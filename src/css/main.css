@@ -1,0 +1,168 @@
+@import url("../3rdparty/codemirror/lib/codemirror.css");
+@import url("../3rdparty/codemirror/theme/blackboard.css");
+@import url("../3rdparty/tooltip.css");
+@import url("../3rdparty/notifier.css");
+
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: monospace;
+  color: white;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
+#uicontainer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  padding: 30px;
+}
+#ui {
+  width: 100%;
+  height: 100%;
+
+  text-shadow: rgba( 0, 0, 0, 1 ) 0px 1px 2px;
+  background-color: rgba(0,0,0,0);
+  border-radius: 0.5em;
+}
+#ui, .fulldialog {
+  display: flex;
+  display: -webkit-flex;
+  flex-flow: column;
+  -webkit-flex-flow: column;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  -webkit-align-content: center;
+  -webkit-align-items: center;
+}
+#ui:hover {
+
+}
+#toolbar {
+  width: 100%;
+  display: flex;
+  display: -webkit-flex;
+  flex-flow: row;
+  -webkit-flex-flow: row;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  -webkit-align-content: center;
+  -webkit-align-items: center;
+}
+#numRange {
+  flex: 1 0 auto;
+  -webkit-appearance: none;
+  height: 2.4em;
+  background-color: rgba(0,0,0,0.7);
+}
+#numRange::-webkit-slider-runnable-track,
+#numRange::-moz-range-track,
+#numRange::-ms-track {
+  background: #444;
+  cursor: pointer;
+}
+#numRange::-webkit-slider-slider-thumb,
+#numRange::-moz-range-thumb,
+#numRange::-ms-thumb {
+  background: #888;
+  cursor: pointer;
+}
+
+#toolbar>div, select, input, #toolbar>button {
+  background-color: rgba(0,0,0,0.7);
+  border: 1px solid #444;
+  margin: 0.25em;
+  padding: 0.5em;
+  border-radius: 0.5em;
+  color: white;
+  user-select: none;
+  font-family: monospace;
+}
+#toolbar>button:disabled,
+#toolbar>input:disabled {
+  background-color: rgba(0.5, 0, 0, 1);
+  border: 1px solid #C00;
+  color: #444;
+}
+#editorWrap {
+  width: 100%;
+  flex: 1 0 auto;
+  position: relative;
+  height: 0;
+}
+#editor {
+  background-color: rgba(0,0,0,0);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+
+  border: 1px solid rgba(0,0,0,0);
+  margin: 0.25em;
+  padding: 0.5em;
+  border-radius: 0.5em;
+  transition: background 0.25s linear, border-color 0.25s linear;
+}
+#editor:hover {
+  border-color: 1px solid #444;
+  background-color: rgba(0,0,0,0.7);
+}
+.fulldialog {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.8);
+  /*
+  background: radial-gradient(ellipse at center, rgba(0,0,0,1) 27%,rgba(0,0,0,0.22) 100%);
+  */
+}
+.fulldialog > * {
+  padding: 1em;
+  background-color: rgba(0,0,0,0.8);
+  border: 1px solid #666;
+}
+input[type="range"] {
+}
+input[type="text"] {
+}
+input[type="number"] {
+  text-align: center;
+}
+input[type="color"] {
+  width: 3em;
+  height: 2.5em;
+  padding: 0.125em;
+}
+.errorLine {
+  background-color: red;
+}
+.CodeMirror {
+  background-color: transparent;
+  height: 100%;
+  font-weight: bold;
+}
+.CodeMirror-gutter-filler,
+.CodeMirror-gutters {
+  background-color: inherit;
+}
+
+

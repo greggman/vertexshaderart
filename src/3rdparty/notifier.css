@@ -1,0 +1,19 @@
+.notifier {
+    z-index: 1000;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.notifier>div {
+    padding: 1em;
+    color: white;
+    background-color: red;
+    border: 2px solid black;
+    border-radius: 1em;
+    font-weight: bold;
+    font-size: larger;
+    width: 100%;
+}
+
