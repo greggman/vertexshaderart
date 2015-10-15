@@ -22,6 +22,7 @@ requirejs([
 
   "use strict";
 
+  var isMobile = window.navigator.userAgent.match(/Android|iPhone|iPad|iPod|Windows Phone/i);
   var $ = document.querySelector.bind(document);
   var gl = twgl.getWebGLContext(document.getElementById("c"), { alpha: false });
   if (!gl) {
@@ -217,6 +218,22 @@ requirejs([
     setPlayState();
     setSoundSuccessState(true);
   });
+  g.streamSource.on('clickToStart', function() {
+    if (!g.startMobileSound) {
+      if (!g.waitMobileSound) {
+        g.waitMobileSound = true;
+        $("#startSound").style.display = "";
+        $("#startSound").addEventListener('click', function() {
+          $("#startSound").style.display = "none";
+          g.streamSource.play();
+        });
+      }
+    }
+  });
+
+  function setSoundSource(src) {
+    g.streamSource.setSource(src);
+  }
 
   playElem.addEventListener('click', function() {
     if (g.streamSource.isPlaying()) {
@@ -226,22 +243,6 @@ requirejs([
     }
     setPlayState();
   });
-
-  function gotoLinkInNewTab(link) {
-    if (link) {
-      var win = window.open(link, "_blank");
-      win.focus();
-    }
-  }
-
-  //function gotoSoundLink() {
-  //  gotoLinkInNewTab(g.soundLink);
-  //}
-  //soundLinkElem.addEventListener('click', gotoSoundLink);
-  //soundcloudElem.addEventListener('click', gotoSoundLink);
-  //bandLinkElem.addEventListener('click', function() {
-  //  gotoLinkInNewTab(g.bandLink);
-  //});
 
   function setPlayState() {
     playNode.nodeValue = g.streamSource.isPlaying() ? _pauseIcon : _playIcon;
@@ -262,6 +263,9 @@ requirejs([
     setLinkOrHide(soundcloudElem, options.permalink_url);
     soundLinkNode.nodeValue = options.title || "";
     bandLinkNode.nodeValue = options.user.username || "";
+    if (cm) {
+      cm.refresh();
+    }
   }
   setSoundLink();
 
@@ -276,7 +280,7 @@ requirejs([
     .then(function(result) {
       if (result.streamable && result.stream_url) {
         var src = result.stream_url + '?client_id=' + g.soundCloudClientId;
-        g.streamSource.setSource(src);
+        setSoundSource(src);
         setSoundLink(result);
       } else {
         console.error("not streamable:", url);
@@ -489,11 +493,20 @@ requirejs([
 
   var hideElem = $("#hide");
   var hideNode = misc.createTextNode(hideElem, "hide");
-  hideElem.addEventListener('click', function() {
-    g.show = !g.show;
+  function showCode(show) {
+    g.show = show;
     hideNode.nodeValue = g.show ? "hide" : "show";
     editorElem.style.display = g.show ? "block" : "none";
+    if (cm) {
+      cm.refresh();
+    }
+  }
+  hideElem.addEventListener('click', function() {
+    showCode(!g.show);
   });
+  if (isMobile) {
+    showCode(false);
+  }
 
   var colorElem = $("#background");
   colorElem.addEventListener('change', function(e) {

@@ -17,6 +17,8 @@
   // so my hope is whenever they get around to actually supporting the 3+ year old
   // standard that things will actually work.
   var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
+  var isMobile = window.navigator.userAgent.match(/Android|iPhone|iPad|iPod|Windows Phone/i);
+  var g = {};
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -32,6 +34,15 @@
     };
   }
 
+  function startPlaying(playFn, emitFn) {
+    if (!isMobile) {
+      playFn();
+      return;
+    }
+
+    emitFn('clickToStart');
+  }
+
   function StreamedAudioSource(options) {
     var emit = addEventEmitter(this);
     var self = this;
@@ -44,6 +55,7 @@
     });
     audio.addEventListener('canplay', function() {
       source.disconnect();
+      startPlaying(play, emit);
       emit('newSource', source);
     });
 
@@ -95,12 +107,16 @@
       setSource(options.src);
     }
 
+    function play() {
+      audio.play();
+      audio.currentTime = 0;
+    }
+
     this.isPlaying = function() {
       return !audio.paused;
     };
     this.play = function() {
-      audio.play();
-      audio.currentTime = 0;
+      startPlaying(play, emit);
     };
     this.stop = function() {
       audio.pause();
@@ -144,10 +160,10 @@
         source = undefined;
       }
       var req = new XMLHttpRequest();
-      req.open("GET", options.lofiSrc || options.src, true);
+      req.open("GET", lofiSrc || src, true);
       req.responseType = "arraybuffer";
       if (crossOrigin !== undefined) {
-        request.withCredentials = true;
+        req.withCredentials = true;
       }
       req.addEventListener('error', function(e) {
         emit('error', e);
@@ -158,7 +174,7 @@
           source.buffer = decodedBuffer;
           source.loop = loop;
           if (autoPlay) {
-            play();
+            startPlaying(play, emit);
           }
           emit('newSource', source);
         });
@@ -170,7 +186,7 @@
       setSource(options.src, options.lofiSrc);
     }
 
-    this.setSource = setSouce;
+    this.setSource = setSource;
     this.play = play;
     this.stop = stop;
     this.isPlaying = isPlaying;
