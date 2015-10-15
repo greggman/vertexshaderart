@@ -89,7 +89,8 @@ requirejs([
   }
 
   function clearRestore() {
-    if (!document.hidden) {
+    if (!document.hidden && !g.restoreCleared) {
+      g.restoreCleared = true;
       storage.removeItem(restoreKey);
     }
   }
@@ -98,6 +99,7 @@ requirejs([
 
   window.addEventListener('beforeunload', function() {
     if (!misc.deepCompare(settings, origSettings)) {
+      g.restoreCleared = true;  // just in case
       storage.setItem(restoreKey, JSON.stringify({
         pathname: window.location.pathname,
         settings: settings,
