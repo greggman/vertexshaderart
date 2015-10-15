@@ -10,10 +10,9 @@
 
 *   fix music loop or at least make stop/start work
 
-*   check safari
-
 *   add fullscreen button?
 
+*   icon
 
 # Done
 
@@ -37,5 +36,7 @@
     save a restore if there have been edits.
 
 *   make toolbar wrap
+
+*   check safari
 
 
