@@ -277,11 +277,12 @@ define(function() {
   /**
    * Inserts a text node into an element
    * @param {HTMLElement} element element to have text node insert
+   * @param {string} [text] text to insert
    * @return {HTMLTextNode} the created text node
    * @memberOf module:Misc
    */
-  var createTextNode = function(element) {
-    var txt = document.createTextNode("");
+  var createTextNode = function(element, text) {
+    var txt = document.createTextNode(text || "");
     element.appendChild(txt);
     return txt;
   };

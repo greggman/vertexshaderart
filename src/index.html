@@ -32,11 +32,16 @@
           <input type="color" id="background" value="#4488CC" />
           <input type="text" id="sound" value="sound" />
           <button id="play"></button>
-          <button id="gallery">gallery</button>
+          <a target="_blank" id="gallery">gallery</a>
           <button id="help">help</button>
         </div>
         <div id="editorWrap">
           <div id="editor"></div>
+        </div>
+        <div id="soundInfo">
+          <a target="_blank" id="soundcloud"><img src="https://developers.soundcloud.com/assets/logo_white-af5006050dd9cba09b0c48be04feac57.png" /></a>
+          <a target="_blank" id="bandLink"></a>
+          <a target="_blank" id="soundLink"></a>
         </div>
       </div>
     </div>
@@ -137,10 +142,10 @@ void main() {
   float localTime = time + 20.0;
   float point = mod(floor(vertexId / 2.0) + mod(vertexId, 2.0) * STEP, NUM_SEGMENTS);
   float count = floor(vertexId / NUM_POINTS);
-  float snd = texture2D(sound, vec2(fract(count / 4000.0), fract(count / 2000.0))).a;
+  float snd = texture2D(sound, vec2(fract(count / 128.0), fract(count / 20000.0))).a;
   float offset = count * 0.02;
   float angle = point * PI * 2.0 / NUM_SEGMENTS + offset;
-  float radius = 0.1 * snd * snd * snd;
+  float radius = 0.2 * pow(snd, 5.0);
   float c = cos(angle + localTime) * radius;
   float s = sin(angle + localTime) * radius;
   float orbitAngle =  count * 0.0;

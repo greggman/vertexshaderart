@@ -46,6 +46,40 @@
       source.disconnect();
       emit('newSource', source);
     });
+
+    function showEvent(e) {
+      console.log("got event:", e.type);
+    }
+
+    //[
+    //  "abort",
+    //  "canplaythrough",
+    //  "durationchange",
+    //  "emptied",
+    //  "encrypted ",
+    //  "ended",
+    //  "interruptbegin",
+    //  "interruptend",
+    //  "loadeddata",
+    //  "loadedmetadata",
+    //  "loadstart",
+    //  "mozaudioavailable",
+    //  "pause",
+    //  "play",
+    //  "playing",
+    //  "progress",
+    //  "ratechange",
+    //  "seeked",
+    //  "seeking",
+    //  "stalled",
+    //  "suspend",
+    //  "timeupdate",
+    //  "volumechange",
+    //  "waiting",
+    //].forEach(function(event) {
+    //  audio.addEventListener(event, showEvent);
+    //});
+
     audio.loop = options.loop;
     audio.autoplay = options.autoPlay;
     if (options.crossOrigin !== undefined) {

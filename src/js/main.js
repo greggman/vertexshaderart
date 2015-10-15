@@ -29,9 +29,13 @@ requirejs([
   var _playIcon = "▶";
   var editorElem = $("#editor");
   var soundElem = $("#sound");
+  var soundLinkElem = $("#soundLink")
+  var soundLinkNode = misc.createTextNode(soundLinkElem);
+  var soundcloudElem = $("#soundcloud");
+  var bandLinkElem = $("#bandLink");
+  var bandLinkNode = misc.createTextNode(bandLinkElem);
   var playElem = $("#play");
-  var playNode = document.createTextNode(_playIcon);
-  playElem.appendChild(playNode);
+  var playNode = misc.createTextNode(playElem, _playIcon);
 
   var historyProgramInfo = twgl.createProgramInfo(gl, ["history-vs", "history-fs"]);
 
@@ -48,7 +52,7 @@ requirejs([
     audio: {
       num: 5000,
       mode: "LINES",
-      sound: "https://soundcloud.com/djapsara/apsara-terminal-zerothree-music-real-prog",
+      sound: "https://soundcloud.com/caseandpoint/case-point-upgrade-free-download",
       lineSize: "NATIVE",
       backgroundColor: [0, 0, 0, 1],
       shader: $("#vs2").text,
@@ -173,14 +177,49 @@ requirejs([
     setPlayState();
   });
 
+  function gotoLinkInNewTab(link) {
+    if (link) {
+      var win = window.open(link, "_blank");
+      win.focus();
+    }
+  }
+
+  //function gotoSoundLink() {
+  //  gotoLinkInNewTab(g.soundLink);
+  //}
+  //soundLinkElem.addEventListener('click', gotoSoundLink);
+  //soundcloudElem.addEventListener('click', gotoSoundLink);
+  //bandLinkElem.addEventListener('click', function() {
+  //  gotoLinkInNewTab(g.bandLink);
+  //});
+
   function setPlayState() {
     playNode.nodeValue = g.streamSource.isPlaying() ? _pauseIcon : _playIcon;
   }
+
+  function setLinkOrHide(elem, link) {
+    elem.style.display = link ? "inline-block" : "none";
+    if (link) {
+      elem.href = link;
+    }
+  }
+
+  function setSoundLink(options) {
+    options = options || {};
+    options.user = options.user || {};
+    setLinkOrHide(soundLinkElem, options.permalink_url);
+    setLinkOrHide(bandLinkElem, options.user.permalink_url);
+    setLinkOrHide(soundcloudElem, options.permalink_url);
+    soundLinkNode.nodeValue = options.title || "";
+    bandLinkNode.nodeValue = options.user.username || "";
+  }
+  setSoundLink();
 
   function setSoundUrl(url) {
     if (!url) {
       g.streamSource.stop();
       setPlayState();
+      setSoundLink();
       return;
     }
     sc.get("/resolve", { url: url })
@@ -188,6 +227,7 @@ requirejs([
       if (result.streamable && result.stream_url) {
         var src = result.stream_url + '?client_id=' + g.soundCloudClientId;
         g.streamSource.setSource(src);
+        setSoundLink(result);
       } else {
         console.error("not streamable:", url);
         setSoundSuccessState(false, "not streamable according to soundcloud");
@@ -398,8 +438,7 @@ requirejs([
   }
 
   var hideElem = $("#hide");
-  var hideNode = document.createTextNode("hide");
-  hideElem.appendChild(hideNode);
+  var hideNode = misc.createTextNode(hideElem, "hide");
   hideElem.addEventListener('click', function() {
     g.show = !g.show;
     hideNode.nodeValue = g.show ? "hide" : "show";

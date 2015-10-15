@@ -83,7 +83,10 @@ canvas {
   cursor: pointer;
 }
 
-#toolbar>div, select, input, #toolbar>button {
+button {
+    cursor: pointer;
+}
+#toolbar>div, select, input, #toolbar>button, #toolbar>a, #soundInfo>a {
   background-color: rgba(0,0,0,0.7);
   border: 1px solid #444;
   margin: 0.25em;
@@ -92,12 +95,30 @@ canvas {
   color: white;
   user-select: none;
   font-family: monospace;
+  font-size: small;
 }
 #toolbar>button:disabled,
 #toolbar>input:disabled {
   background-color: rgba(0.5, 0, 0, 1);
   border: 1px solid #C00;
   color: #444;
+}
+#toolbar>a {
+  display: inline-block;
+  text-decoration: none;
+}
+#soundInfo {
+  text-align: right;
+  width: 100%;
+  overflow: hidden;
+}
+#soundInfo>a {
+  vertical-align: bottom;
+  display: inline-block;
+  text-decoration: none;
+}
+#soundcloud {
+  padding: 0.25em !important;
 }
 #editorWrap {
   width: 100%;
