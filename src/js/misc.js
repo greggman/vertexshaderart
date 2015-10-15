@@ -497,6 +497,43 @@ define(function() {
     });
   }
 
+  function deepCompare(a, b) {
+    // are they the same object?
+    if (a === b) {
+      return true;
+    }
+    // are they the same type?
+    if (typeof a !== typeof b) {
+      return false;
+    }
+    if (Array.isArray(a)) {
+      if (a.length !== b.length) {
+        return false;
+      }
+      for (var ii = 0; ii < a.length; ++ii) {
+        if (!deepCompare(a[ii], b[ii])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (typeof a === "object") {
+      var aKeys = Object.keys(a).sort();
+      var bKeys = Object.keys(b).sort();
+      if (!deepCompare(aKeys, bKeys)) {
+        return false;
+      }
+      for (var ii = 0; ii < aKeys.length; ++ii) {
+        var key = aKeys[ii];
+        if (!deepCompare(a[key], b[key])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return a === b;
+  }
+
   return {
     applyObject: applyObject,
     applyUrlSettings: applyUrlSettings,
@@ -506,6 +543,7 @@ define(function() {
     copyProperties: copyProperties,
     createTextNode: createTextNode,
     degToRad: degToRad,
+    deepCompare: deepCompare,
     findCSSStyleRule: findCSSStyleRule,
     getAbsolutePosition: getAbsolutePosition,
     getFunctionByPrefix: getFunctionByPrefix,

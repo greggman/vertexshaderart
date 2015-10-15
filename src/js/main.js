@@ -36,8 +36,14 @@ requirejs([
   var bandLinkNode = misc.createTextNode(bandLinkElem);
   var playElem = $("#play");
   var playNode = misc.createTextNode(playElem, _playIcon);
+  var restoreKey = "restore";
 
   var historyProgramInfo = twgl.createProgramInfo(gl, ["history-vs", "history-fs"]);
+
+  var storage = window.localStorage || {
+    getItem: function() {},
+    setItem: function() {},
+  };
 
   var q = misc.parseUrlQuery();
   var sets = {
@@ -70,6 +76,29 @@ requirejs([
   if (!settings) {
     settings = sets.default;
   }
+
+  var restoreStr = storage.getItem(restoreKey);
+  if (restoreStr) {
+    storage.removeItem(restoreKey);
+    try {
+      var restore = JSON.parse(restoreStr);
+      if (restore.pathname === window.location.pathname) {
+        settings = restore.settings;
+      }
+    } catch (e) {
+    }
+  }
+
+  var origSettings = JSON.parse(JSON.stringify(settings));
+
+  window.addEventListener('beforeunload', function() {
+    if (!misc.deepCompare(settings, origSettings)) {
+      storage.setItem(restoreKey, JSON.stringify({
+        pathname: window.location.pathname,
+        settings: settings,
+      }));
+    }
+  });
 
   var sc = window.SC;
   if (!sc || q.local) {
