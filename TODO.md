@@ -1,5 +1,7 @@
 ﻿# To Do
 
+*   remove SoundCloud lib
+
 *   save to db
 
     * take screenshot at t = 10 with sound data
@@ -21,3 +23,15 @@
 *   add fullscreen button?
 
 *   make toolbar wrap
+
+
+# Done
+
+*   make audio wave heightmap example
+
+*   try other sound data (should I add this?)
+
+       analyser.getByteTimeDomainData(soundTexBuffer);
+
+
+
