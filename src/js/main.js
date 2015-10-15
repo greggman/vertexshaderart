@@ -52,6 +52,7 @@ requirejs([
 
   var g = {
     maxCount: 100000,
+    screenshotCanvas: document.createElement("canvas"),
     mode: gl.LINES,
     time: 0,
     mouse: [0, 0],
@@ -63,6 +64,8 @@ requirejs([
     soundCloudClientId: '3f4914e324f9caeb23c521f0f1835a60',
   };
   g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
+  g.screenshotCanvas.width = 300;
+  g.screenshotCanvas.height = 150;
 
   var q = misc.parseUrlQuery();
   var sets = {
@@ -127,6 +130,37 @@ requirejs([
   });
   document.addEventListener('visibilitychange', clearRestore);
   clearRestore();
+
+  function takeScreenshot() {
+    renderScene(historyDstFBI.attachments[0], 10, "CSS", [0, 0]);
+    var ctx = g.screenshotCanvas.getContext("2d");
+    var w = ctx.canvas.width  / gl.canvas.width;
+    var h = ctx.canvas.height / gl.canvas.height;
+    var s = Math.max(w, h);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.save();
+    ctx.translate(ctx.canvas.width / 2 , ctx.canvas.height / 2);
+    ctx.scale(s, s);
+    ctx.translate(gl.canvas.width / -2, gl.canvas.height / -2);
+    ctx.drawImage(gl.canvas, 0, 0);
+    ctx.restore();
+    return {
+      width: ctx.canvas.width,
+      height: ctx.canvas.height,
+      dataURL: ctx.canvas.toDataURL(),
+    };
+  }
+
+  $("#gallery").addEventListener('click', function() {
+     var shot = takeScreenshot();
+     var img = new Image();
+     img.src = shot.dataURL;
+     img.style.position = "absolute";
+     img.style.left = "0";
+     img.style.top = "0";
+     img.style.zIndex = 200;
+     document.body.appendChild(img);
+  });
 
   var sc = window.SC;
   if (!sc || q.local) {
@@ -694,7 +728,7 @@ requirejs([
     u_texture: undefined,
   }
 
-  function renderScene(soundHistoryTex, time, lineSize) {
+  function renderScene(soundHistoryTex, time, lineSize, mouse) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -710,8 +744,8 @@ requirejs([
       uniforms.time = time;
       uniforms.resolution[0] = gl.canvas.width;
       uniforms.resolution[1] = gl.canvas.height;
-      uniforms.mouse[0] = g.mouse[0];
-      uniforms.mouse[1] = g.mouse[1];
+      uniforms.mouse[0] = mouse[0];
+      uniforms.mouse[1] = mouse[1];
       uniforms._dontUseDirectly_pointSize = size;
       uniforms.sound = soundHistoryTex;
 
@@ -782,7 +816,7 @@ requirejs([
 
     updateSoundHistory();
 
-    renderScene(historyDstFBI.attachments[0], g.time, settings.lineSize);
+    renderScene(historyDstFBI.attachments[0], g.time, settings.lineSize, g.mouse);
 
     if (q.showHistory) {
       renderSoundHistory();
