@@ -24,6 +24,10 @@ requirejs([
 
   var $ = document.querySelector.bind(document);
   var gl = twgl.getWebGLContext(document.getElementById("c"), { alpha: false });
+  if (!gl) {
+    $("#nogl").style.display = "";
+    return;
+  }
   var m4 = twgl.m4;
   var _pauseIcon = "❚❚";
   var _playIcon = "▶";
@@ -44,6 +48,20 @@ requirejs([
     getItem: function() {},
     setItem: function() {},
   };
+
+  var g = {
+    maxCount: 100000,
+    mode: gl.LINES,
+    time: 0,
+    mouse: [0, 0],
+    shaderSuccess: false,
+    vsHeader: $("#vs-header").text,
+    fSource: $("#fs").text,
+    errorLines: [],
+    show: true,
+    soundCloudClientId: '3f4914e324f9caeb23c521f0f1835a60',
+  };
+  g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
 
   var q = misc.parseUrlQuery();
   var sets = {
@@ -178,20 +196,6 @@ requirejs([
 
   var historySrcFBI = twgl.createFramebufferInfo(gl, historyAttachments, soundTexBuffer.length, numHistorySamples);
   var historyDstFBI = twgl.createFramebufferInfo(gl, historyAttachments, soundTexBuffer.length, numHistorySamples);
-
-  var g = {
-    maxCount: 100000,
-    mode: gl.LINES,
-    time: 0,
-    mouse: [0, 0],
-    shaderSuccess: false,
-    vsHeader: $("#vs-header").text,
-    fSource: $("#fs").text,
-    errorLines: [],
-    show: true,
-    soundCloudClientId: '3f4914e324f9caeb23c521f0f1835a60',
-  };
-  g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
 
   sc.initialize({
     client_id: g.soundCloudClientId,
