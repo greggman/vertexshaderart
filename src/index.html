@@ -19,6 +19,9 @@
             <option>LINE_STRIP</option>
             <option>LINE_LOOP</option>
             <option>LINES</option>
+            <option>TRI_STRIP</option>
+            <option>TRI_FAN</option>
+            <option>TRIANGLES</option>
           </select>
           <select id="size">
             <option>NATIVE</option>
@@ -57,7 +60,9 @@ vertexId  : float     : number of the vertex 0, 1, 2
 resoluton : vec2      : resolution of the art
 mouse     : vec2      : mouse position normalized (-1 to 1)
 time      : float     : time in seconds
-sound     : sampler2D : data from the music Nx1
+sound     : sampler2D : data from the music Nx240, alpha only
+                      : 240 rows of history (4secs @60fps)
+soundRes  : vec2      : resolution of sound
       </pre>
     </div>
   </body>
@@ -68,6 +73,7 @@ uniform vec2 mouse;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D sound;
+uniform vec2 soundRes;
 uniform float _dontUseDirectly_pointSize;
 
 varying vec4 v_color;
@@ -131,7 +137,7 @@ void main() {
   float localTime = time + 20.0;
   float point = mod(floor(vertexId / 2.0) + mod(vertexId, 2.0) * STEP, NUM_SEGMENTS);
   float count = floor(vertexId / NUM_POINTS);
-  float snd = texture2D(sound, vec2(fract(count / 4000.0), 0.5)).a;
+  float snd = texture2D(sound, vec2(fract(count / 4000.0), fract(count / 2000.0))).a;
   float offset = count * 0.02;
   float angle = point * PI * 2.0 / NUM_SEGMENTS + offset;
   float radius = 0.1 * snd * snd * snd;
@@ -166,6 +172,28 @@ void main() {
   gl_FragColor = v_color;
 }
   </script>
+  <script id="history-vs" type="notjs">
+attribute vec4 position;
+attribute vec2 texcoord;
+uniform mat4 u_matrix;
+varying vec2 v_texcoord;
+
+void main() {
+  gl_Position = u_matrix * position;
+  v_texcoord = texcoord;
+}
+  </script>
+  <script id="history-fs" type="notjs">
+precision mediump float;
+
+uniform sampler2D u_texture;
+varying vec2 v_texcoord;
+
+void main() {
+  gl_FragColor = texture2D(u_texture, v_texcoord).aaaa;
+}
+  </script>
+
   <script src="https://connect.soundcloud.com/sdk/sdk-3.0.0.js"></script>
   <script data-main="js/main.js" src="3rdparty/require.js"></script>
 </html>

@@ -4,7 +4,7 @@ requirejs([
     '../3rdparty/colorutils',
     '../3rdparty/cssparse',
     '../3rdparty/glsl',
-    '../3rdparty/twgl',
+    '../3rdparty/twgl-full',
     '../3rdparty/notifier',
     './misc',
     './strings',
@@ -24,6 +24,7 @@ requirejs([
 
   var $ = document.querySelector.bind(document);
   var gl = twgl.getWebGLContext(document.getElementById("c"), { alpha: false });
+  var m4 = twgl.m4;
   var _pauseIcon = "❚❚";
   var _playIcon = "▶";
   var editorElem = $("#editor");
@@ -31,6 +32,8 @@ requirejs([
   var playElem = $("#play");
   var playNode = document.createTextNode(_playIcon);
   playElem.appendChild(playNode);
+
+  var historyProgramInfo = twgl.createProgramInfo(gl, ["history-vs", "history-fs"]);
 
   var q = misc.parseUrlQuery();
   var sets = {
@@ -56,12 +59,30 @@ requirejs([
     settings = sets.default;
   }
 
-  var sc = window.SC || new function() {
-    function noop() {
-      console.log("noop");
-    };
-    this.initialize = noop;
-    this.stream = noop;
+  var sc = window.SC;
+  if (!sc || q.local) {
+    sc = new function() {
+      function noop() {
+        console.log("noop");
+      };
+      this.initialize = noop;
+      this.get = function(url, options) {
+        return {
+          then: function(fn) {
+            setTimeout(function() {
+              fn({
+                streamable: true,
+                stream_url: "/src/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+              });
+            }, 1);
+            return {
+              catch: function() {
+              },
+            };
+          },
+        };
+      }
+    }
   }
 
   var notifier = new Notifier({
@@ -92,6 +113,21 @@ requirejs([
     format: gl.ALPHA,
   }
   var soundTex = twgl.createTexture(gl, soundTexSpec);
+  var numHistorySamples = 60 * 4; // 4 seconds
+  var historyAttachments = [
+    {
+      format: gl.RGBA,
+      mag: gl.LINEAR,
+      min: gl.LINEAR,
+      wrap: gl.CLAMP_TO_EDGE,
+    },
+  ];
+  if (q.showHistory) {
+    console.log("history size:", soundTexBuffer.length, numHistorySamples);
+  }
+
+  var historySrcFBI = twgl.createFramebufferInfo(gl, historyAttachments, soundTexBuffer.length, numHistorySamples);
+  var historyDstFBI = twgl.createFramebufferInfo(gl, historyAttachments, soundTexBuffer.length, numHistorySamples);
 
   var g = {
     maxCount: 100000,
@@ -176,6 +212,9 @@ requirejs([
     "LINE_STRIP": gl.LINE_STRIP,
     "LINE_LOOP": gl.LINE_LOOP,
     "POINTS": gl.POINTS,
+    "TRI_STRIP": gl.TRIANGLE_STRIP,
+    "TRI_FAN": gl.TRIANGLE_FAN,
+    "TRIANGLES": gl.TRIANGLS,
   };
 
   var validLineSizes = {
@@ -206,6 +245,7 @@ requirejs([
     var _fs;
     var _prg;
     var _src;
+    var _processing;
 
     function _emit(event) {
       var handler = _handlers[event];
@@ -248,6 +288,8 @@ requirejs([
     }
 
     function _checkResults() {
+      _processing = false;
+
       var vsErrors = _getShaderResults(_vs);
       var fsErrors = _getShaderResults(_fs);
       var prgErrors = _getProgramResults(_prg);
@@ -280,9 +322,10 @@ requirejs([
     }
 
     function _processQueue() {
-      if (!_queue.length) {
+      if (_processing || !_queue.length) {
         return;
       }
+      _processing = true;
       _src = _queue.shift();
       _vs = _compileShader(gl.VERTEX_SHADER, _src.vsrc);
       _fs = _compileShader(gl.FRAGMENT_SHADER, _src.fsrc);
@@ -442,6 +485,11 @@ requirejs([
     vertexId: { data: count, numComponents: 1 },
   };
   var bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+  var quadBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+    position: { numComponents: 2, data: [-1, -1, 1, -1, -1, 1, 1, 1] },
+    texcoord: [0, 0, 1, 0, 0, 1, 1, 1],
+    indices: [0, 1, 2, 2, 1, 3],
+  });
 
   function getMode(mode) {
     var m = modes[mode];
@@ -524,7 +572,9 @@ requirejs([
 
     setSoundUrl(settings.sound);
     cm.doc.setValue(settings.shader);
-    tryNewProgram(settings.shader);
+
+    // not needed because cm.doc.setValue will trigger change event
+    //tryNewProgram(settings.shader);
   }
   setSettings(settings);
 
@@ -532,9 +582,15 @@ requirejs([
     time: 0,
     resolution: [1, 1],
     mouse: [0, 0],
-    sound: soundTex,
+    sound: undefined,
+    soundRes: [soundTexBuffer.length, numHistorySamples],
     _dontUseDirectly_pointSize: 1,
   };
+
+  var historyUniforms = {
+    u_matrix: m4.identity(),
+    u_texture: undefined,
+  }
 
   function render(time) {
     time *= 0.001;
@@ -544,6 +600,44 @@ requirejs([
     g.time += elapsed;
 
     twgl.resizeCanvasToDisplaySize(gl.canvas);
+
+    // Swap src & dst
+    var temp = historySrcFBI;
+    historySrcFBI = historyDstFBI;
+    historyDstFBI = temp;
+
+    // draw to test
+    gl.bindFramebuffer(gl.FRAMEBUFFER, historyDstFBI.framebuffer);
+    gl.viewport(0, 0, soundTexBuffer.length, numHistorySamples);
+
+    // Copy audio data to Nx1 texture
+    analyser.getByteFrequencyData(soundTexBuffer);
+    twgl.setTextureFromArray(gl, soundTex, soundTexSpec.src, soundTexSpec);
+
+    gl.useProgram(historyProgramInfo.program);
+    twgl.setBuffersAndAttributes(gl, historyProgramInfo, quadBufferInfo);
+
+    // copy from historySrc to historyDst one pixel down
+    historyUniforms.u_texture = historySrcFBI.attachments[0];
+    m4.translation([0, 2 / numHistorySamples, 0], historyUniforms.u_matrix);
+
+    twgl.setUniforms(historyProgramInfo, historyUniforms);
+    twgl.drawBufferInfo(gl, gl.TRIANGLES, quadBufferInfo);
+
+    // copy audio data into top row of historyDst
+    historyUniforms.u_texture = soundTex;
+    m4.translation(
+        [0, -(numHistorySamples - 0.5) / numHistorySamples, 0],
+        historyUniforms.u_matrix)
+    m4.scale(
+        historyUniforms.u_matrix,
+        [1, 1 / numHistorySamples, 1],
+        historyUniforms.u_matrix);
+
+    twgl.setUniforms(historyProgramInfo, historyUniforms);
+    twgl.drawBufferInfo(gl, gl.TRIANGLES, quadBufferInfo);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     var size = settings.lineSize === "NATIVE" ? 1 : (window.devicePixelRatio || 1);
@@ -561,14 +655,22 @@ requirejs([
       uniforms.mouse[0] = g.mouse[0];
       uniforms.mouse[1] = g.mouse[1];
       uniforms._dontUseDirectly_pointSize = size;
-
-      analyser.getByteFrequencyData(soundTexBuffer);
-      twgl.setTextureFromArray(gl, soundTex, soundTexSpec.src, soundTexSpec);
+      uniforms.sound = historyDstFBI.attachments[0];
 
       gl.useProgram(programInfo.program);
       twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
       twgl.setUniforms(programInfo, uniforms);
       twgl.drawBufferInfo(gl, g.mode, bufferInfo, settings.num);
+
+      if (q.showHistory) {
+        gl.useProgram(historyProgramInfo.program);
+        twgl.setBuffersAndAttributes(gl, historyProgramInfo, quadBufferInfo);
+        m4.identity(historyUniforms.u_matrix);
+        historyUniforms.u_texture = historyDstFBI.attachments[0];
+//        historyUniforms.u_texture = soundTex;
+        twgl.setUniforms(historyProgramInfo, historyUniforms);
+        twgl.drawBufferInfo(gl, gl.TRIANGLES, quadBufferInfo);
+      }
     }
 
     requestAnimationFrame(render);
