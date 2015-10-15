@@ -57,6 +57,8 @@ canvas {
   display: -webkit-flex;
   flex-flow: row;
   -webkit-flex-flow: row;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
   justify-content: center;
   align-content: center;
   align-items: center;
