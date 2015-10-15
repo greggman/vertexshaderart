@@ -60,7 +60,7 @@ requirejs([
     audio2: {
       num: 16384,
       mode: "LINES",
-      sound: "https://soundcloud.com/claudevonstroke/claude-vonstroke-barrump",
+      sound: "https://soundcloud.com/chibi-tech/lolitazia-season",
       lineSize: "NATIVE",
       backgroundColor: [0, 0, 0, 1],
       shader: $("#vs3").text.trim(),

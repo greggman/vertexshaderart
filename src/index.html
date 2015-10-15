@@ -53,11 +53,11 @@ UI
 [T]      : Resets the time to 0
 [+]      : Makes a new art piece from the current one
 [Save]   : Saves the current art
-[mode]   : Choose a mode POINTS, LINES, LINE_LOOP, LINE_STRIP
+[mode]   : POINTS, LINES, LINE_STRIP, LINE_LOOP, etc...
 [NATIVE] : Lines are native size (1 pixel) or CSS size
-           On HD-DPI display CSS will generate thicker lines
-[sound]  : A soundcloud URL for music
-           The URL must have permission to embedded
+         : On HD-DPI display CSS will generate thicker lines
+[sound]  : A soundcloud URL for music. Blank = no sound
+         : The URL must have permission to embedded/stream
 
 Inputs
 -------------------------------------------------------------
@@ -66,8 +66,13 @@ resoluton : vec2      : resolution of the art
 mouse     : vec2      : mouse position normalized (-1 to 1)
 time      : float     : time in seconds
 sound     : sampler2D : data from the music Nx240, alpha only
-                      : 240 rows of history (4secs @60fps)
+          :           : 240 rows of history (4secs @60fps)
 soundRes  : vec2      : resolution of sound
+
+Outputs:
+-------------------------------------------------------------
+gl_Position : vec4    : standard GLSL vertex shader output
+v_color     : vec4    : color to output from fragment shader
       </pre>
     </div>
   </body>
