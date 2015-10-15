@@ -14,8 +14,6 @@
 
 *   add fullscreen button?
 
-*   make toolbar wrap
-
 
 # Done
 
@@ -37,5 +35,7 @@
 
     solution: restore on load and clear the restore. Then, only
     save a restore if there have been edits.
+
+*   make toolbar wrap
 
 
