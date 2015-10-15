@@ -12,9 +12,9 @@
 
 *   add fullscreen button?
 
-*   icon
-
 # Done
+
+*   icon
 
 *   make audio wave heightmap example
 
