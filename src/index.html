@@ -71,7 +71,8 @@ soundRes  : vec2      : resolution of sound
       </pre>
     </div>
   </body>
-<script id="vs-header" type="notjs">
+  <!- =========================================================== ->
+  <script id="vs-header" type="notjs">
 attribute float vertexId;
 
 uniform vec2 mouse;
@@ -82,8 +83,10 @@ uniform vec2 soundRes;
 uniform float _dontUseDirectly_pointSize;
 
 varying vec4 v_color;
-</script>
-<script id="vs" type="notjs">#define PI 3.14159
+  </script>
+  <!- =========================================================== ->
+  <script id="vs" type="notjs">
+#define PI 3.14159
 #define NUM_SEGMENTS 21.0
 #define NUM_POINTS (NUM_SEGMENTS * 2.0)
 #define STEP 5.0
@@ -124,6 +127,7 @@ void main() {
   v_color = vec4(hsv2rgb(vec3(hue, 1, 1)), 1);
 }
   </script>
+  <!- =========================================================== ->
   <script id="vs2" type="notjs">
 #define PI 3.14159
 #define NUM_SEGMENTS 4.0
@@ -167,7 +171,52 @@ void main() {
   float hue = (localTime * 0.01 + count * 1.001);
   v_color = vec4(hsv2rgb(vec3(hue, 1, 1)), 1);
 }
-    </script>
+  </script>
+  <!- =========================================================== ->
+  <script id="vs3" type="notjs">
+#define NUM_SEGMENTS 128.0
+#define NUM_POINTS (NUM_SEGMENTS * 2.0)
+#define STEP 1.0
+#define NUM_LINES_DOWN 64.0
+
+vec3 hsv2rgb(vec3 c) {
+  c = vec3(c.x, clamp(c.yz, 0.0, 1.0));
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+void main() {
+  // produces 0,1, 1,2, 2,3, ...
+  float point = floor(mod(vertexId, NUM_POINTS) / 2.0) + mod(vertexId, 2.0) * STEP;
+  // line count
+  float count = floor(vertexId / NUM_POINTS);
+
+  float u = point / NUM_SEGMENTS;    // 0 <-> 1 across line
+  float v = count / NUM_LINES_DOWN;  // 0 <-> 1 by line
+  float invV = 1.0 - v;
+
+  // Only use the left most 1/4th of the sound texture
+  // because there's no action on the right
+  float historyX = u * 0.25;
+  // Match each line to a specific row in the sound texture
+  float historyV = (v * NUM_LINES_DOWN + 0.5) / soundRes.y;
+  float snd = texture2D(sound, vec2(historyX, historyV)).a;
+
+  float x = u * 2.0 - 1.0;
+  float y = v * 2.0 - 1.0;
+  vec2 xy = vec2(
+      x * mix(0.5, 1.0, invV),
+      y + pow(snd, 5.0) * 1.0) / (v + 0.5);
+  gl_Position = vec4(xy * 0.5, 0, 1);
+
+  float hue = u;
+  float sat = invV;
+  float val = invV;
+  v_color = vec4(hsv2rgb(vec3(hue, sat, val)), 1);
+}
+  </script>
+  <!- =========================================================== ->
   <script id="fs" type="notjs">
 precision mediump float;
 
@@ -177,6 +226,7 @@ void main() {
   gl_FragColor = v_color;
 }
   </script>
+  <!- =========================================================== ->
   <script id="history-vs" type="notjs">
 attribute vec4 position;
 attribute vec2 texcoord;
@@ -188,6 +238,7 @@ void main() {
   v_texcoord = texcoord;
 }
   </script>
+  <!- =========================================================== ->
   <script id="history-fs" type="notjs">
 precision mediump float;
 
@@ -198,7 +249,7 @@ void main() {
   gl_FragColor = texture2D(u_texture, v_texcoord).aaaa;
 }
   </script>
-
+  <!- =========================================================== ->
   <script src="https://connect.soundcloud.com/sdk/sdk-3.0.0.js"></script>
   <script data-main="js/main.js" src="3rdparty/require.js"></script>
 </html>

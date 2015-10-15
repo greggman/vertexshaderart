@@ -47,7 +47,7 @@ requirejs([
       sound: "",
       lineSize: "NATIVE",
       backgroundColor: [0, 0, 0, 1],
-      shader: $("#vs").text,
+      shader: $("#vs").text.trim(),
     },
     audio: {
       num: 5000,
@@ -55,7 +55,15 @@ requirejs([
       sound: "https://soundcloud.com/caseandpoint/case-point-upgrade-free-download",
       lineSize: "NATIVE",
       backgroundColor: [0, 0, 0, 1],
-      shader: $("#vs2").text,
+      shader: $("#vs2").text.trim(),
+    },
+    audio2: {
+      num: 16384,
+      mode: "LINES",
+      sound: "https://soundcloud.com/claudevonstroke/claude-vonstroke-barrump",
+      lineSize: "NATIVE",
+      backgroundColor: [0, 0, 0, 1],
+      shader: $("#vs3").text.trim(),
     },
   };
   var settings = sets[q.settings];
@@ -631,15 +639,35 @@ requirejs([
     u_texture: undefined,
   }
 
-  function render(time) {
-    time *= 0.001;
-    var now = time;
-    var elapsed = now - (g.then || 0);
-    g.then = now;
-    g.time += elapsed;
+  function renderScene(soundHistoryTex, time, lineSize) {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    twgl.resizeCanvasToDisplaySize(gl.canvas);
+    var size = lineSize === "NATIVE" ? 1 : (window.devicePixelRatio || 1);
+    gl.lineWidth(size);
 
+    gl.clearColor.apply(gl, settings.backgroundColor);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    var programInfo = programManager.getProgramInfo();
+    if (programInfo) {
+
+      uniforms.time = time;
+      uniforms.resolution[0] = gl.canvas.width;
+      uniforms.resolution[1] = gl.canvas.height;
+      uniforms.mouse[0] = g.mouse[0];
+      uniforms.mouse[1] = g.mouse[1];
+      uniforms._dontUseDirectly_pointSize = size;
+      uniforms.sound = soundHistoryTex;
+
+      gl.useProgram(programInfo.program);
+      twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
+      twgl.setUniforms(programInfo, uniforms);
+      twgl.drawBufferInfo(gl, g.mode, bufferInfo, settings.num);
+    }
+  }
+
+  function updateSoundHistory() {
     // Swap src & dst
     var temp = historySrcFBI;
     historySrcFBI = historyDstFBI;
@@ -651,6 +679,7 @@ requirejs([
 
     // Copy audio data to Nx1 texture
     analyser.getByteFrequencyData(soundTexBuffer);
+//  analyser.getByteTimeDomainData(soundTexBuffer);
     twgl.setTextureFromArray(gl, soundTex, soundTexSpec.src, soundTexSpec);
 
     gl.useProgram(historyProgramInfo.program);
@@ -675,41 +704,33 @@ requirejs([
 
     twgl.setUniforms(historyProgramInfo, historyUniforms);
     twgl.drawBufferInfo(gl, gl.TRIANGLES, quadBufferInfo);
+  }
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  function renderSoundHistory() {
+    gl.useProgram(historyProgramInfo.program);
+    twgl.setBuffersAndAttributes(gl, historyProgramInfo, quadBufferInfo);
+    m4.identity(historyUniforms.u_matrix);
+    historyUniforms.u_texture = historyDstFBI.attachments[0];
+    //historyUniforms.u_texture = soundTex;
+    twgl.setUniforms(historyProgramInfo, historyUniforms);
+    twgl.drawBufferInfo(gl, gl.TRIANGLES, quadBufferInfo);
+  }
 
-    var size = settings.lineSize === "NATIVE" ? 1 : (window.devicePixelRatio || 1);
-    gl.lineWidth(size);
+  function render(time) {
+    time *= 0.001;
+    var now = time;
+    var elapsed = now - (g.then || 0);
+    g.then = now;
+    g.time += elapsed;
 
-    gl.clearColor.apply(gl, settings.backgroundColor);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    twgl.resizeCanvasToDisplaySize(gl.canvas);
 
-    var programInfo = programManager.getProgramInfo();
-    if (programInfo) {
+    updateSoundHistory();
 
-      uniforms.time = g.time;
-      uniforms.resolution[0] = gl.canvas.width;
-      uniforms.resolution[1] = gl.canvas.height;
-      uniforms.mouse[0] = g.mouse[0];
-      uniforms.mouse[1] = g.mouse[1];
-      uniforms._dontUseDirectly_pointSize = size;
-      uniforms.sound = historyDstFBI.attachments[0];
+    renderScene(historyDstFBI.attachments[0], g.time, settings.lineSize);
 
-      gl.useProgram(programInfo.program);
-      twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-      twgl.setUniforms(programInfo, uniforms);
-      twgl.drawBufferInfo(gl, g.mode, bufferInfo, settings.num);
-
-      if (q.showHistory) {
-        gl.useProgram(historyProgramInfo.program);
-        twgl.setBuffersAndAttributes(gl, historyProgramInfo, quadBufferInfo);
-        m4.identity(historyUniforms.u_matrix);
-        historyUniforms.u_texture = historyDstFBI.attachments[0];
-//        historyUniforms.u_texture = soundTex;
-        twgl.setUniforms(historyProgramInfo, historyUniforms);
-        twgl.drawBufferInfo(gl, gl.TRIANGLES, quadBufferInfo);
-      }
+    if (q.showHistory) {
+      renderSoundHistory();
     }
 
     requestAnimationFrame(render);
