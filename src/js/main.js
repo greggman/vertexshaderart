@@ -79,13 +79,18 @@ requirejs([
 
   var restoreStr = storage.getItem(restoreKey);
   if (restoreStr) {
-    storage.removeItem(restoreKey);
     try {
       var restore = JSON.parse(restoreStr);
       if (restore.pathname === window.location.pathname) {
         settings = restore.settings;
       }
     } catch (e) {
+    }
+  }
+
+  function clearRestore() {
+    if (!document.hidden) {
+      storage.removeItem(restoreKey);
     }
   }
 
@@ -99,6 +104,8 @@ requirejs([
       }));
     }
   });
+  document.addEventListener('visibilitychange', clearRestore);
+  clearRestore();
 
   var sc = window.SC;
   if (!sc || q.local) {
