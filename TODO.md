@@ -1,7 +1,5 @@
 ﻿# To Do
 
-*   remove SoundCloud lib
-
 *   save to db
 
     * take screenshot at t = 10 with sound data
@@ -14,12 +12,6 @@
 
 *   check safari
 
-*   save in localstorage in case you accidentally close the tab
-
-    how do we know when to restore? Save URL, if matches re-load
-    localstorage? how to know when to give it up? Add timeout? 5 mins?
-    change URL the moment you start editing?
-
 *   add fullscreen button?
 
 *   make toolbar wrap
@@ -31,7 +23,19 @@
 
 *   try other sound data (should I add this?)
 
-       analyser.getByteTimeDomainData(soundTexBuffer);
+        analyser.getByteTimeDomainData(soundTexBuffer);
 
+*   remove SoundCloud lib
+
+    why? just as waste of time
+
+*   save in localstorage in case you accidentally close the tab
+
+    how do we know when to restore? Save URL, if matches re-load
+    localstorage? how to know when to give it up? Add timeout? 5 mins?
+    change URL the moment you start editing?
+
+    solution: restore on load and clear the restore. Then, only
+    save a restore if there have been edits.
 
 
