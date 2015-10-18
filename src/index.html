@@ -55,7 +55,7 @@
           <input type="color" id="background" value="#4488CC" />
           <input type="text" id="sound" value="sound" />
           <button id="play"></button>
-          <a target="_blank" id="gallery">gallery</a>
+          <a href="/" id="gallery">gallery</a>
           <button id="help">help</button>
         </div>
         <div id="editorWrap">
@@ -70,6 +70,9 @@
     </div>
     <div id="startSound" class="fulldialog" style="display: none;">
       <h1>click to start</h1>
+    </div>
+    <div id="saving" class="fulldialog" style="display: none;">
+      <h1>saving</h1>
     </div>
     <div id="helpDialog" class="fulldialog" style="display: none;">
       <pre>
@@ -259,6 +262,45 @@ void main() {
 }
   </script>
   <!- =========================================================== ->
+  <script id="vs4" type="notjs">
+#define PI 3.14159
+#define NUM_SEGMENTS 2.0
+#define NUM_POINTS (NUM_SEGMENTS * 2.0)
+#define STEP 1.0
+//#define FIT_VERTICAL
+
+void main() {
+  float localTime = time + 20.0;
+  float point = mod(floor(vertexId / 2.0) + mod(vertexId, 2.0) * STEP, NUM_SEGMENTS);
+  float count = floor(vertexId / NUM_POINTS);
+  float offset = count * sin(time * 0.01) + 5.0;
+  float angle = point * PI * 2.0 / NUM_SEGMENTS + offset;
+  float radius = pow(count * 0.00014, 1.0);
+  float c = cos(angle + localTime) * radius;
+  float s = sin(angle + localTime) * radius;
+  float orbitAngle =  pow(count * 0.025, 0.8);
+  float innerRadius = pow(count * 0.0005, 1.2);
+  float oC = cos(orbitAngle + count * 0.0001) * innerRadius;
+  float oS = sin(orbitAngle + count * 0.0001) * innerRadius;
+
+  #ifdef FIT_VERTICAL
+    vec2 aspect = vec2(resolution.y / resolution.x, 1);
+  #else
+    vec2 aspect = vec2(1, resolution.x / resolution.y);
+  #endif
+
+  vec2 xy = vec2(
+      oC + c,
+      oS + s);
+  gl_Position = vec4(xy * aspect + mouse * 0.1, 0, 1);
+
+  //float b = mix(0.0, 0.7, step(0.5, mod(count + localTime * 1.0, 6.0) / 2.0));
+  float b = 1.0 - pow(sin(count * 0.4) * 0.5 + 0.5, 10.0);
+  b = 0.0;mix(0.0, 0.7, b);
+  v_color = vec4(b, b, b, 1);
+}
+  </script>
+  <!- =========================================================== ->
   <script id="fs" type="notjs">
 precision mediump float;
 
@@ -293,5 +335,5 @@ void main() {
   </script>
   <!- =========================================================== ->
   <script src="https://connect.soundcloud.com/sdk/sdk-3.0.0.js"></script>
-  <script data-main="js/main.js" src="3rdparty/require.js"></script>
+  <script data-main="js/start.js" src="3rdparty/require.js"></script>
 </html>

@@ -237,7 +237,7 @@ define([
   var zeros = "00000000";
   var paddedHex = function(h, padding) {
     var s = h.toString(16);
-    return zeros.substr(s.length - padding) + s;
+    return zeros.substr(0, padding - s.length) + s;
   };
 
   /**
