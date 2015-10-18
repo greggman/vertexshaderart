@@ -1,0 +1,114 @@
+<template name="vsart">
+<body>
+    <canvas id="c"></canvas>
+    <div id="uicontainer">
+      <div id="ui">
+        <div id="toolbar">
+          <button id="hide"></button>
+          <button id="time" class="tooltip-bottom" data-tooltip="reset time">T</button>
+          <button id="new" class="tooltip-bottom" data-tooltip="new/fork">+</button>
+          <button id="save">save</button>
+          <select id="mode">
+            <option>POINTS</option>
+            <option>LINE_STRIP</option>
+            <option>LINE_LOOP</option>
+            <option>LINES</option>
+            <option>TRI_STRIP</option>
+            <option>TRI_FAN</option>
+            <option>TRIANGLES</option>
+          </select>
+          <select id="size">
+            <option>NATIVE</option>
+            <option>CSS</option>
+          </select>
+          <input type="range" id="numRange" value="10000" min="1" max="100000" />
+          <input type="number" id="num" value="10000" min="1" max="100000" />
+          <input type="color" id="background" value="#4488CC" />
+          <input type="text" id="sound" value="sound" />
+          <button id="play"></button>
+          <a href="/" id="gallery">gallery</a>
+          <button id="help">help</button>
+        </div>
+        <div id="editorWrap">
+          <div id="editor"></div>
+        </div>
+        <div id="soundInfo">
+          <a target="_blank" id="soundcloud"><img src="https://developers.soundcloud.com/assets/logo_white-af5006050dd9cba09b0c48be04feac57.png" /></a>
+          <a target="_blank" id="bandLink"></a>
+          <a target="_blank" id="soundLink"></a>
+        </div>
+      </div>
+    </div>
+    <div id="startSound" class="fulldialog" style="display: none;">
+      <h1>click to start</h1>
+    </div>
+    <div id="saving" class="fulldialog" style="display: none;">
+      <h1>saving</h1>
+    </div>
+    <div id="helpDialog" class="fulldialog" style="display: none;">
+      <pre>
+==================[ vertexshaderart.com ]====================
+UI
+-------------------------------------------------------------
+[T]      : Resets the time to 0
+[+]      : Makes a new art piece from the current one
+[Save]   : Saves the current art
+[mode]   : POINTS, LINES, LINE_STRIP, LINE_LOOP, etc...
+[NATIVE] : Lines are native size (1 pixel) or CSS size
+         : On HD-DPI display CSS will generate thicker lines
+[sound]  : A soundcloud URL for music. Blank = no sound
+         : The URL must have permission to embedded/stream
+
+Inputs
+-------------------------------------------------------------
+vertexId  : float     : number of the vertex 0, 1, 2
+resoluton : vec2      : resolution of the art
+mouse     : vec2      : mouse position normalized (-1 to 1)
+time      : float     : time in seconds
+sound     : sampler2D : data from the music Nx240, alpha only
+          :           : 240 rows of history (4secs @60fps)
+soundRes  : vec2      : resolution of sound
+
+Outputs:
+-------------------------------------------------------------
+gl_Position : vec4    : standard GLSL vertex shader output
+v_color     : vec4    : color to output from fragment shader
+      </pre>
+    </div>
+  <div id="nogl" class="fulldialog" style="display: none;">
+    <pre>
+==================[ vertexshaderart.com ]====================
+
+  WebGL does not seem to be working.
+
+  Maybe you need to restart your browser
+  or <a href="http:\\get.webgl.org">get a new one</a>?
+
+    </pre>
+  </div>
+  </body><script src="https://connect.soundcloud.com/sdk/sdk-3.0.0.js"></script>
+<script data-main="js/start.js" src="3rdparty/require.js"></script>
+</template>
+
+<template name="vsartmetas">
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, minimal-ui">
+<meta property="og:title" content="vertexshaderart.com" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="http://vertexshaderart.com/static/resources/images/vertexshaderart.png" />
+<meta property="og:description" content="vertexshaderart.com, making art with MATH!" />
+<meta property="og:url" content="http://vertexshaderart.com" />
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@greggman">
+<meta name="twitter:creator" content="@greggman">
+<meta name="twitter:domain" content="vertexshaderart.com">
+<meta name="twitter:title" content="vertexshaderart.com">
+<meta name="twitter:url" content="http://vertexshaderart.com">
+<meta name="twitter:description" content="vertexshaderart.com, making art with MATH!">
+<meta name="twitter:image:src" content="http://vertexshaderart.com/static/resources/images/vertexshaderart.png">
+</template>
+

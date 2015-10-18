@@ -1,0 +1,117 @@
+<head>
+  <title>vertexshaderart.com - making art with MATH!</title>
+</head>
+
+<body>
+</body>
+
+<template name="gallery">
+  <header>
+    <h1>verteshaderart.com</h1>
+    <div>
+        <div>
+            <a href="/new/">create new</a>
+            <a href="http://github.com/greggman/vertexshaderart">github</a>
+        </div>
+        <div>making art with MATH!</div>
+    </div>
+  </header>
+  <div class="container">
+
+    <div class="gallery">
+        {{#each art}}
+          {{> artpiece}}
+        {{/each}}
+    </div>
+
+  </div>
+
+</template>
+
+<template name="artpiece">
+
+<a href="/art/{{_id}}">
+  <img src="{{screenshotDataURL}}" />
+</a>
+
+</template>
+
+<template name="admin">
+  <div class="container">
+    <header>
+      <h1>verteshaderart.com</h1>
+      <div>making art with MATH!</div>
+    </header>
+
+      {{> loginButtons}}
+
+      <label class="hide-completed">
+        <input type="checkbox" checked="{{hideCompleted}}" />
+        Hide Completed Art
+      </label>
+
+      {{#if currentUser}}
+      <form class="new-art">
+        <input type="text" name="text" placeholder="Type to add new art" />
+      </form>
+      {{/if}}
+
+
+    <hr/>
+    <ul>
+      {{#each art}}
+        {{> artitem}}
+      {{/each}}
+    </ul>
+  </div>
+
+</template>
+
+<template name="artpage">
+
+{{> vsart}}
+
+<!--
+<div style="position: absolute; left:0; top:0; z-index: 200; color: white; background: red;">
+   {{ myDamnData }} {{ username }} - {{ _id }}
+</div>
+-->
+
+</template>
+
+<template name="artitem">
+  <li class="{{#if checked}}checked{{/if}} {{#if private}}private{{/if}}">
+    <button class="delete">&times;</button>
+
+    <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+
+    <div style="color: black;">
+        id: {{ _id }}
+    </div>
+
+    {{#if isOwner}}
+      <button class="toggle-private">
+        {{#if private}}
+          Private
+        {{else}}
+          Public
+        {{/if}}
+      </button>
+    {{/if}}
+
+    <span class="text"><strong>{{username}}</strong> - {{text}}</span>
+
+    <img src="{{screenshotDataURL}}" />
+
+    <pre>
+    {{settings}}
+    </pre>
+  </li>
+</template>
+
+<template name="loading">
+   <div>
+     loading...
+   </div>
+</template>
+
