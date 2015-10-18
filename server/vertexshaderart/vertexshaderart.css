@@ -35,6 +35,8 @@ header h1 {
 header>div {
     display: flex;
     display: -webkit-flex;
+    align-items: center;
+    -webkit-align-items: center;
     justify-content: space-between;
     -webkit-justify-content: space-between;
 }

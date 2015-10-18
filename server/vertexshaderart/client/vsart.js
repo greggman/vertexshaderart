@@ -9751,7 +9751,7 @@ define('3rdparty/colorutils',[
   var zeros = "00000000";
   var paddedHex = function(h, padding) {
     var s = h.toString(16);
-    return zeros.substr(s.length - padding) + s;
+    return zeros.substr(0, padding - s.length) + s;
   };
 
   /**
@@ -17910,6 +17910,14 @@ define('src/js/main',[
           backgroundColor: [0, 0, 0, 1],
           shader: getShader("vs3").trim(),
         },
+        spiro: {
+          num: 20000,
+          mode: "LINES",
+          sound: "",
+          lineSize: "NATIVE",
+          backgroundColor: [1, 1, 1, 1],
+          shader: getShader("vs4").trim(),
+        },
       };
 
       g.mode = gl.LINES;
@@ -18327,9 +18335,13 @@ define('src/js/main',[
       ];
     });
 
-    function isAllNumbers(array) {
+    function isAllNumbers0to1(array) {
       for (var ii = 0; ii < array.length; ++ii) {
-        if (typeof array[ii] !== 'number') {
+        var v = array[ii];
+        if (typeof v !== 'number') {
+          return false;
+        }
+        if (v < 0 || v > 1) {
           return false;
         }
       }
@@ -18393,10 +18405,15 @@ define('src/js/main',[
       if (validLineSizes[settings.lineSize] === undefined) {
         settings.lineSize = "NATIVE";
       }
-      if (!settings.backgroundColor ||
-          !Array.isArray(settings.backgroundColor) ||
-          !settings.backgroundColor.length != 4 ||
-          !isAllNumbers(settings.backgroundColor)) {
+
+      var haveBG = !!settings.backgroundColor;
+      var bgIsArray = Array.isArray(settings.backgroundColor);
+      var bgLenIs4 = settings.backgroundColor.length === 4;
+      var bgAllNum = isAllNumbers0to1(settings.backgroundColor);
+      if (!haveBG ||
+          !bgIsArray ||
+          !bgLenIs4 ||
+          !bgAllNum) {
         settings.backgroundColor = [0, 0, 0, 1];
       }
     }

@@ -649,3 +649,5 @@ input[type="color"] {
 .CodeMirror-gutters {
   background-color: inherit;
 }
+.CodeMirror-selected { background: rgba(0,128,255,0.5); }
+.CodeMirror-focused .CodeMirror-selected { background: rgba(128,128,255,0.8); }
