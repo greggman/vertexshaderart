@@ -1,11 +1,10 @@
-
 Art = new Mongo.Collection("art");
 
 //FS.debug = true;
 Images = new FS.Collection("images", {
   stores: [
     new FS.Store.FileSystem("images", {
-      path: "~/vsa-uploads",
+      path: IMAGE_PATH,
       beforeWrite: function(fileObj) {
         fileObj.name("thumbnail.png");
         return {
@@ -19,8 +18,6 @@ Images = new FS.Collection("images", {
 
 
 if (Meteor.isServer) {
-  throw "IMAGE_PATH not set";
-
   Images.allow({
     'insert': function() {
         // add custom authentication code here
