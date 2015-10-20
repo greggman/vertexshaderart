@@ -1,0 +1,74 @@
+{
+  "format": "web-program-pre1",
+  "manifest": [
+    {
+      "path": "1a3817253efc231d857478176bd45a52da956fd1.js",
+      "where": "client",
+      "type": "js",
+      "cacheable": true,
+      "url": "/1a3817253efc231d857478176bd45a52da956fd1.js?meteor_js_resource=true",
+      "size": 930989,
+      "hash": "1a3817253efc231d857478176bd45a52da956fd1"
+    },
+    {
+      "path": "830fbeb06d21894a1028d76d62d9866bdd0ada03.css",
+      "where": "client",
+      "type": "css",
+      "cacheable": true,
+      "url": "/830fbeb06d21894a1028d76d62d9866bdd0ada03.css?meteor_css_resource=true",
+      "size": 24522,
+      "hash": "830fbeb06d21894a1028d76d62d9866bdd0ada03"
+    },
+    {
+      "path": "app/static/resources/icon.html",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/icon.html",
+      "size": 1135,
+      "hash": "e4c53da8ec4d2f69a0b4b01cde36aa9cd5cc6376"
+    },
+    {
+      "path": "app/static/resources/images/missing-thumbnail.jpg",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/images/missing-thumbnail.jpg",
+      "size": 56069,
+      "hash": "32f05e532b71fd60fe8ae95e02df57f2e7c49c97"
+    },
+    {
+      "path": "app/static/resources/images/vertexshaderart-banner.jpg",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/images/vertexshaderart-banner.jpg",
+      "size": 238841,
+      "hash": "272111b0e651ec40011d37e995447fbc8b70efda"
+    },
+    {
+      "path": "app/static/resources/images/vertexshaderart-icon.png",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/images/vertexshaderart-icon.png",
+      "size": 4068,
+      "hash": "f2e1df17a08ece39291e5a6645dbab358d3b9823"
+    },
+    {
+      "path": "app/static/resources/images/vertexshaderart.png",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/images/vertexshaderart.png",
+      "size": 1336836,
+      "hash": "ff55373e6a3f2e241ea9eb4a034af5c14a405588"
+    },
+    {
+      "path": "head.html",
+      "where": "internal",
+      "type": "head",
+      "hash": "4e4aa87d23d9726e9b3065dbfe76dc6492f77703"
+    }
+  ]
+}

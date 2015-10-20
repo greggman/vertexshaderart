@@ -1,0 +1,1 @@
+{"version":3,"sources":["meteor://💻app/server/server.js"],"names":[],"mappings":"yBAAA;AACA;AACA;AACA;AACA;AACA","file":"/server/server.js","sourcesContent":["IMAGE_PATH = process.env.IMAGE_PATH;\n\nif (!IMAGE_PATH) {\n  throw \"IMAGE_PATH not set\";\n}\n\n"]}

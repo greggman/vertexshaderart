@@ -1,0 +1,35 @@
+<template name="artGallerySSR">
+  <h1>Yo! It's art!</h1>
+
+  {{> artSSR}}
+</template>
+
+<template name="artPage">
+
+</template>
+
+<template name="artpieceSSR">
+  <li class="{{#if checked}}checked{{/if}} {{#if private}}private{{/if}}">
+    <button class="delete">&times;</button>
+
+    <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+
+    {{#if isOwner}}
+      <button class="toggle-private">
+        {{#if private}}
+          Private
+        {{else}}
+          Public
+        {{/if}}
+      </button>
+    {{/if}}
+
+    <span class="text">SSR <strong>{{username}}</strong> - {{text}}</span>
+  </li>
+</template>
+
+<template name="artSSR">
+  {{#each art}}
+    {{> artpieceSSR}}
+  {{/each}}
+</template>
