@@ -1,13 +1,42 @@
+
 Art = new Mongo.Collection("art");
 
+//FS.debug = true;
+Images = new FS.Collection("images", {
+  stores: [
+    new FS.Store.FileSystem("images", {
+      path: "~/vsa-uploads",
+      beforeWrite: function(fileObj) {
+        fileObj.name("thumbnail.png");
+        return {
+          extension: 'png',
+          type: 'image/png',
+        };
+      },
+    }),
+  ],
+});
+
+
 if (Meteor.isServer) {
+  throw "IMAGE_PATH not set";
+
+  Images.allow({
+    'insert': function() {
+        // add custom authentication code here
+        return true;
+    },
+    'download': function() {
+         return true;
+    },
+  });
+
   Meteor.publish("art", function () {
-    return Art.find({
-      $or: [
-        { private: {$ne: true} },
-        { owner: this.userId }
-      ]
-    });
+    return Art.find({});
+  });
+
+  Meteor.publish("images", function () {
+    return Images.find({});
   });
 
   var templateRE = /<template\s+name="(.*?)">([\s\S]*?)<\/template>/g;
@@ -18,10 +47,54 @@ if (Meteor.isServer) {
       SSR.compileTemplate(m[1], m[2]);
     }
   } while (m);
+
+  var urlRE = /(.*?\:)\/\/(.*)$/;
+  function parseUrl(url) {
+    var u = {};
+    var hashNdx = url.indexOf("#");
+    if (hashNdx >= 0) {
+      u.hash = url.substr(hashNdx);
+      url = url.substr(0, hashNdx);
+    }
+    var searchNdx = url.indexOf("?");
+    if (searchNdx >= 0) {
+      u.search = url.substr(searchNdx);
+      url = url.substr(0, searchNdx);
+    }
+    var m = urlRE.exec(url);
+    if (m) {
+      u.protocol = m[1];
+      url = m[2];
+    }
+    var slashNdx = url.indexOf("/");
+    if (slashNdx >= 0) {
+      u.hostname = url.substr(0, slashNdx);
+      u.pathname = url.substr(slashNdx);
+    } else {
+      u.host = other;
+    }
+
+    return u;
+  }
+
+  //var artPathRE = /\/art\/(.*)/;
+  //WebApp.connectHandlers.use("/", function(req, res, next) {
+  //   var url = parseUrl(req.url);
+  //   if (url.pathname) {
+  //     var m = artPathRE.exec(url.pathname);
+  //     if (m) {
+  //
+  //     }
+  //   }
+  //   next();
+  //});
+
+//  Inject.meta("foo", "bar");
 }
 
 if (Meteor.isClient) {
   Meteor.subscribe("art");
+  Meteor.subscribe("images");
 
   Template.gallery.helpers({
     art: function () {
@@ -33,13 +106,19 @@ if (Meteor.isClient) {
         return Art.find({}, {sort: {createdAt: -1}});
       }
     },
+    numImages: function() {
+      return Images.find().count();
+    },
+    images: function() {
+      return Images.find();
+    },
     hideCompleted: function () {
       return Session.get("hideCompleted");
     },
     incompleteCount: function () {
       return Art.find({checked: {$ne: true}}).count();
     },
-});
+  });
 
 
   Template.gallery.events({
@@ -59,6 +138,18 @@ if (Meteor.isClient) {
     "change .hide-completed input": function (event) {
       Session.set("hideCompleted", event.target.checked);
     }
+  });
+
+  Template.artpiece.helpers({
+    screenshotLink: function() {
+      if (this.screenshotDataId) {
+        return Images.findOne(({_id: this.screenshotDataId}));
+      } else if (this.screenshotDataURL) {
+        return { url:this.screenshotDataURL };
+      } else {
+        return { url:"/static/resources/images/missing-thumbnail.jpg" };
+      }
+    },
   });
 
   Template.artitem.helpers({
@@ -135,17 +226,37 @@ if (Meteor.isClient) {
     });
     this.route('/art/:_id', {
       template: 'artpage',
+      waitOn: function() {
+        return [Meteor.subscribe('art', this.params._id)];
+      },
       data: function() {
         return Art.findOne({_id: this.params._id});
       },
       action: function() {
-       this.subscribe('art', this.params._id).wait();
+        //this.subscribe('art', this.params._id).wait();
 
         if (this.ready()) {
           this.render();
         } else {
           this.render('loading');
         }
+      },
+      onAfterAction: function() {
+        if (!Meteor.isClient) {
+          return;
+        }
+        console.log(this);
+        //SEO.set({
+        //  title: "foobar",
+        //  meta: {
+        //    'description': "foobar-desc",
+        //  },
+        //  og: {
+        //    'title': this.params._id,
+        //    'description': "foobar-desc",
+        //  },
+        //});
+
       },
     });
   });
@@ -160,18 +271,20 @@ Meteor.methods({
     var username = Meteor.userId() ? Meteor.user().username : "-anon-";
     var settings = data.settings || {};
     var screenshotDataURL = data.screenshot.dataURL || "";
-    Art.insert({
-      createdAt: new Date(),
-      owner: owner,
-      username: username,
-      settings: JSON.stringify(settings),
-      screenshotDataURL: screenshotDataURL,
-    }, function(error, result) {
-       if (Meteor.isClient) {
-         var url = "/art/" + result;
-         window.history.replaceState({}, "", url);
-         window.vsart.markAsSaved();
-       }
+    Images.insert(screenshotDataURL, function(err, fileObj) {
+      Art.insert({
+        createdAt: new Date(),
+        owner: owner,
+        username: username,
+        settings: JSON.stringify(settings),
+        screenshotDataId: fileObj._id,
+      }, function(error, result) {
+         if (Meteor.isClient) {
+           var url = "/art/" + result;
+           window.history.replaceState({}, "", url);
+           window.vsart.markAsSaved();
+         }
+      });
     });
   },
   deleteArt: function (artId) {
@@ -212,34 +325,25 @@ Meteor.methods({
 });
 
 
-if (Meteor.isServer) {
-  Meteor.startup(function () {
-    // code to run on server at startup
-      return null;
-  });
+Meteor.startup(function () {
+ if(Meteor.isClient){
+ }
+ if(Meteor.isClient){
+     // SEO.config({
+     //   title: 'vertexshaderart.com',
+     //   meta: {
+     //     'apple-mobile-web-app-capable': "yes",
+     //     'apple-mobile-web-app-status-bar-style': "black",
+     //     'HandheldFriendly': "True",
+     //     'MobileOptimized': "320",
+     //     'viewport': "width=device-width, target-densitydpi=160dpi, initial-scale=1.0, minimal-ui",
+     //     'description': 'vertexshaderart.com - realtime vertex shader art',
+     //   },
+     //   og: {
+     //     'image': 'http://vertexshaderart.com/static/resources/images/vertexshaderart.png',
+     //   },
+     // });
+ }
+});
 
-  Router.map(function() {
-//    this.route('root', {
-//      where: 'server',
-//      path: '/',
-//      action: function() {
-//        var html = SSR.render("artGallerySSR", {
-//          art: Art.find({}).fetch(),
-//        });
-//        this.response.end(html);
-//      },
-//    });
-//
-//    this.route('artpiece', {
-//      where: 'server',
-//      path: '/art/:_id',
-//      action: function() {
-//        var html = SSR.render("artGallerySSR", {
-//          art: Art.find({}).fetch(),
-//        });
-//        this.response.end(html);
-//      },
-//    });
-  });
 
-}

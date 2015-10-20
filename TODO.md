@@ -1,18 +1,24 @@
 ﻿# To Do
 
-*   save to db
+*   fix popup on time reset
 
-    * take screenshot at t = 10 with sound data
-    * login ?
-    * track forking?
+*
 
-*   gallery
+*   login ?
+
+*   track forking?
 
 *   fix music loop or at least make stop/start work
 
 *   add fullscreen button?
 
 # Done
+
+*   save to db
+
+    * take screenshot at t = 10 with sound data
+
+*   gallery
 
 *   icon
 

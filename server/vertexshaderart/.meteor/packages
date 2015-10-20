@@ -4,7 +4,6 @@
 # 'meteor add' and 'meteor remove' will edit this file for you,
 # but you can also edit it by hand.
 
-meteor-platform
 accounts-ui
 accounts-password
 accounts-google
@@ -12,3 +11,21 @@ accounts-twitter
 accounts-github
 meteorhacks:ssr
 iron:router
+standard-minifiers
+meteor-base
+mobile-experience
+mongo
+blaze-html-templates
+session
+jquery
+tracker
+logging
+reload
+random
+ejson
+spacebars
+check
+spiderable
+manuelschoebel:ms-seo
+cfs:standard-packages
+cfs:filesystem
