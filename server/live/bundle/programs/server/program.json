@@ -1,6 +1,6 @@
 {
   "format": "javascript-image-pre1",
-  "arch": "os.osx.x86_64",
+  "arch": "os.linux.x86_64",
   "load": [
     {
       "sourceMap": "packages/underscore.js.map",
