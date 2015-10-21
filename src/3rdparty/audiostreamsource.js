@@ -50,14 +50,20 @@
     var autoPlay = options.autoPlay;
     var audio = new Audio();
     var source = context.createMediaElementSource(audio);
-    audio.addEventListener('error', function(e) {
+    var canPlayHandled = false;
+    var handleAudioError = function handleAudioError(e) {
       emit('error', e);
-    });
-    audio.addEventListener('canplay', function() {
-      source.disconnect();
-      startPlaying(play, emit);
-      emit('newSource', source);
-    });
+    };
+    var handleCanplay = function handleCanplay() {
+      if (!canPlayHandled) {
+        canPlayHandled = true;
+        source.disconnect();
+        startPlaying(play, emit);
+        emit('newSource', source);
+      }
+    }
+    audio.addEventListener('error', handleAudioError);
+    audio.addEventListener('canplay', handleCanplay);
 
     function showEvent(e) {
       console.log("got event:", e.type);
@@ -99,6 +105,7 @@
     }
 
     function setSource(src) {
+      canPlayHandled = false;
       audio.src = src;
       audio.load();
     }
@@ -112,9 +119,12 @@
       audio.currentTime = 0;
     }
 
-    this.isPlaying = function() {
+    function isPlaying() {
       return !audio.paused;
-    };
+    }
+
+    this.isPlaying = isPlaying;
+
     this.play = function() {
       startPlaying(play, emit);
     };
