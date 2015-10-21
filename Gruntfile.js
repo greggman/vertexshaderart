@@ -195,14 +195,15 @@ module.exports = function(grunt) {
     body = body.replace(/<!--template=(.*?)--><pre><\/pre>/g, "{{> $1}}");
     var scriptRE = /<script(.*?)>([\s\S]*?)<\/script>/g;
     var allScripts = getAllMatches(content, scriptRE);
-    var scripts = allScripts
-       .filter(function(m) {
-         var attributes = parseAttributes(m[1].trim());
-         return !attributes["type"] && !attributes["data-main"];
-       })
-       .map(function(m) {
-         return m[0];
-       });
+    var scripts = [];
+    //var scripts = allScripts
+    //   .filter(function(m) {
+    //     var attributes = parseAttributes(m[1].trim());
+    //     return !attributes["type"] && !attributes["data-main"];
+    //   })
+    //   .map(function(m) {
+    //     return m[0];
+    //   });
     var shaders = {};
     allScripts.forEach(function(m) {
       var attributes = parseAttributes(m[1].trim());
