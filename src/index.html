@@ -61,10 +61,17 @@
         <div id="editorWrap">
           <div id="editor"></div>
         </div>
-        <div id="soundInfo">
-          <a target="_blank" id="soundcloud"><img src="https://developers.soundcloud.com/assets/logo_white-af5006050dd9cba09b0c48be04feac57.png" /></a>
-          <a target="_blank" id="bandLink"></a>
-          <a target="_blank" id="soundLink"></a>
+        <div id="bottom">
+          <div id="userInfo">
+            <div id="user">
+                sign in
+            </div>
+          </div>
+          <div id="soundInfo">
+            <a target="_blank" id="soundcloud"><img src="https://developers.soundcloud.com/assets/logo_white-af5006050dd9cba09b0c48be04feac57.png" /></a>
+            <a target="_blank" class="shrink" id="bandLink"></a>
+            <a target="_blank" class="shrink" id="soundLink"></a>
+          </div>
         </div>
       </div>
     </div>
@@ -102,6 +109,8 @@ Outputs:
 -------------------------------------------------------------
 gl_Position : vec4    : standard GLSL vertex shader output
 v_color     : vec4    : color to output from fragment shader
+
+<a href="http://github.com/greggman/vertexshaderart">Github: http://github.com/greggman/vertexshaderart</a>
       </pre>
     </div>
   <div id="nogl" class="fulldialog" style="display: none;">
