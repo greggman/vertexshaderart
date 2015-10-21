@@ -330,13 +330,14 @@ define([
             return {
               then: function(fn) {
                 setTimeout(function() {
+                  var longName = "This is a really long name that might mess up formatting so let's use it to test that long names don't totally mess up formatting just so we have some idea of how messed up things can get if we don't set any limits";
                   fn({
-                    title: "DOCTOR VOX - Level Up [Argofox]",
+                    title: q.long ? longName : "DOCTOR VOX - Level Up [Argofox]",
                     streamable: true,
-                    stream_url: "/src/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+                    stream_url: "/static/resources/sounds/DOCTOR VOX - Level Up - lofi.mp3",
                     permalink_url: "http://soundcloud.com/argofox",
                     user: {
-                      username: "Argofox Creative Commons",
+                      username: q.long ? longName : "Argofox Creative Commons",
                       permalink_url: "http://soundcloud.com/argofox",
                     }
                   });
