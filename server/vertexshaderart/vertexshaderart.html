@@ -77,12 +77,21 @@
 
 <template name="userinfo">
     <div id="userInfo">
-      <div id="user">
-          sign in
+      {{#if currentUser}}
+      <div id="user" class="currentuser">
+          {{currentUser.profile.name}}
       </div>
-      <div id="like" class="icon">
+      <div id="like" class="icon currentuser">
           <img src="/static/resources/images/heart.svg" />
       </div>
+      {{else}}
+        <div id="user" class="nouser">
+            sign in
+        </div>
+        <div id="like" class="icon nouser">
+            <img src="/static/resources/images/heart.svg" />
+        </div>
+      {{/if}}
     </div>
 </template>
 
@@ -118,9 +127,26 @@
 
 </template>
 
+<template name="vslogin">
+  <div style="z-index: 1000; position: absolute; left: 0; top: 0; background-color:red; color: white;">
+      login template!
+  </div>
+  {{#if currentlyLoggingIn}}
+
+    <div id="vsloginback" class="fulldialog">
+        <div id="vslogin">
+            {{> loginButtons}}
+        </div>
+    </div>
+
+  {{/if}}
+</template>
+
 <template name="artpage">
 
 {{> vsart}}
+
+{{> vslogin}}
 
 <!--
 <div style="position: absolute; left:0; top:0; z-index: 200; color: white; background: red;">

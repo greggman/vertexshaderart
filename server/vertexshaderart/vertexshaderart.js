@@ -1,4 +1,5 @@
 Art = new Mongo.Collection("art");
+S_CURRENTLY_LOGGING_IN = "currentlyLoggingIn";
 
 //FS.debug = true;
 Images = new FS.Collection("images", {
@@ -168,6 +169,27 @@ if (Meteor.isClient) {
     },
   });
 
+  Template.vslogin.helpers({
+    currentlyLoggingIn: function() {
+      var currentlyLoggingIn = Session.get(S_CURRENTLY_LOGGING_IN);
+console.log("currentlyLoggingIn:", currentlyLoggingIn);
+      return currentlyLoggingIn;
+    }
+  });
+
+  Template.vslogin.events({
+    "click #vsloginback": function() {
+      Session.set(S_CURRENTLY_LOGGING_IN, false);
+    },
+  });
+
+  Template.userinfo.events({
+    "click .nouser": function() {
+console.log("clicked");
+      Session.set(S_CURRENTLY_LOGGING_IN, true);
+    },
+  });
+
   function SetArt(data) {
     var settings;
     if (data && data.settings) {
@@ -232,6 +254,7 @@ Router.map(function() {
       //this.subscribe('art', this.params._id).wait();
 
       if (this.ready()) {
+        Session.set(S_CURRENTLY_LOGGING_IN, false);
         this.render();
       } else {
         this.render('loading');
