@@ -12,7 +12,7 @@
   display: inline-block;
   height: 100%;
 }
-.gallery img {
+.thumbnail {
   border: 1px solid #444;
   border-radius: 10px;
   display: inline-block;
@@ -36,6 +36,11 @@
     -webkit-align-items: center;
 
     max-width: 300px;
+}
+.galleryinfo img {
+    width: 1em;
+    height: 1em;
+    vertical-align: bottom;
 }
 .galleryname {
     flex: 1 0 0;

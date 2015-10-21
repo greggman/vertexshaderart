@@ -503,14 +503,20 @@ define("node_modules/almond/almond.js", function(){});
     var autoPlay = options.autoPlay;
     var audio = new Audio();
     var source = context.createMediaElementSource(audio);
-    audio.addEventListener('error', function(e) {
+    var canPlayHandled = false;
+    var handleAudioError = function handleAudioError(e) {
       emit('error', e);
-    });
-    audio.addEventListener('canplay', function() {
-      source.disconnect();
-      startPlaying(play, emit);
-      emit('newSource', source);
-    });
+    };
+    var handleCanplay = function handleCanplay() {
+      if (!canPlayHandled) {
+        canPlayHandled = true;
+        source.disconnect();
+        startPlaying(play, emit);
+        emit('newSource', source);
+      }
+    }
+    audio.addEventListener('error', handleAudioError);
+    audio.addEventListener('canplay', handleCanplay);
 
     function showEvent(e) {
       console.log("got event:", e.type);
@@ -552,6 +558,7 @@ define("node_modules/almond/almond.js", function(){});
     }
 
     function setSource(src) {
+      canPlayHandled = false;
       audio.src = src;
       audio.load();
     }
@@ -565,9 +572,12 @@ define("node_modules/almond/almond.js", function(){});
       audio.currentTime = 0;
     }
 
-    this.isPlaying = function() {
+    function isPlaying() {
       return !audio.paused;
-    };
+    }
+
+    this.isPlaying = isPlaying;
+
     this.play = function() {
       startPlaying(play, emit);
     };
@@ -17978,9 +17988,16 @@ define('src/js/main',[
             return {
               then: function(fn) {
                 setTimeout(function() {
+                  var longName = "This is a really long name that might mess up formatting so let's use it to test that long names don't totally mess up formatting just so we have some idea of how messed up things can get if we don't set any limits";
                   fn({
+                    title: q.long ? longName : "DOCTOR VOX - Level Up [Argofox]",
                     streamable: true,
-                    stream_url: "/src/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+                    stream_url: "/static/resources/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+                    permalink_url: "http://soundcloud.com/argofox",
+                    user: {
+                      username: q.long ? longName : "Argofox Creative Commons",
+                      permalink_url: "http://soundcloud.com/argofox",
+                    }
                   });
                 }, 1);
                 return {

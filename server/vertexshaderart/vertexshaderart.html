@@ -32,7 +32,7 @@
   </header>
   <div class="container">
 
-
+<!--
 <hr/>
 <div>numImages: {{numImages}}</div>
 <hr/>
@@ -47,6 +47,7 @@
   </div>
 {{/each}}
 <hr/>
+-->
     <div class="gallery">
         {{#each art}}
           {{> artpiece}}
@@ -60,17 +61,31 @@
 <template name="artpiece">
 
 <a href="/art/{{_id}}">
-  <img src="{{screenshotLink.url}}" />
+  <img class="thumbnail" src="{{screenshotLink.url}}" />
   <div class="galleryinfo">
-      <div class="galleryname">by: {{username}}</div><div>&#x1f441; 123 - &#x2605; 32</div>
+      <div class="galleryname">&ldquo;{{name}}&rdquo; by: {{username}}</div><div><img src="/static/resources/images/eye.svg" /> {{views}} - <img src="/static/resources/images/heart.svg" /> {{likes}}</div>
   </div>
+<!--
 <div>
   <div>id: {{_id}}</div>
   <div>sid: {{screenshotDataId}}</div>
 </div>
+-->
 </a>
 
 </template>
+
+<template name="userinfo">
+    <div id="userInfo">
+      <div id="user">
+          sign in
+      </div>
+      <div id="like" class="icon">
+          <img src="/static/resources/images/heart.svg" />
+      </div>
+    </div>
+</template>
+
 
 <template name="admin">
   <div class="container">

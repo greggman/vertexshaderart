@@ -213,50 +213,59 @@ if (Meteor.isClient) {
 
 }
 
-
-  Router.map(function() {
-    this.route('/', function() {
-      this.render('gallery');
-    });
-    this.route('/new/', function() {
-      this.render('artpage');
-    });
-    this.route('/art/:_id', {
-      template: 'artpage',
-      waitOn: function() {
-        return [Meteor.subscribe('art', this.params._id)];
-      },
-      data: function() {
-        return Art.findOne({_id: this.params._id});
-      },
-      action: function() {
-        //this.subscribe('art', this.params._id).wait();
-
-        if (this.ready()) {
-          this.render();
-        } else {
-          this.render('loading');
-        }
-      },
-      onAfterAction: function() {
-        if (!Meteor.isClient) {
-          return;
-        }
-        console.log(this);
-        //SEO.set({
-        //  title: "foobar",
-        //  meta: {
-        //    'description': "foobar-desc",
-        //  },
-        //  og: {
-        //    'title': this.params._id,
-        //    'description': "foobar-desc",
-        //  },
-        //});
-
-      },
-    });
+Router.map(function() {
+  this.route('/', function() {
+    this.render('gallery');
   });
+  this.route('/new/', function() {
+    this.render('artpage');
+  });
+  this.route('/art/:_id', {
+    template: 'artpage',
+    waitOn: function() {
+      return [Meteor.subscribe('art', this.params._id)];
+    },
+    data: function() {
+      return Art.findOne({_id: this.params._id});
+    },
+    action: function() {
+      //this.subscribe('art', this.params._id).wait();
+
+      if (this.ready()) {
+        this.render();
+      } else {
+        this.render('loading');
+      }
+    },
+    onAfterAction: function() {
+      if (!Meteor.isClient) {
+        return;
+      }
+
+      // hard to decide what's the best way to do this
+      // this just makes it not get into an infinite loop.
+      // Do we care that if you just refresh the page it's a new view?
+      // Youtube doesn't care so should I?
+      var artId = this.params._id;
+      var lastArtId = Session.get("view_art_id");
+      if (artId !== lastArtId) {
+        Session.set("view_art_id", artId);
+        Meteor.call("incArtViews", artId);
+      }
+      //SEO.set({
+      //  title: "foobar",
+      //  meta: {
+      //    'description': "foobar-desc",
+      //  },
+      //  og: {
+      //    'title': this.params._id,
+      //    'description': "foobar-desc",
+      //  },
+      //});
+
+    },
+  });
+});
 
 Meteor.methods({
   addArt: function (data) {
@@ -275,6 +284,8 @@ Meteor.methods({
         username: username,
         settings: JSON.stringify(settings),
         screenshotDataId: fileObj._id,
+        views: 0,
+        likes: 0,
       }, function(error, result) {
          if (Meteor.isClient) {
            var url = "/art/" + result;
@@ -318,6 +329,9 @@ Meteor.methods({
       });
       console.log("-----\n", html);
     }
+  },
+  incArtViews: function(artId) {
+    Art.update({_id: artId}, {$inc: {views: 1}});
   },
 });
 

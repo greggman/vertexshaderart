@@ -499,6 +499,10 @@ canvas {
   background-color: rgba(0,0,0,0);
   border-radius: 0.5em;
 }
+.fulldialog a {
+  text-decoration: none;
+  color: white;
+}
 #ui, .fulldialog {
   display: flex;
   display: -webkit-flex;
@@ -549,7 +553,7 @@ canvas {
 button {
     cursor: pointer;
 }
-#toolbar>div, select, input, #toolbar>button, #toolbar>a, #soundInfo>a {
+#toolbar>div, select, input, #toolbar>button, #toolbar>a, #soundInfo>a, #userInfo>div {
   background-color: rgba(0,0,0,0.7);
   border: 1px solid #444;
   margin: 0.25em;
@@ -569,15 +573,53 @@ button {
   display: inline-block;
   text-decoration: none;
 }
-#soundInfo {
-  text-align: right;
+#bottom {
   width: 100%;
+  display: flex;
+  display: -webkit-flex;
+  justify-content: space-between;
+  -webkit-justify-content: space-between;
+  align-items: center;
+  -webkit-align-items: center;
+}
+#userInfo {
+  white-space: nowrap;
+  display: flex;
+  display: -webkit-flex;
+  justify-content: flex-start;
+  -webkit-justify-content: flex-start;
+  align-items: center;
+  -webkit-align-items: center;
+}
+#soundInfo {
   overflow: hidden;
+  display: flex;
+  display: -webkit-flex;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  align-items: center;
+  -webkit-align-items: center;
+}
+.icon {
+    padding: 0 !important;
+}
+.icon>img {
+    width: 2.15em;
+    padding: 0.25em;
+    margin: 0;
+    vertical-align: middle;
+}
+.shrink {
+    flex: 0 1 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 #soundInfo>a {
   vertical-align: bottom;
   display: inline-block;
   text-decoration: none;
+  white-space: nowrap;
 }
 #soundcloud {
   padding: 0.25em !important;
