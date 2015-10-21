@@ -1,3 +1,4 @@
+server/vsa-uploads
 node_modules
 output
 .DS_Store
