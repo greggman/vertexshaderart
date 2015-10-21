@@ -140,6 +140,15 @@ button {
   align-items: center;
   -webkit-align-items: center;
 }
+.icon {
+    padding: 0 !important;
+}
+.icon>img {
+    width: 2.15em;
+    padding: 0.25em;
+    margin: 0;
+    vertical-align: middle;
+}
 .shrink {
     flex: 0 1 auto;
     overflow: hidden;
