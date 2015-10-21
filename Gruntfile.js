@@ -192,6 +192,7 @@ module.exports = function(grunt) {
       throw "no body";
     }
     var body = bodyMatch[1];
+    body = body.replace(/<!--template=(.*?)--><pre><\/pre>/g, "{{> $1}}");
     var scriptRE = /<script(.*?)>([\s\S]*?)<\/script>/g;
     var allScripts = getAllMatches(content, scriptRE);
     var scripts = allScripts
