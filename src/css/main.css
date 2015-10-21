@@ -37,6 +37,10 @@ canvas {
   background-color: rgba(0,0,0,0);
   border-radius: 0.5em;
 }
+.fulldialog a {
+  text-decoration: none;
+  color: white;
+}
 #ui, .fulldialog {
   display: flex;
   display: -webkit-flex;
