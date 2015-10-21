@@ -85,6 +85,10 @@ header a {
     text-decoration: none;
 }
 
+.accounts-dialog {
+    background-color: black;
+    color: white;
+}
 /*
 
 body {

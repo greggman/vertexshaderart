@@ -79,7 +79,7 @@
     <div id="userInfo">
       {{#if currentUser}}
       <div id="user" class="currentuser">
-          {{currentUser.profile.name}}
+          [{{currentUser.profile.name}}]
       </div>
       <div id="like" class="icon currentuser">
           <img src="/static/resources/images/heart.svg" />
@@ -135,7 +135,7 @@
 
     <div id="vsloginback" class="fulldialog">
         <div id="vslogin">
-            {{> loginButtons}}
+            {{> atForm}}
         </div>
     </div>
 

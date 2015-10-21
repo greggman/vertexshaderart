@@ -172,7 +172,6 @@ if (Meteor.isClient) {
   Template.vslogin.helpers({
     currentlyLoggingIn: function() {
       var currentlyLoggingIn = Session.get(S_CURRENTLY_LOGGING_IN);
-console.log("currentlyLoggingIn:", currentlyLoggingIn);
       return currentlyLoggingIn;
     }
   });
@@ -181,12 +180,17 @@ console.log("currentlyLoggingIn:", currentlyLoggingIn);
     "click #vsloginback": function() {
       Session.set(S_CURRENTLY_LOGGING_IN, false);
     },
+    "click #vslogin": function(e) {
+      e.stopPropagation();
+    },
   });
 
   Template.userinfo.events({
     "click .nouser": function() {
-console.log("clicked");
       Session.set(S_CURRENTLY_LOGGING_IN, true);
+    },
+    "click .currentuser": function() {
+      AccountsTemplates.logout();
     },
   });
 
@@ -234,6 +238,24 @@ console.log("clicked");
   });
 
 }
+
+var mySubmitFunc = function(error, state){
+  if (error) {
+    console.log("login error");
+  } else if (state === "signIn") {
+      // Successfully logged in
+      // ...
+    console.log("sign in");
+  } else  if (state === "signUp") {
+      // Successfully registered
+      // ...
+    console.log("sign up");
+  }
+};
+
+AccountsTemplates.configure({
+    onSubmitHook: mySubmitFunc
+});
 
 Router.map(function() {
   this.route('/', function() {

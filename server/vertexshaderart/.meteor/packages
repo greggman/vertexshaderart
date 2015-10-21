@@ -4,7 +4,6 @@
 # 'meteor add' and 'meteor remove' will edit this file for you,
 # but you can also edit it by hand.
 
-accounts-ui
 accounts-password
 accounts-google
 accounts-twitter
@@ -29,3 +28,6 @@ spiderable
 manuelschoebel:ms-seo
 cfs:standard-packages
 cfs:filesystem
+accounts-ui-unstyled
+accounts-ui
+useraccounts:unstyled
