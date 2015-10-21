@@ -331,8 +331,14 @@ define([
               then: function(fn) {
                 setTimeout(function() {
                   fn({
+                    title: "DOCTOR VOX - Level Up [Argofox]",
                     streamable: true,
                     stream_url: "/src/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+                    permalink_url: "http://soundcloud.com/argofox",
+                    user: {
+                      username: "Argofox Creative Commons",
+                      permalink_url: "http://soundcloud.com/argofox",
+                    }
                   });
                 }, 1);
                 return {
