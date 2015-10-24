@@ -1,8 +1,16 @@
 ﻿# To Do
 
-*   fix popup on time reset
+*   click outside name to abort
 
-*
+*   let user change email
+
+*   have [username] link when not on own profile?
+
+*   show likes
+
+*   make like work
+
+*   fix popup on time reset
 
 *   login ?
 
