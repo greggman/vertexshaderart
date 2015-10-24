@@ -44,21 +44,36 @@ if (Meteor.isServer) {
     },
   });
 
-  Meteor.publish("art", function () {
-    Counts.publish(this, 'artCount', Art.find({}));
-    return Art.find({});
+  Meteor.publish("artForGrid", function (username, sortField, skip, limit) {
+    var find = username ? {username: username} : {};
+    var sort = {};
+    sort[sortField] = -1;
+    return Art.find(find, {
+      fields: {settings: false},
+      sort: sort,
+      skip: skip,
+      limti: limit,
+    });
   });
 
-  Meteor.publish("artlikes", function () {
-    return ArtLikes.find({});
+  Meteor.publish("art", function(id) {
+    return Art.find({_id: id});
+  });
+
+  Meteor.publish("artCount", function() {
+    Counts.publish(this, 'artCount', Art.find({}));
+  });
+
+  Meteor.publish("artLikes", function (artId, userId) {
+    return ArtLikes.find({artId: artId, userId: userId});
   });
 
   Meteor.publish("images", function () {
     return Images.find({});
   });
 
-  Meteor.publish("usernames", function() {
-    return Meteor.users.find({}, {fields: {username: 1}});
+  Meteor.publish("usernames", function(username) {
+    return Meteor.users.find({username: username}, {fields: {username: 1}});
   });
 
 
@@ -143,20 +158,12 @@ AccountsTemplates.addFields([
 ]);
 
 if (Meteor.isClient) {
-  Meteor.subscribe("art");
+  Meteor.subscribe("artCount");
   Meteor.subscribe("images");
-  Meteor.subscribe("artlikes");
-  Meteor.subscribe("usernames");
   Session.set(S_VIEW_STYLE, "popular");
   Pages = new Mongo.Collection(null);
 
   Template.gallery.helpers({
-    numImages: function() {
-      return Images.find().count();
-    },
-    images: function() {
-      return Images.find();
-    },
     hideCompleted: function () {
       return Session.get("hideCompleted");
     },
@@ -390,7 +397,7 @@ if (Meteor.isClient) {
          var needPrevNext = numPages > G_NUM_PAGE_BUTTONS
          if (needPrevNext) {
            var prev = Math.max(page, 1);
-           Pages.insert({path: path, pagenum: "<<", pageid: prev, samepageclass: this.page === prev ? "selected" : ""});
+           Pages.insert({path: path, pagenum: "<<", pageid: prev, samepageclass: pageId === prev ? "selected" : ""});
          }
 
          var min = page - G_PAGE_RANGE;
@@ -479,12 +486,28 @@ AccountsTemplates.configure({
     onSubmitHook: mySubmitFunc
 });
 
+function subscribeForGrid(pageId, username) {
+  var page = pageId - 1;
+  var skip = page * G_PAGE_SIZE;
+  var limit = G_PAGE_SIZE;
+  return [
+    Meteor.subscribe("artForGrid", username, "views", skip, limit),
+    Meteor.subscribe("artForGrid", username, "createdAt", skip, limit),
+    Meteor.subscribe("artForGrid", username, "popular", skip, limit),
+  ];
+}
+
 Router.map(function() {
   this.route('/', {
     template: 'gallery',
     data: {
       page: 1,
     },
+    subscriptions: function() {
+      return subscribeForGrid(1);
+    },
+    cache: 5,
+    expire: 3,
   });
   this.route('/gallery/:_page', {
     template: 'gallery',
@@ -493,6 +516,11 @@ Router.map(function() {
         page: parseInt(this.params._page),
       };
     },
+    subscriptions: function() {
+      return subscribeForGrid(parseInt(this.params._page));
+    },
+    cache: 5,
+    expire: 3,
   });
   this.route('/new/', function() {
     this.render('artpage');
@@ -505,6 +533,13 @@ Router.map(function() {
         username: this.params._username,
       };
     },
+    subscriptions: function() {
+      var subs = subscribeForGrid(1, this.params._username);
+      subs.push(Meteor.subscribe('usernames', this.params._username));
+      return subs;
+    },
+    cache: 5,
+    expire: 5,
   });
   this.route('/user/:_username/:_page', {
     template: 'userprofile',
@@ -514,18 +549,31 @@ Router.map(function() {
         username: this.params._username,
       };
     },
+    subscriptions: function() {
+      var subs = subscribeForGrid(parseInt(this.params._page), this.params._username);
+      subs.push(Meteor.subscribe('usernames', this.params._username));
+      return subs;
+    },
+    cache: 5,
+    expire: 5,
   });
   this.route('/art/:_id', {
     template: 'artpage',
-    waitOn: function() {
-      return [Meteor.subscribe('art', this.params._id)];
+    subscriptions: function() {
+      var subs = [
+        Meteor.subscribe('art', this.params._id),
+      ];
+      if (Meteor.userId()) {
+        subs.push(Meteor.subscribe('artLikes', this.params._id, Meteor.userId()));
+      }
+      return subs;
     },
+    cache: 5,
+    expire: 5,
     data: function() {
       return Art.findOne({_id: this.params._id});
     },
     action: function() {
-      //this.subscribe('art', this.params._id).wait();
-
       if (this.ready()) {
         Session.set(S_CURRENTLY_LOGGING_IN, false);
         this.render();
