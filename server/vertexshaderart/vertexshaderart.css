@@ -32,6 +32,9 @@
     z-index: 20;
 }
 
+#savedialog {
+    width: 330px;
+}
 #savedialog img {
     border: 1px solid #444;
     border-radius: 10px;
@@ -61,7 +64,10 @@
     padding: 0.5em;
 }
 .saveline .data {
-    flex: 1 0 auto;
+    flex: 1 0 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     margin-right: 0;
 }
 
