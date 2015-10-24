@@ -68,10 +68,6 @@ if (Meteor.isServer) {
     return ArtLikes.find({artId: artId, userId: userId});
   });
 
-  Meteor.publish("images", function () {
-    return Images.find({});
-  });
-
   Meteor.publish("usernames", function(username) {
     return Meteor.users.find({username: username}, {fields: {username: 1}});
   });
@@ -159,7 +155,6 @@ AccountsTemplates.addFields([
 
 if (Meteor.isClient) {
   Meteor.subscribe("artCount");
-  Meteor.subscribe("images");
   Session.set(S_VIEW_STYLE, "popular");
   Pages = new Mongo.Collection(null);
 
@@ -237,8 +232,11 @@ if (Meteor.isClient) {
 
   Template.artpiece.helpers({
     screenshotLink: function() {
-      if (this.screenshotDataId) {
-        return Images.findOne(({_id: this.screenshotDataId}));
+      if (this.screenshotURL) {
+        return { url: this.screenshotURL };
+      } else if (this.screenshotDataId) {
+        return { url: "/cfs/files/images/" + this.screenshotDataId };
+//        return Images.findOne(({_id: this.screenshotDataId}));
       } else if (this.screenshotDataURL) {
         return { url:this.screenshotDataURL };
       } else {
