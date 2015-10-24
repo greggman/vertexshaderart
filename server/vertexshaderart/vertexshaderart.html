@@ -145,18 +145,16 @@
   <div class="infoContainer">
     {{#if userExists}}
        <h2>Profile:</h2>
-       <table>
-           <tr>
-           　　<td><div>username:</div></td>
-           　　<td>
-                 {{#if editUsername}}
-                   <input class="usernameedit" type="text" value="{{username}}" />
-                 {{else}}
-                   <div class="username">{{username}}</div>
-                 {{/if}}
-           　　</td>
-           </tr>
-       </table>
+       <div class="profile">
+           <div class="infoline">
+               <div class="label">username:</div>
+               <!-- {{#if editUsername}} -->
+                 <input class="usernameedit" type="text" value="{{username}}" style="display: none" />
+               <!-- {{else}} -->
+                 <div class="username">{{username}}</div>
+               <!-- {{/if}} -->
+           </div>
+       </div>
        <h2>Creations:</h2>
        {{> artgrid user="true" path="user"}}
     {{else}}
@@ -216,9 +214,53 @@
   {{/if}}
 </template>
 
+<template name="save">
+
+  {{#if saving}}
+
+  <div id="savedialogback" class="fulldialog">
+     <div id="savedialog">
+         <img src="{{screenshot}}" />
+         <div class="saveinfo">
+             <div class="saveline">
+                 <div class="label">
+                     name of art:
+                 </div>
+                 <input class="data" type="text" id="name" value="noname" />
+             </div>
+             <div class="saveline">
+                 <div class="label">
+                     author:
+                 </div>
+                 <div class="data" id="author">
+                    {{#if currentUser}}
+                       {{currentUser.username}}
+                    {{else}}
+                       -anon- <button class="signin button">sign in</button> to set.
+                    {{/if}}
+                 </div>
+             </div>
+         </div>
+         <div class="buttons">
+             <button class="button" id="cancel">
+                 cancel
+             </button>
+             <button class="button" id="saveit">
+                 save!
+             </button>
+         </div>
+     </div>
+  </div>
+
+  {{/if}}
+
+</template>
+
 <template name="artpage">
 
 {{> vsart}}
+
+{{> save}}
 
 {{> vslogin}}
 

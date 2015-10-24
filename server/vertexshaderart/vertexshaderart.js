@@ -333,11 +333,18 @@ if (Meteor.isClient) {
   });
 
   Template.userprofile.events({
-    "click .username": function() {
+    "blur .usernameedit": function() {
+      Session.set("editUsername", false);
+      $(".infoContainer .username").show();
+      $(".infoContainer .usernameedit").hide();
+    },
+    "click .username": function(e) {
       var route = Router.current();
       if (Meteor.userId() &&
           Meteor.user().username === route.params._username) {
         Session.set("editUsername", true);
+        $(".infoContainer .username").hide();
+        $(".infoContainer .usernameedit").show().focus();
       }
     },
     "change .usernameedit": function(e) {
@@ -455,11 +462,45 @@ if (Meteor.isClient) {
 
   Template.artpage.events({
     "click #save": function() {
-      window.vsart.markAsSaving();
-      Meteor.call("addArt", {
+      Session.set("saving", true);
+      window.vsSaveData = {
         settings: window.vsart.getSettings(),
         screenshot: window.vsart.takeScreenshot(),
-      });
+      };
+    },
+  });
+
+  Template.save.helpers({
+    saving: function() {
+      return Session.get("saving");
+    },
+    screenshot: function() {
+      if (!window.vsSaveData) {
+        console.log("no save data");
+        Session.set("saving", false);
+        return "";
+      }
+      return window.vsSaveData.screenshot.dataURL;
+    },
+  });
+
+  Template.save.events({
+    "click #savedialogback": function() {
+      Session.set("saving", false);
+    },
+    "click #savedialog": function(e) {
+      e.stopPropagation();
+    },
+    "click #saveit": function() {
+      window.vsart.markAsSaving();
+      Meteor.call("addArt", $("#savedialog #name").val(), window.vsSaveData);
+      Session.set("saving", false);
+    },
+    "click #cancel": function() {
+      Session.set("saving", false);
+    },
+    "click .signin": function() {
+      Session.set(S_CURRENTLY_LOGGING_IN, true);
     },
   });
 
@@ -613,7 +654,7 @@ Router.map(function() {
 });
 
 Meteor.methods({
-  addArt: function (data) {
+  addArt: function (name, data) {
     // Make sure the user is logged in before inserting art
 //    if (! Meteor.userId()) {
 //      throw new Meteor.Error("not-authorized");
@@ -626,6 +667,7 @@ Meteor.methods({
       Art.insert({
         createdAt: new Date(),
         owner: owner,
+        name: name || "unnamed",
         username: username,
         settings: JSON.stringify(settings),
         screenshotDataId: fileObj._id,
@@ -634,8 +676,8 @@ Meteor.methods({
       }, function(error, result) {
          if (Meteor.isClient) {
            var url = "/art/" + result;
-           window.history.replaceState({}, "", url);
            window.vsart.markAsSaved();
+           Router.go(url);
          }
       });
     });

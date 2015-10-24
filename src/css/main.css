@@ -209,6 +209,7 @@ button:focus {
   padding: 1em;
   background-color: rgba(0,0,0,0.8);
   border: 1px solid #666;
+  border-radius: 0.5em;
 }
 #helpDialog>pre {
   flex: 0 1 auto;
