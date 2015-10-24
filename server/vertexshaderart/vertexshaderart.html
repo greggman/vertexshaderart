@@ -131,6 +131,11 @@
            {{> userinfosignin}}
            <a href="/new/">create new</a>
            <a href="/">gallery</a>
+           {{#if userIsCurrentUser}}
+             <div class="logout">
+                 logout
+             </div>
+           {{/if}}
         </div>
         <div><h1>vertexshaderart.com</h1></div>
     </div>
@@ -156,6 +161,9 @@
       <h2>no such user</h2>
     {{/if}}
   </div>
+
+  {{> vslogin}}
+
 </template>
 
 <template name="admin">
