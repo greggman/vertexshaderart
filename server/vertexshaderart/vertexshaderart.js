@@ -16,6 +16,9 @@ S_VIEW_STYLE = "viewstyle";
 G_PAGE_SIZE = 3; //15; //3;
 G_PAGE_RANGE = 2;
 G_NUM_PAGE_BUTTONS = G_PAGE_RANGE * 2 + 1;
+G_RESERVED_NAMES = {
+  "-anon-": true,
+};
 
 //FS.debug = true;
 Images = new FS.Collection("images", {
@@ -134,7 +137,7 @@ AccountsTemplates.addFields([
       type: "text",
       displayName: "username",
       required: true,
-      minLength: 5,
+      minLength: 3,
   },
   {
       _id: 'email',
@@ -245,24 +248,24 @@ if (Meteor.isClient) {
     },
   });
 
-  Template.artitem.helpers({
-    isOwner: function () {
-      return this.owner === Meteor.userId();
-    }
-  });
-
-  Template.artitem.events({
-    "click .toggle-checked": function () {
-      // Set the checked property to the opposite of its current value
-      Meteor.call("setChecked", this._id, ! this.checked);
-    },
-    "click .delete": function () {
-      Meteor.call("deleteTask", this._id);
-    },
-    "click .toggle-private": function () {
-      Meteor.call("setPrivate", this._id, ! this.private);
-    },
-  });
+  //Template.artitem.helpers({
+  //  isOwner: function () {
+  //    return this.owner === Meteor.userId();
+  //  }
+  //});
+  //
+  //Template.artitem.events({
+  //  "click .toggle-checked": function () {
+  //    // Set the checked property to the opposite of its current value
+  //    Meteor.call("setChecked", this._id, ! this.checked);
+  //  },
+  //  "click .delete": function () {
+  //    Meteor.call("deleteTask", this._id);
+  //  },
+  //  "click .toggle-private": function () {
+  //    Meteor.call("setPrivate", this._id, ! this.private);
+  //  },
+  //});
 
   Template.vslogin.helpers({
     currentlyLoggingIn: function() {
@@ -657,6 +660,9 @@ Meteor.methods({
     }
     if (!username) {
       throw new Meteor.Error("username is empty or mostly empty");
+    }
+    if (G_RESERVED_NAMES[username.toLowerCase()]) {
+      throw new Meteor.Error("that name already exists");
     }
     if (Meteor.user().username === username) {
       return;
