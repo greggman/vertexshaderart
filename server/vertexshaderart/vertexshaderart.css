@@ -57,6 +57,10 @@
     height: 1em;
     vertical-align: bottom;
 }
+.galleryinfo a {
+    text-decoration: none;
+    color: #888;
+}
 .galleryname {
     flex: 1 0 0;
     overflow: hidden;
@@ -131,132 +135,57 @@ header a, header .buttons div, .button {
     background-color: black;
     color: white;
 }
-/*
-
-body {
-  font-family: sans-serif;
-  background-color: #315481;
-  background-image: linear-gradient(to bottom, #315481, #918e82 100%);
-  background-attachment: fixed;
-
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-
-  padding: 0;
-  margin: 0;
-
-  font-size: 14px;
+.at-title {
+    font-size: x-large;
 }
-
-.container {
-  max-width: 600px;
-  margin: 0 auto;
-  min-height: 100%;
-  background: white;
+.at-sep {
+    margin: 0.25em 0 0.25em 0;
+    font-size: x-large;
 }
-
-header {
-  background: #d2edf4;
-  background-image: linear-gradient(to bottom, #d0edf5, #e1e5f0 100%);
-  padding: 20px 15px 15px 15px;
-  position: relative;
+.at-signup-link, .at-signin-link {
+    margin-top: 1em;
+    padding-top: 1em;
+    border-top: 1px solid #444;
 }
-
-#login-buttons {
-  display: block;
+.at-input {
+    display: flex;
+    display: -webkit-flex;
+    align-items: center;
+    -webkit-align-items: center;
 }
-
-h1 {
-  font-size: 1.5em;
-  margin: 0;
-  margin-bottom: 10px;
-  display: inline-block;
-  margin-right: 1em;
+.at-input label {
+    padding-right: 0.5em;
+    min-width: 10em;
+    display: inline-block;
+    white-space: nowrap;
 }
-
-form {
-  margin-top: 10px;
-  margin-bottom: -10px;
-  position: relative;
+.at-input input {
+    flex: 1 0 auto;
 }
-
-.new-task input {
-  box-sizing: border-box;
-  padding: 10px 0;
-  background: transparent;
-  border: none;
-  width: 100%;
-  padding-right: 80px;
-  font-size: 1em;
+.at-form h3 {
+    margin: 0 0 0.5em 0;
 }
-
-.new-task input:focus{
-  outline: 0;
+.at-pwd-form {
+    text-align: right;
 }
-
-ul {
-  margin: 0;
-  padding: 0;
-  background: white;
+.at-form button, .at-link {
+    font-family: monospace;
+    font-size: medium;
+    background-color: #000;
+    border: 1px solid #444;
+    margin: 0.25em;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    color: white;
+    user-select: none;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
 }
-
-.delete {
-  float: right;
-  font-weight: bold;
-  background: none;
-  font-size: 1em;
-  border: none;
-  position: relative;
+.at-social-btn {
+    display: block;
+    width: 100%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
 }
-
-li {
-  position: relative;
-  list-style: none;
-  padding: 15px;
-  border-bottom: #eee solid 1px;
-}
-
-li .text {
-  margin-left: 10px;
-}
-
-li.checked {
-  color: #888;
-}
-
-li.checked .text {
-  text-decoration: line-through;
-}
-
-li.private {
-  background: #eee;
-  border-color: #ddd;
-}
-
-header .hide-completed {
-  float: right;
-}
-
-.toggle-private {
-  margin-left: 5px;
-}
-
-@media (max-width: 600px) {
-  li {
-    padding: 12px 15px;
-  }
-
-  .search {
-    width: 150px;
-    clear: both;
-  }
-
-  .new-task input {
-    padding-bottom: 5px;
-  }
-}
-*/
 
