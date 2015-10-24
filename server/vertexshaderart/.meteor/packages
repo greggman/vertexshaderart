@@ -25,9 +25,9 @@ ejson
 spacebars
 check
 spiderable
-manuelschoebel:ms-seo
 cfs:standard-packages
 cfs:filesystem
 accounts-ui-unstyled
 accounts-ui
 useraccounts:unstyled
+tmeasday:publish-counts

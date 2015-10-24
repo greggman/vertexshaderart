@@ -1,5 +1,21 @@
 Art = new Mongo.Collection("art");
+ArtLikes = new Mongo.Collection("artlikes");
+
+//Artpages = new Meteor.Pagination(Art, {
+//  itemTemplate: "artpiece",
+//  templateName: "gallery",
+//  route: "/gallery/",
+//  router: "iron-router",
+//  routerTemplate: "gallery",
+//  routerLayout: "Layout",
+//});
+
 S_CURRENTLY_LOGGING_IN = "currentlyLoggingIn";
+S_PENDING_LIKE = "pendingLike";
+S_VIEW_STYLE = "viewstyle";
+G_PAGE_SIZE = 3; //15; //3;
+G_PAGE_RANGE = 2;
+G_NUM_PAGE_BUTTONS = G_PAGE_RANGE * 2 + 1;
 
 //FS.debug = true;
 Images = new FS.Collection("images", {
@@ -17,7 +33,6 @@ Images = new FS.Collection("images", {
   ],
 });
 
-
 if (Meteor.isServer) {
   Images.allow({
     'insert': function() {
@@ -30,12 +45,19 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("art", function () {
+    Counts.publish(this, 'artCount', Art.find({}));
     return Art.find({});
+  });
+
+  Meteor.publish("artlikes", function () {
+    return ArtLikes.find({});
   });
 
   Meteor.publish("images", function () {
     return Images.find({});
   });
+
+
 
   var templateRE = /<template\s+name="(.*?)">([\s\S]*?)<\/template>/g;
   var ssrTemplates = Assets.getText('ssr-templates.html');
@@ -90,20 +112,41 @@ if (Meteor.isServer) {
 //  Inject.meta("foo", "bar");
 }
 
+var pwd = AccountsTemplates.removeField('password');
+AccountsTemplates.removeField('email');
+AccountsTemplates.addFields([
+  {
+      _id: "username",
+      type: "text",
+      displayName: "username",
+      required: true,
+      minLength: 5,
+  },
+  {
+      _id: 'email',
+      type: 'email',
+      required: true,
+      displayName: "email",
+      re: /.+@(.+){2,}\.(.+){2,}/,
+      errStr: 'Invalid email',
+  },
+  {
+      _id: 'username_and_email',
+      type: 'text',
+      required: true,
+      displayName: "Login",
+  },
+  pwd
+]);
+
 if (Meteor.isClient) {
   Meteor.subscribe("art");
   Meteor.subscribe("images");
+  Meteor.subscribe("artlikes");
+  Session.set(S_VIEW_STYLE, "popular");
+  Pages = new Mongo.Collection(null);
 
   Template.gallery.helpers({
-    art: function () {
-      if (Session.get("hideCompleted")) {
-        // If hide completed is checked, filter tasks
-        return Art.find({checked: {$ne: true}}, {sort: {createdAt: -1}});
-      } else {
-        // Otherwise, return all of the tasks
-        return Art.find({}, {sort: {createdAt: -1}});
-      }
-    },
     numImages: function() {
       return Images.find().count();
     },
@@ -118,6 +161,49 @@ if (Meteor.isClient) {
     },
   });
 
+  Template.artgrid.helpers({
+    art: function () {
+      var route = Router.current();
+      var pageId = route.params._page || 1;
+      var page = pageId - 1;
+      var skip = page * G_PAGE_SIZE;
+      var find = {};
+      var sort;
+      var cd = Template.currentData();
+      if (cd && cd.user) {
+        var pd = Template.parentData();
+        if (pd && pd.username) {
+          find = {username: pd.username};
+        }
+      }
+      switch (Session.get(S_VIEW_STYLE)) {
+        case "mostviewed":
+          sort = { views: -1 };
+          break;
+        case "newest":
+          sort = {createdAt: -1};
+          break;
+        case "popular":
+        default:
+          sort = { likes: -1 };
+          break;
+      }
+
+      return Art.find(find, {
+        fields: {settings: false},
+        sort: sort,
+        skip: skip,
+        limit: G_PAGE_SIZE,
+      });
+      //if (Session.get("hideCompleted")) {
+      //  // If hide completed is checked, filter tasks
+      //  return Art.find({checked: {$ne: true}}, {sort: {createdAt: -1}});
+      //} else {
+      //  // Otherwise, return all of the tasks
+      //  return Art.find({}, {sort: {createdAt: -1}});
+      //}
+    },
+  });
 
   Template.gallery.events({
     "submit .new-art": function (event) {
@@ -171,7 +257,7 @@ if (Meteor.isClient) {
 
   Template.vslogin.helpers({
     currentlyLoggingIn: function() {
-      var currentlyLoggingIn = Session.get(S_CURRENTLY_LOGGING_IN);
+      var currentlyLoggingIn = Session.get(S_CURRENTLY_LOGGING_IN) && !Meteor.user();
       return currentlyLoggingIn;
     }
   });
@@ -179,18 +265,145 @@ if (Meteor.isClient) {
   Template.vslogin.events({
     "click #vsloginback": function() {
       Session.set(S_CURRENTLY_LOGGING_IN, false);
+      Session.set(S_PENDING_LIKE, false);
     },
     "click #vslogin": function(e) {
       e.stopPropagation();
     },
   });
 
-  Template.userinfo.events({
-    "click .nouser": function() {
+  Template.userinfolike.helpers({
+    likedByUser: function() {
+      var route = Router.current();
+      if (ArtLikes.findOne({artId: route.params._id, userId: Meteor.userId()})) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+  });
+  Template.userinfolike.events({
+    "click #like.nouser": function() {
+      Session.set(S_CURRENTLY_LOGGING_IN, true);
+      Session.set(S_PENDING_LIKE, true);
+    },
+    "click #like.currentuser": function() {
+      var route = Router.current();
+      Meteor.call("likeArt", route.params._id);
+    },
+  });
+  Template.userinfosignin.events({
+    "click #user.nouser": function() {
       Session.set(S_CURRENTLY_LOGGING_IN, true);
     },
-    "click .currentuser": function() {
-      AccountsTemplates.logout();
+    "click #user.currentuser": function() {
+      window.location.href = "/user/" + Meteor.user().username;
+    },
+  });
+
+  Template.userprofile.helpers({
+    editUsername: function() {
+      return Session.get("editUsername");
+    },
+    userExists: function() {
+      var route = Router.current();
+      var username = route.params._username;
+      if (Meteor.users.findOne({username: username})) {
+        return true;
+      }
+      return false;
+    },
+  });
+
+  Template.userprofile.events({
+    "click .username": function() {
+      var route = Router.current();
+      if (Meteor.userId() &&
+          Meteor.user().username === route.params._username) {
+        Session.set("editUsername", true);
+      }
+    },
+    "change .usernameedit": function(e) {
+      if (Meteor.userId()) {
+        var username = e.target.value.trim();
+        Meteor.call("changeUsername", username, function(error) {
+          if (!error) {
+            Session.set("editUsername", false);
+            Router.go("/user/" + username);
+            return;
+          }
+        });
+      }
+    },
+    "click .logout": function() {
+       if (Meteor.userId()) {
+         Meteor.logout();
+       }
+    },
+  });
+
+  Template.sorting.events({
+    "click .sorting .popular": function() {
+      Session.set(S_VIEW_STYLE, "popular");
+    },
+    "click .sorting .newest": function() {
+      Session.set(S_VIEW_STYLE, "newest");
+    },
+    "click .sorting .mostviewed": function() {
+      Session.set(S_VIEW_STYLE, "mostviewed");
+    },
+  });
+
+  Template.sorting.helpers({
+    selected: function(sortType) {
+      return Session.get(S_VIEW_STYLE) === sortType ? "selected" : "";
+    },
+    pages: function() {
+       var count = Counts.get("artCount");
+       var cd = Template.currentData();
+       var pd = Template.parentData();
+       var pageId = pd.page;
+       var path = cd ? cd.path : "foo";
+       if (cd && cd.user) {
+         if (pd && pd.username) {
+           var username = pd.username;
+           // HACK!!!
+           path = "user/" + username;
+           count = Art.find({username: username}).count();
+           pageId = parseInt(pd.page || 1);
+         }
+       }
+       var page = pageId - 1;
+       var numPages = (count + G_PAGE_SIZE - 1) / G_PAGE_SIZE | 0;
+       var lastPage = numPages - 1;
+       Pages.remove({});
+       if (numPages > 1) {
+         var needPrevNext = numPages > G_NUM_PAGE_BUTTONS
+         if (needPrevNext) {
+           var prev = Math.max(page, 1);
+           Pages.insert({path: path, pagenum: "<<", pageid: prev, samepageclass: this.page === prev ? "selected" : ""});
+         }
+
+         var min = page - G_PAGE_RANGE;
+         var max = page + G_PAGE_RANGE;
+         if (min < 0) {
+           max = max - min;
+           min = 0;
+         }
+         if (max > lastPage) {
+           min = Math.max(0, min - (max - lastPage));
+           max = lastPage;
+         }
+         for (var ii = min; ii <= max; ++ii) {
+           Pages.insert({path: path, pagenum: ii + 1, pageid: ii + 1, samepageclass: ii === page ? "selected" : ""});
+         }
+
+         if (needPrevNext) {
+           var next = Math.min(lastPage, page + 1);
+           Pages.insert({path: path, pagenum: ">>", pageid: next + 1, samepageclass: page === next ? "selected" : ""});
+         }
+       }
+       return Pages.find({});
     },
   });
 
@@ -258,11 +471,40 @@ AccountsTemplates.configure({
 });
 
 Router.map(function() {
-  this.route('/', function() {
-    this.render('gallery');
+  this.route('/', {
+    template: 'gallery',
+    data: {
+      page: 1,
+    },
+  });
+  this.route('/gallery/:_page', {
+    template: 'gallery',
+    data: function() {
+      return {
+        page: parseInt(this.params._page),
+      };
+    },
   });
   this.route('/new/', function() {
     this.render('artpage');
+  });
+  this.route('/user/:_username', {
+    template: 'userprofile',
+    data: function() {
+      return {
+        page: 1,
+        username: this.params._username,
+      };
+    },
+  });
+  this.route('/user/:_username/:_page', {
+    template: 'userprofile',
+    data: function() {
+      return {
+        page: parseInt(this.params._page),
+        username: this.params._username,
+      };
+    },
   });
   this.route('/art/:_id', {
     template: 'artpage',
@@ -340,41 +582,76 @@ Meteor.methods({
       });
     });
   },
-  deleteArt: function (artId) {
-    var art = Art.findOne(artId);
-    if (art.private && art.owner !== Meteor.userId()) {
-      // If the task is private, make sure only the owner can delete it
-      throw new Meteor.Error("not-authorized");
-    }
-    Art.remove(artId);
+  likeArt: function(artId) {
+     var userId = Meteor.userId();
+     if (!userId) {
+       throw new Meteor.Error("can not like something if not logged in");
+     }
+     var like = ArtLikes.findOne({artId: artId, userId: userId});
+     if (like) {
+       ArtLikes.remove(like._id);
+     } else {
+       ArtLikes.insert({artId: artId, userId: userId});
+     }
+     Art.update({_id: artId}, {$inc: {likes: like ? -1 : 1}});
   },
-  setChecked: function (artId, setChecked) {
-    var art = Art.findOne(artId);
-    if (art.private && art.owner !== Meteor.userId()) {
-      // If the task is private, make sure only the owner can check it off
-      throw new Meteor.Error("not-authorized");
+  changeUsername: function(username) {
+    username = username.trim();
+    if (!Meteor.userId()) {
+      throw new Meteor.Error("please login to change your username");
     }
-
-    Art.update(artId, { $set: { checked: setChecked} });
-  },
-  setPrivate: function (artId, setToPrivate) {
-    var art = Art.findOne(artId);
-
-    // Make sure only the task owner can make a task private
-    if (art.owner !== Meteor.userId()) {
-      throw new Meteor.Error("not-authorized");
+    if (!username) {
+      throw new Meteor.Error("username is empty or mostly empty");
     }
-
-    Art.update(artId, { $set: { private: setToPrivate } });
-  },
-  testSSR: function() {
-    if (Meteor.isServer) {
-      var html = SSR.render("artSSR", {
-        art: Art.find({}).fetch(),
-      });
-      console.log("-----\n", html);
+    if (Meteor.user().username === username) {
+      return;
     }
+    if (!Meteor.isServer) {
+      return;
+    }
+    try {
+      Accounts.setUsername(Meteor.userId(), username);
+    } catch(e) {
+      console.log("could not set username");
+      throw e;
+    }
+    Art.update({owner: Meteor.userId()}, {$set: {username: username}}, {multi: true});
   },
+  //deleteArt: function (artId) {
+  //  var art = Art.findOne(artId);
+  //  if (art.private && art.owner !== Meteor.userId()) {
+  //    // If the task is private, make sure only the owner can delete it
+  //    throw new Meteor.Error("not-authorized");
+  //  }
+  //  Art.remove(artId);
+  //},
+  //setChecked: function (artId, setChecked) {
+  //  var art = Art.findOne(artId);
+  //  if (art.private && art.owner !== Meteor.userId()) {
+  //    // If the task is private, make sure only the owner can check it off
+  //    throw new Meteor.Error("not-authorized");
+  //  }
+  //
+  //  Art.update(artId, { $set: { checked: setChecked} });
+  //},
+  //setPrivate: function (artId, setToPrivate) {
+  //  var art = Art.findOne(artId);
+  //
+  //  // Make sure only the task owner can make a task private
+  //  if (art.owner !== Meteor.userId()) {
+  //    throw new Meteor.Error("not-authorized");
+  //  }
+  //
+  //  Art.update(artId, { $set: { private: setToPrivate } });
+  //},
+  //testSSR: function() {
+  //  if (Meteor.isServer) {
+  //    var html = SSR.render("artSSR", {
+  //      art: Art.find({}).fetch(),
+  //    });
+  //    console.log("-----\n", html);
+  //  }
+  //},
   incArtViews: function(artId) {
     Art.update({_id: artId}, {$inc: {views: 1}});
   },

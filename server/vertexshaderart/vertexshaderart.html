@@ -19,11 +19,35 @@
 <body>
 </body>
 
+<template name="sorting">
+
+    <div class="sorting">
+      <div class='button popular {{selected "popular"}}'>
+          popular
+      </div>
+      <div class='button newest {{selected "newest"}}'>
+          newest
+      </div>
+      <div class='button mostviewed {{selected "mostviewed"}}'>
+          views
+      </div>
+      {{#each pages}}
+        {{> page}}
+      {{/each}}
+    </div>
+
+</template>
+
+<template name="page">
+     <a class='button {{samepageclass}}' href="/{{path}}/{{pageid}}">{{pagenum}}</a>
+</template>
+
 <template name="gallery">
   <header>
 
     <div>
-        <div>
+        <div class="buttons">
+            {{> userinfosignin}}
             <a href="/new/">create new</a>
             <a href="http://github.com/greggman/vertexshaderart">github</a>
         </div>
@@ -31,36 +55,16 @@
     </div>
   </header>
   <div class="container">
-
-<!--
-<hr/>
-<div>numImages: {{numImages}}</div>
-<hr/>
-{{#each images}}
-  <div>
-      <div>URL: {{this.url}}</div>
-  <p>Original name: {{this.name}}</p>
-  <p>Original extension: {{this.extension}}</p>
-  <p>Original type: {{this.type}}</p>
-  <p>Original size: {{this.size}}</p>
-      <img src="{{this.url}}" alt="thumbnail">
+     {{> artgrid path="gallery"}}
   </div>
-{{/each}}
-<hr/>
--->
-    <div class="gallery">
-        {{#each art}}
-          {{> artpiece}}
-        {{/each}}
-    </div>
 
-  </div>
+  {{> vslogin}}
 
 </template>
 
 <template name="artpiece">
 
-<a href="/art/{{_id}}">
+<a class="artpiece" href="/art/{{_id}}">
   <img class="thumbnail" src="{{screenshotLink.url}}" />
   <div class="galleryinfo">
       <div class="galleryname">&ldquo;{{name}}&rdquo; by: {{username}}</div><div><img src="/static/resources/images/eye.svg" /> {{views}} - <img src="/static/resources/images/heart.svg" /> {{likes}}</div>
@@ -75,26 +79,84 @@
 
 </template>
 
-<template name="userinfo">
-    <div id="userInfo">
+<template name="artgrid">
+     <div class="gallery">
+         {{> sorting}}
+         {{#each art}}
+           {{> artpiece}}
+         {{/each}}
+     </div>
+</template>
+
+<template name="userinfolike">
+      {{#if currentUser}}
+      <div id="like" class="icon currentuser">
+          {{#if likedByUser}}
+            <img src="/static/resources/images/heart-liked.svg" />
+          {{else}}
+            <img src="/static/resources/images/heart.svg" />
+          {{/if}}
+      </div>
+      {{else}}
+        <div id="like" class="icon nouser">
+            <img src="/static/resources/images/heart.svg" />
+        </div>
+      {{/if}}
+</template>
+
+<template name="userinfosignin">
       {{#if currentUser}}
       <div id="user" class="currentuser">
-          [{{currentUser.profile.name}}]
-      </div>
-      <div id="like" class="icon currentuser">
-          <img src="/static/resources/images/heart.svg" />
+          [{{currentUser.username}}]
       </div>
       {{else}}
         <div id="user" class="nouser">
             sign in
         </div>
-        <div id="like" class="icon nouser">
-            <img src="/static/resources/images/heart.svg" />
-        </div>
       {{/if}}
+</template>
+
+<template name="userinfo">
+    <div id="userInfo">
+        {{> userinfosignin}}
+        {{> userinfolike}}
     </div>
 </template>
 
+<template name="userprofile">
+  <header>
+
+    <div>
+        <div class="buttons">
+           {{> userinfosignin}}
+           <a href="/new/">create new</a>
+           <a href="/">gallery</a>
+        </div>
+        <div><h1>vertexshaderart.com</h1></div>
+    </div>
+  </header>
+  <div class="infoContainer">
+    {{#if userExists}}
+       <h2>Profile:</h2>
+       <table>
+           <tr>
+           　　<td><div>username:</div></td>
+           　　<td>
+                 {{#if editUsername}}
+                   <input class="usernameedit" type="text" value="{{username}}" />
+                 {{else}}
+                   <div class="username">{{username}}</div>
+                 {{/if}}
+           　　</td>
+           </tr>
+       </table>
+       <h2>Creations:</h2>
+       {{> artgrid user="true" path="user"}}
+    {{else}}
+      <h2>no such user</h2>
+    {{/if}}
+  </div>
+</template>
 
 <template name="admin">
   <div class="container">
@@ -128,9 +190,11 @@
 </template>
 
 <template name="vslogin">
+  <!--
   <div style="z-index: 1000; position: absolute; left: 0; top: 0; background-color:red; color: white;">
       login template!
   </div>
+  -->
   {{#if currentlyLoggingIn}}
 
     <div id="vsloginback" class="fulldialog">

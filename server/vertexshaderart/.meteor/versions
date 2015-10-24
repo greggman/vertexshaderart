@@ -71,7 +71,6 @@ less@2.5.0_3
 livedata@1.0.15
 localstorage@1.0.5
 logging@1.0.8
-manuelschoebel:ms-seo@0.4.1
 meteor@1.1.9
 meteor-base@1.0.1
 meteorhacks:ssr@2.1.2
@@ -109,6 +108,7 @@ srp@1.0.4
 standard-minifiers@1.0.1
 templating@1.1.4
 templating-tools@1.0.0
+tmeasday:publish-counts@0.7.2
 tracker@1.0.9
 twitter@1.1.5
 ui@1.0.8

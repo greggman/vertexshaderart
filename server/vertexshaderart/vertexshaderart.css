@@ -1,11 +1,23 @@
 /* CSS declarations go here */
+#like, #user {
+    cursor: pointer;
+}
 
 .container {
-  padding: 2em;
+  padding: 0 2em 2em 2em;
   text-align: center;
   display: inline-block;
   height: 100%;
   overflow: scroll;
+}
+.infoContainer {
+    padding: 0 2em 2em 2em;
+    display: inline-block;
+    height: 100%;
+    overflow: scroll;
+}
+.infoContainer tr {
+    vertical-align: middle !important;
 }
 .gallery {
   text-align: left;
@@ -19,12 +31,15 @@
   width: 300px;
   height: 168px;
 }
-.gallery a {
+.gallery .artpiece {
   margin: 0em 1em 1em 0em;
   display: inline-block;
   text-decoration: none;
   width: 300px;
   color: #888;
+}
+.hearticon {
+    fill: red !important;
 }
 .galleryinfo {
     line-height: 1em;
@@ -74,17 +89,44 @@ header>div {
     justify-content: space-between;
     -webkit-justify-content: space-between;
 }
-header a {
+header .buttons {
+    display: flex;
+    align-items: center;
+    -webkit-align-items: center;
+    justify-content: flex-start;
+    -webkit-justify-content: flex-start;
+}
+header a, header .buttons div, .button {
     background-color: rgba(0,0,0,0.7);
     border: 1px solid #444;
     margin: 0.25em;
-    padding: 0.5em;
+    padding: 0.25em;
     border-radius: 0.5em;
     color: white;
     user-select: none;
     text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
 }
-
+.padding {
+    padding: 2em;
+}
+.sorting {
+    display: flex;
+    display: -webkit-flex;
+    align-items: center;
+    -webkit-align-items: center;
+    justify-content: flex-start;
+    -webkit-justify-content: flex-start;
+}
+.sorting a {
+    min-width: 3em;
+    display: block;
+    text-align: center;
+}
+.sorting .selected {
+    background-color: #446;
+}
 .accounts-dialog {
     background-color: black;
     color: white;
