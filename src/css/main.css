@@ -93,6 +93,10 @@ canvas {
 button {
     cursor: pointer;
 }
+button:focus {
+    outline: 0
+}
+
 #toolbar>div, select, input, #toolbar>button, #toolbar>a, #soundInfo>a, #userInfo>div {
   background-color: rgba(0,0,0,0.7);
   border: 1px solid #444;
