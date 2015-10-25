@@ -1,4 +1,5 @@
 Art = new Mongo.Collection("art");
+ArtRevision = new Mongo.Collection("artrevision"); // note: username show username at time of revision
 ArtLikes = new Mongo.Collection("artlikes");
 
 //Artpages = new Meteor.Pagination(Art, {
@@ -13,12 +14,21 @@ ArtLikes = new Mongo.Collection("artlikes");
 S_CURRENTLY_LOGGING_IN = "currentlyLoggingIn";
 S_PENDING_LIKE = "pendingLike";
 S_VIEW_STYLE = "viewstyle";
+S_ART_OWNER_ID = "artOwnerId";
+S_ART_NAME = "artName";
+
 G_PAGE_SIZE = 3; //15; //3;
 G_PAGE_RANGE = 2;
 G_NUM_PAGE_BUTTONS = G_PAGE_RANGE * 2 + 1;
 G_RESERVED_NAMES = {
   "-anon-": true,
 };
+
+G_BAD_USERNAME_RE = /[:\/\\?%#\t\n\r]/
+function isBadUsername(username) {
+  return G_RESERVED_NAMES[username.toLowerCase()] ||
+         G_BAD_USERNAME_RE.test(username);
+}
 
 //FS.debug = true;
 Images = new FS.Collection("images", {
@@ -212,25 +222,6 @@ if (Meteor.isClient) {
       //  return Art.find({}, {sort: {createdAt: -1}});
       //}
     },
-  });
-
-  Template.gallery.events({
-    "submit .new-art": function (event) {
-      // Prevent default browser form submit
-      event.preventDefault();
-
-      // Get value from form element
-      var text = event.target.text.value;
-
-      // Insert a art into the collection
-      Meteor.call("addArt", text);
-
-      // Clear form
-      event.target.text.value = "";
-    },
-    "change .hide-completed input": function (event) {
-      Session.set("hideCompleted", event.target.checked);
-    }
   });
 
   Template.artpiece.helpers({
@@ -433,9 +424,13 @@ if (Meteor.isClient) {
 
   function SetArt(data) {
     var settings;
+    Session.set(S_ART_OWNER_ID, undefined);
+    Session.set(S_ART_NAME, "unnamed");
     if (data && data.settings) {
       try {
         settings = JSON.parse(data.settings);
+        Session.set(S_ART_OWNER_ID, data.owner);
+        Session.set(S_ART_NAME, data.name);
       } catch (e) {
         console.log("could not parse settings");
       }
@@ -468,11 +463,22 @@ if (Meteor.isClient) {
         screenshot: window.vsart.takeScreenshot(),
       };
     },
+    "click #new": function() {
+      window.location.href = "/new/";
+    },
   });
 
   Template.save.helpers({
     saving: function() {
       return Session.get("saving");
+    },
+    artname: function() {
+      return Session.get(S_ART_NAME);
+    },
+    isCurrentUsersExistingArt: function() {
+      var route = Router.current();
+      var artId = route.params ? route.params._id : undefined;
+      return artId && Meteor.userId() && Meteor.userId() === Session.get(S_ART_OWNER_ID);
     },
     screenshot: function() {
       if (!window.vsSaveData) {
@@ -491,9 +497,25 @@ if (Meteor.isClient) {
     "click #savedialog": function(e) {
       e.stopPropagation();
     },
-    "click #saveit": function() {
+    "click #saveit, click #savenew": function() {
+      var route = Router.current();
+      var origId;
+      if (route && route.params) {
+        origId = route.params._id;
+      }
       window.vsart.markAsSaving();
-      Meteor.call("addArt", $("#savedialog #name").val(), window.vsSaveData);
+      Session.set("saving", false);
+      Meteor.call("addArt", $("#savedialog #name").val(), origId, window.vsSaveData, function(error) {
+      });
+    },
+    "click #updateit": function() {
+      var route = Router.current();
+      var origId;
+      if (route && route.params) {
+        origId = route.params._id;
+      }
+      window.vsart.markAsSaving();
+      Meteor.call("updateArt", $("#savedialog #name").val(), origId, window.vsSaveData);
       Session.set("saving", false);
     },
     "click #cancel": function() {
@@ -654,26 +676,43 @@ Router.map(function() {
 });
 
 Meteor.methods({
-  addArt: function (name, data) {
+  addArt: function (name, origId, data) {
     // Make sure the user is logged in before inserting art
 //    if (! Meteor.userId()) {
 //      throw new Meteor.Error("not-authorized");
 //    }
+    name = name || "unnamed";
     var owner = Meteor.userId();
     var username = Meteor.userId() ? Meteor.user().username : "-anon-";
     var settings = data.settings || {};
     var screenshotDataURL = data.screenshot.dataURL || "";
     Images.insert(screenshotDataURL, function(err, fileObj) {
-      Art.insert({
-        createdAt: new Date(),
+      var artId = Art.insert({
         owner: owner,
-        name: name || "unnamed",
+        createdAt: new Date(),
+        origId: origId,
+        name: name,
         username: username,
         settings: JSON.stringify(settings),
         screenshotDataId: fileObj._id,
         views: 0,
         likes: 0,
+      });
+      var revisionId = ArtRevision.insert({
+        createdAt: new Date(),
+        owner: owner,
+        origId: origId,
+        artId: artId,
+        name: name,
+        username: username,
+        settings: JSON.stringify(settings),
+        screenshotDataId: fileObj._id,
       }, function(error, result) {
+         Art.update({_id: artId},
+           {$set: {
+             revisionId: revisionId,
+           },
+         });
          if (Meteor.isClient) {
            var url = "/art/" + result;
            window.vsart.markAsSaved();
@@ -682,10 +721,55 @@ Meteor.methods({
       });
     });
   },
+  updateArt: function (name, origId, data) {
+    var owner = Meteor.userId();
+    if (!owner) {
+      throw new Meteor.Error("not-loggedin", "use must be logged in to update");
+    }
+    var arts = Art.find({_id: origId}).fetch();
+    if (!arts || arts.length != 1) {
+      throw new Meteor.Error("not-exists", "can not update non-existant art");
+    }
+    var art = arts[0];
+    if (art.owner !== owner) {
+      throw new Meteor.Error("not-owner", "must be onwer to update art");
+    }
+
+    var username = Meteor.user().username;
+    var settings = data.settings || {};
+    var screenshotDataURL = data.screenshot.dataURL || "";
+
+    Images.insert(screenshotDataURL, function(err, fileObj) {
+      name = name || "unnamed";
+      var revisionId = ArtRevision.insert({
+        createdAt: new Date(),
+        owner: owner,
+        origId: origId,
+        artId: art._id,
+        prevRevisionId: art.revisionId,
+        name: name,
+        username: username,
+        settings: JSON.stringify(settings),
+        screenshotDataId: fileObj._id,
+      }, function(error, result) {
+         Art.update({_id: origId},
+           {$set: {
+             revisionId: revisionId,
+             name: name,
+             settings: JSON.stringify(settings),
+             screenshotDataId: fileObj._id,
+           },
+         });
+         if (Meteor.isClient) {
+           window.vsart.markAsSaved();
+         }
+      });
+    });
+  },
   likeArt: function(artId) {
      var userId = Meteor.userId();
      if (!userId) {
-       throw new Meteor.Error("can not like something if not logged in");
+       throw new Meteor.Error("not-loggedin", "can not like something if not logged in");
      }
      var like = ArtLikes.findOne({artId: artId, userId: userId});
      if (like) {
@@ -698,13 +782,13 @@ Meteor.methods({
   changeUsername: function(username) {
     username = username.trim();
     if (!Meteor.userId()) {
-      throw new Meteor.Error("please login to change your username");
+      throw new Meteor.Error("not loggedin", "please login to change your username");
     }
     if (!username) {
-      throw new Meteor.Error("username is empty or mostly empty");
+      throw new Meteor.Error("bad data", "username is empty or mostly empty");
     }
-    if (G_RESERVED_NAMES[username.toLowerCase()]) {
-      throw new Meteor.Error("that name already exists");
+    if (isBadUsername(username)) {
+      throw new Meteor.Error("bad data", "not a valid name (no #%?/\\: allowed");
     }
     if (Meteor.user().username === username) {
       return;

@@ -8,10 +8,18 @@
 
     <meta property="og:type" content="website" />
 
+    <meta property="og:title" content="vertexshaderart.com" />
+    <meta property="og:description" content="vertexshaderart.com" />
+    <meta property="og:image" content="http://vertexshaderart.com/static/resources/images/vertexshaderart.png" />
+
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@greggman">
     <meta name="twitter:domain" content="vertexshaderart.com">
     <meta name="twitter:title" content="vertexshaderart.com">
+
+    <meta name="twitter:description" content="vertexshaderart.com">
+    <meta name="twitter:creator" content="@greggman">
+    <meta name="twitter:image:src" content="http://vertexshaderart.com/static/resources/images/vertexshaderart.png">
 
     <link href="/static/resources/images/vertexshaderart-icon.png" rel="shortcut icon" type="image/png">
 </head>
@@ -170,24 +178,7 @@
   <div class="container">
     <header>
       <h1>verteshaderart.com</h1>
-      <div>making art with MATH!</div>
     </header>
-
-      {{> loginButtons}}
-
-      <label class="hide-completed">
-        <input type="checkbox" checked="{{hideCompleted}}" />
-        Hide Completed Art
-      </label>
-
-      {{#if currentUser}}
-      <form class="new-art">
-        <input type="text" name="text" placeholder="Type to add new art" />
-      </form>
-      {{/if}}
-
-
-    <hr/>
     <ul>
       {{#each art}}
         {{> artitem}}
@@ -226,7 +217,7 @@
                  <div class="label">
                      name of art:
                  </div>
-                 <input class="data" type="text" id="name" value="noname" />
+                 <input class="data" type="text" id="name" value="{{artname}}" />
              </div>
              <div class="saveline">
                  <div class="label">
@@ -245,9 +236,18 @@
              <button class="button" id="cancel">
                  cancel
              </button>
-             <button class="button" id="saveit">
-                 save!
-             </button>
+             {{#if isCurrentUsersExistingArt}}
+               <button class="button" id="savenew">
+                   save as new
+               </button>
+               <button class="button" id="updateit">
+                   update
+               </button>
+             {{else}}
+               <button class="button" id="saveit">
+                   save!
+               </button>
+             {{/if}}
          </div>
      </div>
   </div>
