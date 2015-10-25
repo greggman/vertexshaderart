@@ -145,6 +145,10 @@ header>div {
     justify-content: space-between;
     -webkit-justify-content: space-between;
 }
+header .logo a {
+    text-decoration: none;
+    color: white;
+}
 header .buttons {
     display: flex;
     align-items: center;
@@ -152,7 +156,7 @@ header .buttons {
     justify-content: flex-start;
     -webkit-justify-content: flex-start;
 }
-header a, header .buttons div, .button {
+header .buttons a, header .buttons div, .button {
     background-color: rgba(0,0,0,0.7);
     border: 1px solid #444;
     margin: 0.25em;
