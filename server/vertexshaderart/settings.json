@@ -2,6 +2,9 @@
   "public" : {
     "ga": {
       "account":"UA-69264752-1"
+    },
+    "app": {
+      "pageSize": 3
     }
   }
 }
