@@ -50,6 +50,10 @@
      <a class='button {{samepageclass}}' href="/{{path}}/{{pageid}}">{{pagenum}}</a>
 </template>
 
+<template name="logo">
+        <div class="logo"><h1><a href="/">vertexshaderart.com</a></h1></div>
+</template>
+
 <template name="gallery">
   <header>
 
@@ -59,7 +63,7 @@
             <a href="/new/">create new</a>
             <a href="http://github.com/greggman/vertexshaderart">github</a>
         </div>
-        <div><h1>vertexshaderart.com</h1></div>
+        {{> logo}}
     </div>
   </header>
   <div class="container">
@@ -108,9 +112,10 @@
         <div class="buttons">
             {{> userinfosignin}}
             <a href="/new/">create new</a>
+            <a href="/">gallery</a>
             <a href="http://github.com/greggman/vertexshaderart">github</a>
         </div>
-        <div><h1>vertexshaderart.com</h1></div>
+        {{> logo}}
     </div>
   </header>
 
@@ -182,7 +187,7 @@
              </div>
            {{/if}}
         </div>
-        <div><h1>vertexshaderart.com</h1></div>
+        {{> logo}}
     </div>
   </header>
   <div class="infoContainer">
