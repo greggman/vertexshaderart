@@ -164,6 +164,8 @@ header a, header .buttons div, .button {
     cursor: pointer;
     white-space: nowrap;
     font-family: monospace;
+}
+.button {
     font-size: medium;
 }
 .padding {
