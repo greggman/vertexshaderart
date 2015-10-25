@@ -17,6 +17,10 @@ S_VIEW_STYLE = "viewstyle";
 S_ART_OWNER_ID = "artOwnerId";
 S_ART_NAME = "artName";
 
+console.log("------------------------");
+console.log(JSON.stringify(Meteor.settings));
+console.log("------------------------");
+
 G_PAGE_SIZE = (Meteor.settings.public.app && Meteor.settings.public.app.pageSize) ? Meteor.settings.public.app.pageSize : 15;
 G_PAGE_RANGE = 2;
 G_NUM_PAGE_BUTTONS = G_PAGE_RANGE * 2 + 1;
