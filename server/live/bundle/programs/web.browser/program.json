@@ -2,22 +2,22 @@
   "format": "web-program-pre1",
   "manifest": [
     {
-      "path": "1a3817253efc231d857478176bd45a52da956fd1.js",
+      "path": "4a5b0fb8e061451971945117879798f3646d27d6.js",
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/1a3817253efc231d857478176bd45a52da956fd1.js?meteor_js_resource=true",
-      "size": 930989,
-      "hash": "1a3817253efc231d857478176bd45a52da956fd1"
+      "url": "/4a5b0fb8e061451971945117879798f3646d27d6.js?meteor_js_resource=true",
+      "size": 1132087,
+      "hash": "4a5b0fb8e061451971945117879798f3646d27d6"
     },
     {
-      "path": "830fbeb06d21894a1028d76d62d9866bdd0ada03.css",
+      "path": "4409eeef023c301ea8dbd9baff2f9a30595f25d3.css",
       "where": "client",
       "type": "css",
       "cacheable": true,
-      "url": "/830fbeb06d21894a1028d76d62d9866bdd0ada03.css?meteor_css_resource=true",
-      "size": 24522,
-      "hash": "830fbeb06d21894a1028d76d62d9866bdd0ada03"
+      "url": "/4409eeef023c301ea8dbd9baff2f9a30595f25d3.css?meteor_css_resource=true",
+      "size": 27940,
+      "hash": "4409eeef023c301ea8dbd9baff2f9a30595f25d3"
     },
     {
       "path": "app/static/resources/icon.html",
@@ -25,8 +25,44 @@
       "type": "asset",
       "cacheable": false,
       "url": "/static/resources/icon.html",
-      "size": 1135,
-      "hash": "e4c53da8ec4d2f69a0b4b01cde36aa9cd5cc6376"
+      "size": 436,
+      "hash": "c16169a8d77e50da2ccd73b224df56398ad0480e"
+    },
+    {
+      "path": "app/static/resources/icon.js",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/icon.js",
+      "size": 1151,
+      "hash": "778eb1afbdbf5a76104882926f97ee984b75d500"
+    },
+    {
+      "path": "app/static/resources/images/eye.svg",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/images/eye.svg",
+      "size": 1069,
+      "hash": "e3855291f0714c7cf2f01496c7a162a033140592"
+    },
+    {
+      "path": "app/static/resources/images/heart-liked.svg",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/images/heart-liked.svg",
+      "size": 713,
+      "hash": "410555b8a9114970bd67de33fb0518553044e99d"
+    },
+    {
+      "path": "app/static/resources/images/heart.svg",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/images/heart.svg",
+      "size": 717,
+      "hash": "23a7e5b7b017bafda65fe295a8871c96de91e718"
     },
     {
       "path": "app/static/resources/images/missing-thumbnail.jpg",
@@ -65,10 +101,19 @@
       "hash": "ff55373e6a3f2e241ea9eb4a034af5c14a405588"
     },
     {
+      "path": "app/static/resources/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+      "where": "client",
+      "type": "asset",
+      "cacheable": false,
+      "url": "/static/resources/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+      "size": 812930,
+      "hash": "bbfa5e2d8464be560bcd805d9b0b0b5016d7aa56"
+    },
+    {
       "path": "head.html",
       "where": "internal",
       "type": "head",
-      "hash": "4e4aa87d23d9726e9b3065dbfe76dc6492f77703"
+      "hash": "98dba529fdaae20b9ae3d2a798237bb0ce753baf"
     }
   ]
 }

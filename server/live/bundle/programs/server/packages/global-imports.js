@@ -15,6 +15,8 @@ Spacebars = Package.spacebars.Spacebars;
 check = Package.check.check;
 Match = Package.check.Match;
 Spiderable = Package.spiderable.Spiderable;
+Counts = Package['tmeasday:publish-counts'].Counts;
+publishCount = Package['tmeasday:publish-counts'].publishCount;
 Accounts = Package['accounts-base'].Accounts;
 AccountsServer = Package['accounts-base'].AccountsServer;
 Iron = Package['iron:core'].Iron;
@@ -30,6 +32,8 @@ Blaze = Package.ui.Blaze;
 UI = Package.ui.UI;
 Handlebars = Package.ui.Handlebars;
 FS = Package['cfs:base-package'].FS;
+AccountsTemplates = Package['useraccounts:core'].AccountsTemplates;
 Autoupdate = Package.autoupdate.Autoupdate;
 HTML = Package.htmljs.HTML;
+T9n = Package['softwarerero:accounts-t9n'].T9n;
 

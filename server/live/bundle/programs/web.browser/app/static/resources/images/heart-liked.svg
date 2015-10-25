@@ -1,0 +1,7 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;">
+    <g id="Layer1">
+        <path class="hearticon" d="M128,79C128.04,78.9 146.848,31.511 190,32C221.778,32.36 251.978,46.779 252,101C252.019,148.121 128,224 128,224L128,224C127.853,223.913 4.196,150.488 4,101C3.785,46.78 38.925,31.928 70,32C113.2,32.099 128,79 128,79L128,79Z" style="fill:#C44;"/>
+    </g>
+</svg>

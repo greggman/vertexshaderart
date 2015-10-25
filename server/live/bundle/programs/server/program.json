@@ -12,10 +12,6 @@
       "path": "packages/meteor.js"
     },
     {
-      "sourceMap": "packages/accounts-ui.js.map",
-      "path": "packages/accounts-ui.js"
-    },
-    {
       "node_modules": "npm/npm-bcrypt/node_modules",
       "sourceMap": "packages/npm-bcrypt.js.map",
       "path": "packages/npm-bcrypt.js"
@@ -364,14 +360,6 @@
       }
     },
     {
-      "sourceMap": "packages/coffeescript.js.map",
-      "path": "packages/coffeescript.js"
-    },
-    {
-      "sourceMap": "packages/manuelschoebel_ms-seo.js.map",
-      "path": "packages/manuelschoebel_ms-seo.js"
-    },
-    {
       "sourceMap": "packages/cfs_standard-packages.js.map",
       "path": "packages/cfs_standard-packages.js"
     },
@@ -400,6 +388,38 @@
       "node_modules": "npm/cfs_filesystem/node_modules",
       "sourceMap": "packages/cfs_filesystem.js.map",
       "path": "packages/cfs_filesystem.js"
+    },
+    {
+      "sourceMap": "packages/less.js.map",
+      "path": "packages/less.js"
+    },
+    {
+      "sourceMap": "packages/accounts-ui-unstyled.js.map",
+      "path": "packages/accounts-ui-unstyled.js"
+    },
+    {
+      "sourceMap": "packages/accounts-ui.js.map",
+      "path": "packages/accounts-ui.js"
+    },
+    {
+      "sourceMap": "packages/useraccounts_core.js.map",
+      "path": "packages/useraccounts_core.js"
+    },
+    {
+      "sourceMap": "packages/coffeescript.js.map",
+      "path": "packages/coffeescript.js"
+    },
+    {
+      "sourceMap": "packages/softwarerero_accounts-t9n.js.map",
+      "path": "packages/softwarerero_accounts-t9n.js"
+    },
+    {
+      "sourceMap": "packages/useraccounts_unstyled.js.map",
+      "path": "packages/useraccounts_unstyled.js"
+    },
+    {
+      "sourceMap": "packages/tmeasday_publish-counts.js.map",
+      "path": "packages/tmeasday_publish-counts.js"
     },
     {
       "sourceMap": "packages/hot-code-push.js.map",
