@@ -91,6 +91,10 @@ if (Meteor.isServer) {
     return Meteor.users.find({username: username}, {fields: {username: 1}});
   });
 
+  Meteor.publish("artrevision", function(id) {
+    return ArtRevision.find({_id: id});
+  });
+
   Meteor.publish("artrevisions", function(artId, skip, limit) {
     return ArtRevision.find({artId: artId}, {
       fields: {settings: false},
@@ -717,6 +721,62 @@ Router.map(function() {
         Session.set("view_art_id", artId);
         Meteor.call("incArtViews", artId);
       }
+      //SEO.set({
+      //  title: "foobar",
+      //  meta: {
+      //    'description': "foobar-desc",
+      //  },
+      //  og: {
+      //    'title': this.params._id,
+      //    'description': "foobar-desc",
+      //  },
+      //});
+
+    },
+  });
+  this.route('/art/:_id/revision/:_revisionId', {
+    template: 'artpage',
+    subscriptions: function() {
+      var subs = [
+        Meteor.subscribe('artrevision', this.params._revisionId),
+        Meteor.subscribe('art', this.params._id),
+      ];
+      if (Meteor.userId()) {
+        subs.push(Meteor.subscribe('artLikes', this.params._id, Meteor.userId()));
+      }
+      return subs;
+    },
+    cache: 5,
+    expire: 5,
+    data: function() {
+      return ArtRevision.findOne({_id: this.params._revisionId});
+    },
+    action: function() {
+      if (this.ready()) {
+        Session.set(S_CURRENTLY_LOGGING_IN, false);
+        this.render();
+      } else {
+        this.render('loading');
+      }
+    },
+    onAfterAction: function() {
+      if (!Meteor.isClient) {
+        return;
+      }
+
+      // hard to decide what's the best way to do this
+      // this just makes it not get into an infinite loop.
+      // Do we care that if you just refresh the page it's a new view?
+      // Youtube doesn't care so should I?
+      //
+      // -- let's not track views for revisions
+      //
+      // var artId = this.params._id;
+      // var lastArtId = Session.get("view_art_id");
+      // if (artId !== lastArtId) {
+      //   Session.set("view_art_id", artId);
+      //   Meteor.call("incArtViews", artId);
+      // }
       //SEO.set({
       //  title: "foobar",
       //  meta: {
