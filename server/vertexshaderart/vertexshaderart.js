@@ -608,7 +608,7 @@ var mySubmitFunc = function(error, state){
 };
 
 AccountsTemplates.configure({
-    onSubmitHook: mySubmitFunc
+  onSubmitHook: mySubmitFunc,
 });
 
 function subscribeForGrid(pageId, username) {
@@ -621,6 +621,10 @@ function subscribeForGrid(pageId, username) {
     Meteor.subscribe("artForGrid", username, "popular", skip, limit),
   ];
 }
+
+Router.configure({
+  trackPageView: true,
+});
 
 Router.map(function() {
   this.route('/', {
