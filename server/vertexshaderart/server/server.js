@@ -66,9 +66,14 @@ function setupAccounts(accounts) {
 }
 
 WebApp.connectHandlers.use(function(req, res, next) {
-console.log(req.headers.host);
   if (req.headers && req.headers.host && req.headers.host.match(/^vertexshaderart.com/) !== null ) {
-    res.redirect(301, 'http://www.' + req.headers.host + req.url);
+       /* Redirect to the proper address */
+        var correctURL = 'http://www.' + req.headers.host + req.url;
+        res.writeHead(301, {
+            'Content-Type': 'text/html; charset=UTF-8',
+            Location: correctURL,
+        });
+        res.end("Moved to: " + correctURL);
   } else {
     next();
   }
