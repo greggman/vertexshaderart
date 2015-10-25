@@ -222,10 +222,15 @@ define([
       show: true,
       soundCloudClientId: '3f4914e324f9caeb23c521f0f1835a60',
       origSettings: { shader: "" },
+      pauseOnBlur: window.location.hostname === "localhost",
     };
     g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
 
     var q = misc.parseUrlQuery();
+    if (q.pauseOnBlur !== undefined) {
+      g.pauseOnBlur = q.pauseOnBlur.toLowerCase() === "true";
+    }
+
     if (gl) {
       editorElem.parentNode.insertBefore(s.editorElem, editorElem);
       editorElem.parentNode.removeChild(editorElem);
@@ -812,6 +817,7 @@ define([
       //tryNewProgram(settings.shader);
       markAsSaved();
 
+      g.running = true;
       queueRender();
     }
 
@@ -933,11 +939,31 @@ define([
       }
     }
 
-    this.stop = function() {
+    function stopRender() {
       if (g.requestId) {
         cancelAnimationFrame(g.requestId);
         g.requestId = undefined;
       }
+    }
+
+    function pauseOnBlur() {
+      if (g.pauseOnBlur) {
+        stopRender();
+      }
+    }
+
+    function unpauseOnFocus() {
+      if (g.pauseOnBlur && g.running) {
+        queueRender();
+      }
+    }
+
+    on(window, 'blur', pauseOnBlur);
+    on(window, 'focus', unpauseOnFocus);
+
+    this.stop = function() {
+      g.running = false;
+      stopRender();
       if (s.streamSource.isPlaying()) {
         s.streamSource.stop();
       }
