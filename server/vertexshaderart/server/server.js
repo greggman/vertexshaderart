@@ -65,3 +65,11 @@ function setupAccounts(accounts) {
   });
 }
 
+WebApp.connectHandlers.use(function(req, res, next) {
+console.log(req.headers.host);
+  if (req.headers && req.headers.host && req.headers.host.match(/^vertexshaderart.com/) !== null ) {
+    res.redirect(301, 'http://www.' + req.headers.host + req.url);
+  } else {
+    next();
+  }
+});
