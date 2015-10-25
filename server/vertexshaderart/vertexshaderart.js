@@ -30,6 +30,12 @@ function isBadUsername(username) {
          G_BAD_USERNAME_RE.test(username);
 }
 
+var S_ZEROS = "0000000000";
+function padZeros(v, len) {
+  var s = v.toString();
+  return S_ZEROS.substr(0, len - s.length) + s;
+}
+
 //FS.debug = true;
 Images = new FS.Collection("images", {
   stores: [
@@ -83,6 +89,15 @@ if (Meteor.isServer) {
 
   Meteor.publish("usernames", function(username) {
     return Meteor.users.find({username: username}, {fields: {username: 1}});
+  });
+
+  Meteor.publish("artrevisions", function(artId, skip, limit) {
+    return ArtRevision.find({artId: artId}, {
+      fields: {settings: false},
+      skip: skip,
+      limit: limit,
+      sort: {createdAt: -1},
+    });
   });
 
 
@@ -221,6 +236,39 @@ if (Meteor.isClient) {
       //  // Otherwise, return all of the tasks
       //  return Art.find({}, {sort: {createdAt: -1}});
       //}
+    },
+  });
+
+  Template.artrevisions.helpers({
+    revisions: function() {
+      var route = Router.current();
+      var artId = route.params._id;
+      var skip = 0;
+      var limit = 10;
+      return ArtRevision.find({artId: artId}, {
+        skip: skip,
+        limit: limit,
+        sort: { createdAt: -1 },
+      });
+    },
+  });
+
+  Template.revision.helpers({
+    screenshotLink: function() {
+      if (this.screenshotURL) {
+        return { url: this.screenshotURL };
+      } else if (this.screenshotDataId) {
+        return { url: "/cfs/files/images/" + this.screenshotDataId };
+//        return Images.findOne(({_id: this.screenshotDataId}));
+      } else if (this.screenshotDataURL) {
+        return { url:this.screenshotDataURL };
+      } else {
+        return { url:"/static/resources/images/missing-thumbnail.jpg" };
+      }
+    },
+    createdAtFormatted: function() {
+      var d = this.createdAt;
+      return d.getFullYear() + "/" + padZeros(d.getMonth(), 2) + "/" + padZeros(d.getDate(), 2) + " " + padZeros(d.getHours(), 2) + ":" + padZeros(d.getMinutes(), 2);
     },
   });
 
@@ -681,6 +729,18 @@ Router.map(function() {
       //});
 
     },
+  });
+  this.route('/art/:_id/revisions/', {
+    template: 'artrevisions',
+    subscriptions: function() {
+      var subs = [
+        Meteor.subscribe('art', this.params._id),
+        Meteor.subscribe('artrevisions', this.params._id, 0, G_PAGE_SIZE),
+      ];
+      return subs;
+    },
+    cache: 5,
+    expire: 5,
   });
 });
 

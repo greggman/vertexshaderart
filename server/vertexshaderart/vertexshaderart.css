@@ -109,7 +109,7 @@
     height: 1em;
     vertical-align: bottom;
 }
-.galleryinfo a {
+.artpiece a, .galleryinfo a {
     text-decoration: none;
     color: #888;
 }

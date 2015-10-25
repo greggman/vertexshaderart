@@ -89,6 +89,41 @@
 
 </template>
 
+<template name="revision">
+    <div class="artpiece">
+        <a href="/art/{{artId}}/revision/{{_id}}">
+          <img class="thumbnail" src="{{screenshotLink.url}}" />
+          <div class="galleryinfo">
+            <div class="galleryname">&ldquo;{{name}}&rdquo; by: {{username}}</div>
+            <div>{{createdAtFormatted}}</div>
+          </div>
+        </a>
+    </div>
+</template>
+
+<template name="artrevisions">
+  <header>
+
+    <div>
+        <div class="buttons">
+            {{> userinfosignin}}
+            <a href="/new/">create new</a>
+            <a href="http://github.com/greggman/vertexshaderart">github</a>
+        </div>
+        <div><h1>vertexshaderart.com</h1></div>
+    </div>
+  </header>
+
+  <div class="infoContainer">
+    <h2>Revisions:</h2>
+    <div class="gallery">
+        {{#each revisions}}
+          {{> revision}}
+        {{/each}}
+    </div>
+  </div>
+</template>
+
 <template name="artgrid">
      <div class="gallery">
          {{> sorting}}
