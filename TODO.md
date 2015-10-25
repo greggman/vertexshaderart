@@ -1,8 +1,16 @@
 ﻿# To Do
 
-*   click outside name to abort
+*   make meta data work "og:...", "twitter: ..."
 
 *   let user change email
+
+*   track forking?
+
+*   fix music loop or at least make stop/start work
+
+*   add fullscreen button?
+
+# Done
 
 *   have [username] link when not on own profile?
 
@@ -14,13 +22,7 @@
 
 *   login ?
 
-*   track forking?
-
-*   fix music loop or at least make stop/start work
-
-*   add fullscreen button?
-
-# Done
+*   click outside name to abort
 
 *   save to db
 
