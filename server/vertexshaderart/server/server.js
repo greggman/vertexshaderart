@@ -44,3 +44,24 @@ Accounts.onCreateUser(function (options, user) {
     return user;
 });
 
+setupAccounts(Meteor.settings.accounts);
+
+function setupAccounts(accounts) {
+  if (!accounts) {
+    return;
+  }
+
+  Object.keys(accounts).forEach(function(name) {
+    var account = accounts[name];
+    ServiceConfiguration.configurations.upsert(
+      { service: name },
+      {
+        $set: {
+          clientId: account.clientId,
+          loginStyle: "popup",
+          secret: account.secret,
+        }
+      });
+  });
+}
+
