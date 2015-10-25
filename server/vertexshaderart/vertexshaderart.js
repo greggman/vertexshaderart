@@ -505,7 +505,14 @@ if (Meteor.isClient) {
       }
       window.vsart.markAsSaving();
       Session.set("saving", false);
-      Meteor.call("addArt", $("#savedialog #name").val(), origId, window.vsSaveData, function(error) {
+      Meteor.call("addArt", $("#savedialog #name").val(), origId, window.vsSaveData, function(err, result) {
+        window.vsart.markAsSaved();
+        if (err) {
+          console.error(err);
+          return;
+        }
+        var url = "/art/" + result;
+        Router.go(url);
       });
     },
     "click #updateit": function() {
@@ -515,8 +522,10 @@ if (Meteor.isClient) {
         origId = route.params._id;
       }
       window.vsart.markAsSaving();
-      Meteor.call("updateArt", $("#savedialog #name").val(), origId, window.vsSaveData);
       Session.set("saving", false);
+      Meteor.call("updateArt", $("#savedialog #name").val(), origId, window.vsSaveData, function(err, result) {
+        window.vsart.markAsSaved();
+      });
     },
     "click #cancel": function() {
       Session.set("saving", false);
@@ -675,97 +684,114 @@ Router.map(function() {
   });
 });
 
-Meteor.methods({
-  addArt: function (name, origId, data) {
-    // Make sure the user is logged in before inserting art
+function addArt(name, origId, data, callback) {
+  // Make sure the user is logged in before inserting art
 //    if (! Meteor.userId()) {
 //      throw new Meteor.Error("not-authorized");
 //    }
+  name = name || "unnamed";
+  var owner = Meteor.userId();
+  var username = Meteor.userId() ? Meteor.user().username : "-anon-";
+  var settings = data.settings || {};
+  var screenshotDataURL = data.screenshot.dataURL || "";
+  Images.insert(screenshotDataURL, function(err, fileObj) {
+    if (err) {
+      callback(err);
+      return;
+    }
+    var artId = Art.insert({
+      owner: owner,
+      createdAt: new Date(),
+      origId: origId,
+      name: name,
+      username: username,
+      settings: JSON.stringify(settings),
+      screenshotDataId: fileObj._id,
+      views: 0,
+      likes: 0,
+    });
+    var revisionId = ArtRevision.insert({
+      createdAt: new Date(),
+      owner: owner,
+      origId: origId,
+      artId: artId,
+      name: name,
+      username: username,
+      settings: JSON.stringify(settings),
+      screenshotDataId: fileObj._id,
+    }, function(err, result) {
+       if (err) {
+         callback(err);
+         return;
+       }
+       Art.update({_id: artId},
+         {$set: {
+           revisionId: revisionId,
+         },
+       }, function(err) {
+         callback(err, artId);
+       });
+    });
+  });
+}
+
+function updateArt(name, origId, data, callback) {
+  var owner = Meteor.userId();
+  if (!owner) {
+    throw new Meteor.Error("not-loggedin", "use must be logged in to update");
+  }
+  var arts = Art.find({_id: origId}).fetch();
+  if (!arts || arts.length != 1) {
+    throw new Meteor.Error("not-exists", "can not update non-existant art");
+  }
+  var art = arts[0];
+  if (art.owner !== owner) {
+    throw new Meteor.Error("not-owner", "must be onwer to update art");
+  }
+
+  var username = Meteor.user().username;
+  var settings = data.settings || {};
+  var screenshotDataURL = data.screenshot.dataURL || "";
+
+  Images.insert(screenshotDataURL, function(err, fileObj) {
+    if (err) {
+      callback(err);
+      return;
+    }
     name = name || "unnamed";
-    var owner = Meteor.userId();
-    var username = Meteor.userId() ? Meteor.user().username : "-anon-";
-    var settings = data.settings || {};
-    var screenshotDataURL = data.screenshot.dataURL || "";
-    Images.insert(screenshotDataURL, function(err, fileObj) {
-      var artId = Art.insert({
-        owner: owner,
-        createdAt: new Date(),
-        origId: origId,
-        name: name,
-        username: username,
-        settings: JSON.stringify(settings),
-        screenshotDataId: fileObj._id,
-        views: 0,
-        likes: 0,
-      });
-      var revisionId = ArtRevision.insert({
-        createdAt: new Date(),
-        owner: owner,
-        origId: origId,
-        artId: artId,
-        name: name,
-        username: username,
-        settings: JSON.stringify(settings),
-        screenshotDataId: fileObj._id,
-      }, function(error, result) {
-         Art.update({_id: artId},
-           {$set: {
-             revisionId: revisionId,
-           },
-         });
-         if (Meteor.isClient) {
-           var url = "/art/" + result;
-           window.vsart.markAsSaved();
-           Router.go(url);
-         }
-      });
+    var revisionId = ArtRevision.insert({
+      createdAt: new Date(),
+      owner: owner,
+      origId: origId,
+      artId: art._id,
+      prevRevisionId: art.revisionId,
+      name: name,
+      username: username,
+      settings: JSON.stringify(settings),
+      screenshotDataId: fileObj._id,
+    }, function(err, result) {
+       if (err) {
+         callback(err);
+         return;
+       }
+       Art.update({_id: origId},
+         {$set: {
+           revisionId: revisionId,
+           name: name,
+           settings: JSON.stringify(settings),
+           screenshotDataId: fileObj._id,
+         },
+       }, function() {
+         callback(null);
+       });
     });
-  },
-  updateArt: function (name, origId, data) {
-    var owner = Meteor.userId();
-    if (!owner) {
-      throw new Meteor.Error("not-loggedin", "use must be logged in to update");
-    }
-    var arts = Art.find({_id: origId}).fetch();
-    if (!arts || arts.length != 1) {
-      throw new Meteor.Error("not-exists", "can not update non-existant art");
-    }
-    var art = arts[0];
-    if (art.owner !== owner) {
-      throw new Meteor.Error("not-owner", "must be onwer to update art");
-    }
+  });
+}
 
-    var username = Meteor.user().username;
-    var settings = data.settings || {};
-    var screenshotDataURL = data.screenshot.dataURL || "";
 
-    Images.insert(screenshotDataURL, function(err, fileObj) {
-      name = name || "unnamed";
-      var revisionId = ArtRevision.insert({
-        createdAt: new Date(),
-        owner: owner,
-        origId: origId,
-        artId: art._id,
-        prevRevisionId: art.revisionId,
-        name: name,
-        username: username,
-        settings: JSON.stringify(settings),
-        screenshotDataId: fileObj._id,
-      }, function(error, result) {
-         Art.update({_id: origId},
-           {$set: {
-             revisionId: revisionId,
-             name: name,
-             settings: JSON.stringify(settings),
-             screenshotDataId: fileObj._id,
-           },
-         });
-         if (Meteor.isClient) {
-           window.vsart.markAsSaved();
-         }
-      });
-    });
-  },
+Meteor.methods({
+  addArt: Meteor.wrapAsync(addArt),
+  updateArt: Meteor.wrapAsync(updateArt),
   likeArt: function(artId) {
      var userId = Meteor.userId();
      if (!userId) {
