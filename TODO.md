@@ -10,6 +10,10 @@
 
 *   add fullscreen button?
 
+*   display individual revision
+
+*   paginate revisions
+
 # Done
 
 *   have [username] link when not on own profile?
