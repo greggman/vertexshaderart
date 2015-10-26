@@ -47,21 +47,27 @@ Accounts.onCreateUser(function (options, user) {
 setupAccounts(Meteor.settings.accounts);
 
 function setupAccounts(accounts) {
+  var log = console.log.bind(console);
+  // var log = function() {};
+  log("----[ Setting up Accounts ] -------");
   if (!accounts) {
+    log("no accounts!");
     return;
   }
 
   Object.keys(accounts).forEach(function(name) {
+    log("----> setup:", name);
     var account = accounts[name];
+    var fields = {
+      loginStyle: "popup",
+    };
+    Object.keys(account).forEach(function(key) {
+        log("    ", key, "=", account[key]);
+        fields[key] = account[key];
+    });
     ServiceConfiguration.configurations.upsert(
       { service: name },
-      {
-        $set: {
-          clientId: account.clientId,
-          loginStyle: "popup",
-          secret: account.secret,
-        }
-      });
+      { $set: fields });
   });
 }
 
