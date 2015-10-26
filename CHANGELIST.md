@@ -2,6 +2,8 @@
 
 ### 2015-10-26
 
+*   enable z-buffer
+
 *   fixed hide->gallery->art
 
     The state of the button was wrong
