@@ -64,15 +64,16 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("artForGrid", function (username, sortField, skip, limit) {
-    var find = username ? {username: username} : {};
+    var find = (username && username !== "undefined") ? {username: username} : {};
     var sort = {};
     sort[sortField] = -1;
-    return Art.find(find, {
+    var options = {
       fields: {settings: false},
       sort: sort,
       skip: skip,
-      limti: limit,
-    });
+      limit: limit,
+    };
+    return Art.find(find, options);
   });
 
   Meteor.publish("art", function(id) {
@@ -202,7 +203,7 @@ if (Meteor.isClient) {
   Template.artgrid.helpers({
     art: function () {
       var route = Router.current();
-      var pageId = route.params._page || 1;
+      var pageId = parseInt(route.params._page) || 1;
       var page = pageId - 1;
       var skip = page * G_PAGE_SIZE;
       var find = {};
@@ -227,12 +228,14 @@ if (Meteor.isClient) {
           break;
       }
 
-      return Art.find(find, {
+      var options = {
         fields: {settings: false},
         sort: sort,
-        skip: skip,
+//        skip: skip,
         limit: G_PAGE_SIZE,
-      });
+      };
+
+      return Art.find(find, options);
       //if (Session.get("hideCompleted")) {
       //  // If hide completed is checked, filter tasks
       //  return Art.find({checked: {$ne: true}}, {sort: {createdAt: -1}});
