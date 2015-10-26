@@ -469,7 +469,7 @@ define([
       }
     }
 
-    on(window, 'beforeunload', function() {
+    function saveRestoreSettings() {
       if (!misc.deepCompare(settings, g.origSettings)) {
         g.restoreCleared = true;  // just in case
         storage.setItem(s.restoreKey, JSON.stringify({
@@ -477,9 +477,10 @@ define([
           settings: settings,
         }));
       }
-    });
+    }
+
+    on(window, 'beforeunload', saveRestoreSettings);
     on(document, 'visibilitychange', clearRestore);
-    clearRestore();
 
     function takeScreenshot() {
       var historyTex = s.historyDstFBI.attachments[0];
@@ -857,8 +858,25 @@ define([
       savingElem.style.display = "";
     }
 
+    function restoreSettings(settings) {
+      var restoreStr = storage.getItem(s.restoreKey);
+      if (restoreStr) {
+        try {
+          var restore = JSON.parse(restoreStr);
+          if (restore.pathname === window.location.pathname) {
+            settings = restore.settings;
+          }
+        } catch (e) {
+        }
+      }
+      clearRestore();
+      return settings;
+    }
+
     function setSettings(_settings) {
-      settings = JSON.parse(JSON.stringify(_settings));
+      g.restoreCleared = false;
+      settings = restoreSettings(_settings);
+      settings = JSON.parse(JSON.stringify(settings));
       validateSettings(settings);
       setUISettings(settings);
 
@@ -1054,6 +1072,7 @@ define([
       clearLineErrors();
       s.cm.off('change', handleChange);
       gl.canvas.parentNode.removeChild(gl.canvas);
+      saveRestoreSettings();
     }
 
     this.takeScreenshot = takeScreenshot;
@@ -1085,16 +1104,6 @@ define([
       settings = s.sets.default;
     }
 
-    var restoreStr = storage.getItem(s.restoreKey);
-    if (restoreStr) {
-      try {
-        var restore = JSON.parse(restoreStr);
-        if (restore.pathname === window.location.pathname) {
-          settings = restore.settings;
-        }
-      } catch (e) {
-      }
-    }
     vs.setSettings(settings);
   }
 
