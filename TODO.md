@@ -5,8 +5,9 @@
     I save your work in localStorage BUT meteor replaces at AFTER it's restored.
     Should restore after meteor sends data.
 
+*   add mouse history
 
-*   add float sound data
+*   make likes active on gallery
 
 *   add monitoring
 
@@ -17,8 +18,6 @@
     *   twitter
 
 *   test email password recovery
-
-*   fix safari
 
 *   fix hide->gallery->art. It's hidden but button is wrong state and play button is in wrong state
 
@@ -37,6 +36,8 @@
 *   paginate revisions
 
 # Done
+
+*   add float sound data
 
 *   fix that can't scroll to bottom of gallery
 
