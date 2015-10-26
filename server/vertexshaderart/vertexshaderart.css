@@ -119,6 +119,9 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+.bottomspace {
+    height: 10em;
+}
 header {
   background-image: url(/static/resources/images/vertexshaderart-banner.jpg);
   background-size: cover;
