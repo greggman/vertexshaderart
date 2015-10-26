@@ -8,7 +8,6 @@ accounts-password
 accounts-google
 accounts-twitter
 accounts-github
-meteorhacks:ssr
 iron:router
 standard-minifiers
 meteor-base
@@ -24,7 +23,6 @@ random
 ejson
 spacebars
 check
-spiderable
 cfs:standard-packages
 cfs:filesystem
 accounts-ui-unstyled
