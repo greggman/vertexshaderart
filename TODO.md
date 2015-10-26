@@ -19,8 +19,6 @@
 
 *   test email password recovery
 
-*   fix hide->gallery->art. It's hidden but button is wrong state and play button is in wrong state
-
 *   make meta data work "og:...", "twitter: ..."
 
 *   let user change email
@@ -36,6 +34,8 @@
 *   paginate revisions
 
 # Done
+
+*   fix hide->gallery->art. It's hidden but button is wrong state and play button is in wrong state
 
 *   add float sound data
 
