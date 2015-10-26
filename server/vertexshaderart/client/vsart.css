@@ -483,9 +483,10 @@ canvas {
   background-color: rgba(0,0,0,0);
   border-radius: 0.5em;
 }
-.fulldialog a {
+#helpDialog a {
   text-decoration: none;
-  color: white;
+  color: #F44;
+  background-color: #444;
 }
 #ui, .fulldialog {
   display: flex;

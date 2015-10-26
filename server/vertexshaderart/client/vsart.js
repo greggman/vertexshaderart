@@ -17842,6 +17842,29 @@ define('src/js/main',[
     };
   }
 
+  function checkCanUseFloat(gl) {
+    if (!gl.getExtension("OES_texture_float")) {
+      return false;
+    }
+
+    // Can we render to float?
+    var testAttachments = [
+      {
+        format: gl.RGBA,
+        type: gl.FLOAT,
+        mag: gl.NEAREST,
+        min: gl.NEAREST,
+        wrap: gl.CLAMP_TO_EDGE,
+      },
+    ];
+    var testFBI = twgl.createFramebufferInfo(gl, testAttachments, 1, 1);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, testFBI.framebuffer);
+    var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    return status == gl.FRAMEBUFFER_COMPLETE;
+  }
+
   var storage = window.localStorage || {
     getItem: function() {},
     setItem: function() {},
@@ -17900,6 +17923,10 @@ define('src/js/main',[
         return;
       }
 
+      s.canUseFloat = checkCanUseFloat(gl);
+      s.canFilterFloat = gl.getExtension("OES_texture_float_linear");
+      console.log("can " + (s.canUseFloat ? "" : "not ") + "use floating point textures");
+
       s.sets = {
         default: {
           num: 10000,
@@ -17951,6 +17978,7 @@ define('src/js/main',[
         format: gl.ALPHA,
       }
       s.soundTex = twgl.createTexture(gl, s.soundTexSpec);
+
       s.numHistorySamples = 60 * 4; // 4 seconds
       var historyAttachments = [
         {
@@ -17967,6 +17995,34 @@ define('src/js/main',[
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
       s.historySrcFBI = twgl.createFramebufferInfo(gl, historyAttachments, s.soundTexBuffer.length, s.numHistorySamples);
       s.historyDstFBI = twgl.createFramebufferInfo(gl, historyAttachments, s.soundTexBuffer.length, s.numHistorySamples);
+
+
+      if (s.canUseFloat) {
+        var floatFilter = s.canFilterFloat ? gl.LINEAR : gl.NEAREST;
+        s.floatSoundTexBuffer = new Float32Array(Math.min(maxTextureSize, s.analyser.frequencyBinCount));
+        s.floatSoundTexSpec = {
+          src: s.floatSoundTexBuffer,
+          height: 1,
+          min: floatFilter,
+          mag: floatFilter,
+          wrap: gl.CLAMP_TO_EDGE,
+          format: gl.ALPHA,
+        }
+        s.floatSoundTex = twgl.createTexture(gl, s.floatSoundTexSpec);
+
+        var floatHistoryAttachments = [
+          {
+            format: gl.RGBA,
+            type: gl.FLOAT,
+            mag: floatFilter,
+            min: floatFilter,
+            wrap: gl.CLAMP_TO_EDGE,
+          },
+        ];
+
+        s.floatHistorySrcFBI = twgl.createFramebufferInfo(gl, floatHistoryAttachments, s.floatSoundTexBuffer.length, s.numHistorySamples);
+        s.floatHistoryDstFBI = twgl.createFramebufferInfo(gl, floatHistoryAttachments, s.floatSoundTexBuffer.length, s.numHistorySamples);
+      }
 
       var count = new Float32Array(g.maxCount);
       for (var ii = 0; ii < count.length; ++ii) {
@@ -18084,7 +18140,9 @@ define('src/js/main',[
     clearRestore();
 
     function takeScreenshot() {
-      renderScene(s.historyDstFBI.attachments[0], g.time, "CSS", [0, 0]);
+      var historyTex = s.historyDstFBI.attachments[0];
+      var floatHistoryTex = s.canUseFloat ? s.floatHistoryDstFBI.attachments[0] : historyTex;
+      renderScene(historyTex, floatHistoryTex, g.time, "CSS", [0, 0]);
       var ctx = s.screenshotCanvas.getContext("2d");
       var w = ctx.canvas.width  / gl.canvas.width;
       var h = ctx.canvas.height / gl.canvas.height;
@@ -18484,6 +18542,7 @@ define('src/js/main',[
       resolution: [1, 1],
       mouse: [0, 0],
       sound: undefined,
+      floatSound: undefined,
       soundRes: [s.soundTexBuffer.length, s.numHistorySamples],
       _dontUseDirectly_pointSize: 1,
     };
@@ -18491,9 +18550,9 @@ define('src/js/main',[
     var historyUniforms = {
       u_matrix: m4.identity(),
       u_texture: undefined,
-    }
+    };
 
-    function renderScene(soundHistoryTex, time, lineSize, mouse) {
+    function renderScene(soundHistoryTex, floatSoundHistoryTex, time, lineSize, mouse) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -18513,6 +18572,7 @@ define('src/js/main',[
         uniforms.mouse[1] = mouse[1];
         uniforms._dontUseDirectly_pointSize = size;
         uniforms.sound = soundHistoryTex;
+        uniforms.floatSound = floatSoundHistoryTex;
 
         gl.useProgram(programInfo.program);
         twgl.setBuffersAndAttributes(gl, programInfo, s.countBufferInfo);
@@ -18527,27 +18587,43 @@ define('src/js/main',[
       s.historySrcFBI = s.historyDstFBI;
       s.historyDstFBI = temp;
 
-      // draw to test
-      gl.bindFramebuffer(gl.FRAMEBUFFER, s.historyDstFBI.framebuffer);
-      gl.viewport(0, 0, s.soundTexBuffer.length, s.numHistorySamples);
+      if (s.canUseFloat) {
+        temp = s.floatHistorySrcFBI;
+        s.floatHistorySrcFBI = s.floatHistoryDstFBI;
+        s.floatHistoryDstFBI = temp;
+      }
 
       // Copy audio data to Nx1 texture
       s.analyser.getByteFrequencyData(s.soundTexBuffer);
-  //  s.analyser.getByteTimeDomainData(s.soundTexBuffer);
       twgl.setTextureFromArray(gl, s.soundTex, s.soundTexSpec.src, s.soundTexSpec);
+
+      if (s.canUseFloat) {
+        s.analyser.getFloatFrequencyData(s.floatSoundTexBuffer);
+        twgl.setTextureFromArray(gl, s.floatSoundTex, s.floatSoundTexSpec.src, s.floatSoundTexSpec);
+      }
 
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
 
+      gl.viewport(0, 0, s.soundTexBuffer.length, s.numHistorySamples);
+      renderToSoundHistory(s.historyDstFBI.framebuffer, s.historySrcFBI.attachments[0], s.soundTex);
+      if (s.canUseFloat) {
+        renderToSoundHistory(s.floatHistoryDstFBI.framebuffer, s.floatHistorySrcFBI.attachments[0], s.floatSoundTex);
+      }
+    }
+
+    function renderToSoundHistory(destFB, oldHistoryTex, newDataTex) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, destFB)
+
       // copy from historySrc to historyDst one pixel down
-      historyUniforms.u_texture = s.historySrcFBI.attachments[0];
       m4.translation([0, 2 / s.numHistorySamples, 0], historyUniforms.u_matrix);
+      historyUniforms.u_texture = oldHistoryTex;
 
       twgl.setUniforms(s.historyProgramInfo, historyUniforms);
       twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
 
       // copy audio data into top row of historyDst
-      historyUniforms.u_texture = s.soundTex;
+      historyUniforms.u_texture = newDataTex;
       m4.translation(
           [0, -(s.numHistorySamples - 0.5) / s.numHistorySamples, 0],
           historyUniforms.u_matrix)
@@ -18560,11 +18636,11 @@ define('src/js/main',[
       twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
     }
 
-    function renderSoundHistory() {
+    function renderSoundHistory(tex) {
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
       m4.identity(historyUniforms.u_matrix);
-      historyUniforms.u_texture = s.historyDstFBI.attachments[0];
+      historyUniforms.u_texture = tex;
       //historyUniforms.u_texture = s.soundTex;
       twgl.setUniforms(s.historyProgramInfo, historyUniforms);
       twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
@@ -18582,10 +18658,15 @@ define('src/js/main',[
 
       updateSoundHistory();
 
-      renderScene(s.historyDstFBI.attachments[0], g.time, settings.lineSize, g.mouse);
+      var historyTex = s.historyDstFBI.attachments[0];
+      var floatHistoryTex = s.canUseFloat ? s.floatHistoryDstFBI.attachments[0] : historyTex;
+      renderScene(historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
 
       if (q.showHistory) {
-        renderSoundHistory();
+        renderSoundHistory(s.historyDstFBI.attachments[0]);
+      }
+      if (q.showFloatHistory && s.canUseFloat) {
+        renderSoundHistory(s.floatHistoryDstFBI.attachments[0]);
       }
 
       queueRender();
