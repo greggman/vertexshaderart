@@ -131,7 +131,12 @@ are passed in by adding a `?` and then `key=value&key=value`.
 
 Coming soon...
 
+## Changelist
+
+See [CHANGELIST.md](CHANGELIST.md).
+
 ## License
 
-MIT
+[MIT](LICENSE.md)
+
 
