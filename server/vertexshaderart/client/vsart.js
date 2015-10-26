@@ -18557,8 +18557,9 @@ define('src/js/main',[
       var size = lineSize === "NATIVE" ? 1 : (window.devicePixelRatio || 1);
       gl.lineWidth(size);
 
+      gl.enable(gl.DEPTH_TEST);
       gl.clearColor.apply(gl, settings.backgroundColor);
-      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
       var programInfo = s.programManager.getProgramInfo();
       if (programInfo) {
@@ -18600,6 +18601,7 @@ define('src/js/main',[
         twgl.setTextureFromArray(gl, s.floatSoundTex, s.floatSoundTexSpec.src, s.floatSoundTexSpec);
       }
 
+      gl.disable(gl.DEPTH_TEST);
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
 
@@ -18635,6 +18637,7 @@ define('src/js/main',[
     }
 
     function renderSoundHistory(tex) {
+      gl.disable(gl.DEPTH_TEST);
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
       m4.identity(historyUniforms.u_matrix);
