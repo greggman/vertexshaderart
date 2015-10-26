@@ -1,8 +1,8 @@
 ﻿# To Do
 
-*   fix that can't scroll to bottom of gallery
+*   fix safari
 
-*   fix hide->gallery->art. It's hidden but button is wrong state
+*   fix hide->gallery->art. It's hidden but button is wrong state and play button is in wrong state
 
 *   make meta data work "og:...", "twitter: ..."
 
@@ -19,6 +19,8 @@
 *   paginate revisions
 
 # Done
+
+*   fix that can't scroll to bottom of gallery
 
 *   have [username] link when not on own profile?
 
