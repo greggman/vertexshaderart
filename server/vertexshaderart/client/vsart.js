@@ -18199,7 +18199,7 @@ define('src/js/main',[
       "POINTS": gl.POINTS,
       "TRI_STRIP": gl.TRIANGLE_STRIP,
       "TRI_FAN": gl.TRIANGLE_FAN,
-      "TRIANGLES": gl.TRIANGLS,
+      "TRIANGLES": gl.TRIANGLES,
     };
 
     var validLineSizes = {
