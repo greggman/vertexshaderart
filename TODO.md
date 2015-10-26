@@ -1,5 +1,13 @@
 ﻿# To Do
 
+*   fix restore for meteor
+
+    I save your work in localStorage BUT meteor replaces at AFTER it's restored.
+    Should restore after meteor sends data.
+
+
+*   add float sound data
+
 *   add monitoring
 
 *   try to request less info from accounts
