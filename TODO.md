@@ -1,5 +1,9 @@
 ﻿# To Do
 
+*   fix that can't scroll to bottom of gallery
+
+*   fix hide->gallery->art. It's hidden but button is wrong state
+
 *   make meta data work "og:...", "twitter: ..."
 
 *   let user change email
