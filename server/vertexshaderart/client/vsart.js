@@ -17691,6 +17691,7 @@ define('src/js/main',[
   var s = {
     screenshotCanvas: document.createElement("canvas"),
     restoreKey: "restore",
+    show: !isMobile,
   };
   s.screenshotCanvas.width = 300;
   s.screenshotCanvas.height = 168;
@@ -17900,7 +17901,6 @@ define('src/js/main',[
       vsHeader: getShader("vs-header"),
       fSource: getShader("fs"),
       errorLines: [],
-      show: true,
       soundCloudClientId: '3f4914e324f9caeb23c521f0f1835a60',
       origSettings: { shader: "" },
       pauseOnBlur: window.location.hostname === "localhost",
@@ -18347,19 +18347,17 @@ define('src/js/main',[
     var hideElem = $("#hide");
     var hideNode = misc.createTextNode(hideElem, "hide");
     function showCode(show) {
-      g.show = show;
-      hideNode.nodeValue = g.show ? "hide" : "show";
-      editorElem.style.display = g.show ? "block" : "none";
+      s.show = show;
+      hideNode.nodeValue = s.show ? "hide" : "show";
+      editorElem.style.display = s.show ? "block" : "none";
       if (s.cm) {
         s.cm.refresh();
       }
     }
     on(hideElem, 'click', function() {
-      showCode(!g.show);
+      showCode(!s.show);
     });
-    if (isMobile) {
-      showCode(false);
-    }
+    showCode(s.show);
 
     var colorElem = $("#background");
     on(colorElem, 'change', function(e) {

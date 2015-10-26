@@ -47,8 +47,8 @@ Accounts.onCreateUser(function (options, user) {
 setupAccounts(Meteor.settings.accounts);
 
 function setupAccounts(accounts) {
-  var log = console.log.bind(console);
-  // var log = function() {};
+  //var log = console.log.bind(console);
+  var log = function() {};
   log("----[ Setting up Accounts ] -------");
   if (!accounts) {
     log("no accounts!");
