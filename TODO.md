@@ -1,10 +1,5 @@
 ﻿# To Do
 
-*   fix restore for meteor
-
-    I save your work in localStorage BUT meteor replaces at AFTER it's restored.
-    Should restore after meteor sends data.
-
 *   add mouse history
 
 *   make likes active on gallery
@@ -34,6 +29,11 @@
 *   paginate revisions
 
 # Done
+
+*   fix restore for meteor
+
+    I save your work in localStorage BUT meteor replaces at AFTER it's restored.
+    Should restore after meteor sends data.
 
 *   fix hide->gallery->art. It's hidden but button is wrong state and play button is in wrong state
 

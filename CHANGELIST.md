@@ -2,6 +2,8 @@
 
 ### 2015-10-26
 
+*   If the page is closed or refreshed restore your work
+
 *   enable z-buffer
 
 *   fixed hide->gallery->art
