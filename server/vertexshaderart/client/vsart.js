@@ -18172,7 +18172,7 @@ define('src/js/main',[
     on(document, 'visibilitychange', clearRestore);
 
     function takeScreenshot() {
-      var touchHistoryTex = s.touchHstoryDstFBI.attachments[0];
+      var touchHistoryTex = s.touchHistoryDstFBI.attachments[0];
       var historyTex = s.historyDstFBI.attachments[0];
       var floatHistoryTex = s.canUseFloat ? s.floatHistoryDstFBI.attachments[0] : historyTex;
       renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, "CSS", [0, 0]);
