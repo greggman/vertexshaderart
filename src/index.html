@@ -93,13 +93,18 @@ UI
 
 Inputs
 -------------------------------------------------------------
-vertexId  : float     : number of the vertex 0, 1, 2
-resoluton : vec2      : resolution of the art
-mouse     : vec2      : mouse position normalized (-1 to 1)
-time      : float     : time in seconds
-sound     : sampler2D : data from the music Nx240, alpha only
-          :           : 240 rows of history (4secs @60fps)
-soundRes  : vec2      : resolution of sound
+vertexId   : float     : number of the vertex 0, 1, 2
+resoluton  : vec2      : resolution of the art
+mouse      : vec2      : mouse position normalized (-1 to 1)
+time       : float     : time in seconds
+sound      : sampler2D : data from the music Nx240, alpha only
+           :           : 240 rows of history (4secs @60fps)
+floatSound : sampler2D : data from the music Nx240, alpha only
+           :           : 240 rows of history (4secs @60fps)
+           :           : <a href="http://webaudio.github.io/web-audio-api/#widl-AnalyserNode-getFloatFrequencyData-void-Float32Array-array">see spec</a> for difference between
+           :           : getFloatFrequencyData and
+           :           : getByteFrenquencyData.
+soundRes   : vec2      : resolution of sound
 
 Outputs:
 -------------------------------------------------------------
@@ -129,6 +134,7 @@ uniform vec2 mouse;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D sound;
+uniform sampler2D floatSound;
 uniform vec2 soundRes;
 uniform float _dontUseDirectly_pointSize;
 
