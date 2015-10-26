@@ -1,5 +1,7 @@
 ﻿# To Do
 
+*   add monitoring
+
 *   try to request less info from accounts
 
     *   github
