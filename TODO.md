@@ -1,5 +1,13 @@
 ﻿# To Do
 
+*   try to request less info from accounts
+
+    *   github
+    *   google
+    *   twitter
+
+*   test email password recovery
+
 *   fix safari
 
 *   fix hide->gallery->art. It's hidden but button is wrong state and play button is in wrong state
