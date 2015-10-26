@@ -17924,8 +17924,11 @@ define('src/js/main',[
       }
 
       s.canUseFloat = checkCanUseFloat(gl);
-      s.canFilterFloat = gl.getExtension("OES_texture_float_linear");
+      s.canFilterFloat = s.canUseFloat && gl.getExtension("OES_texture_float_linear");
       console.log("can " + (s.canUseFloat ? "" : "not ") + "use floating point textures");
+      if (s.canUseFloat) {
+        console.log("can " + (s.canFilterFloat ? "" : "not ") + "filter floating point textures");
+      }
 
       s.sets = {
         default: {
@@ -18023,6 +18026,34 @@ define('src/js/main',[
         s.floatHistorySrcFBI = twgl.createFramebufferInfo(gl, floatHistoryAttachments, s.floatSoundTexBuffer.length, s.numHistorySamples);
         s.floatHistoryDstFBI = twgl.createFramebufferInfo(gl, floatHistoryAttachments, s.floatSoundTexBuffer.length, s.numHistorySamples);
       }
+
+
+      var touchFilter = s.canUseFloat ? (s.canFilterFloat ? gl.LINEAR : gl.NEAREST) : gl.LINEAR;
+      s.touchColumns = 32;
+      s.touchTexBuffer = new (s.canUseFloat ? Float32Array : Uint8Array)(4 * s.touchColumns);
+
+      s.touchTexSpec = {
+        src: s.touchTexBuffer,
+        height: 1,
+        min: touchFilter,
+        mag: touchFilter,
+        wrap: gl.CLAMP_TO_EDGE,
+        format: gl.RGBA,
+        auto: false,
+      };
+      s.touchTex = twgl.createTexture(gl, s.touchTexSpec);
+
+      var touchHistoryAttachments = [
+        {
+          format: gl.RGBA,
+          type: s.canUseFloat ? gl.FLOAT : gl.UNSIGNED_BYTE,
+          mag: touchFilter,
+          min: touchFilter,
+          wrap: gl.CLAMP_TO_EDGE,
+        },
+      ];
+      s.touchHistorySrcFBI = twgl.createFramebufferInfo(gl, touchHistoryAttachments, s.touchColumns, s.numHistorySamples);
+      s.touchHistoryDstFBI = twgl.createFramebufferInfo(gl, touchHistoryAttachments, s.touchColumns, s.numHistorySamples);
 
       var count = new Float32Array(g.maxCount);
       for (var ii = 0; ii < count.length; ++ii) {
@@ -18141,9 +18172,10 @@ define('src/js/main',[
     on(document, 'visibilitychange', clearRestore);
 
     function takeScreenshot() {
+      var touchHistoryTex = s.touchHstoryDstFBI.attachments[0];
       var historyTex = s.historyDstFBI.attachments[0];
       var floatHistoryTex = s.canUseFloat ? s.floatHistoryDstFBI.attachments[0] : historyTex;
-      renderScene(historyTex, floatHistoryTex, g.time, "CSS", [0, 0]);
+      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, "CSS", [0, 0]);
       var ctx = s.screenshotCanvas.getContext("2d");
       var w = ctx.canvas.width  / gl.canvas.width;
       var h = ctx.canvas.height / gl.canvas.height;
@@ -18407,13 +18439,6 @@ define('src/js/main',[
       helpDialogElem.style.display = "none";
     });
 
-    on(window, 'mousemove', function(e) {
-      g.mouse = [
-        e.clientX / window.innerWidth  *  2 - 1,
-        e.clientY / window.innerHeight * -2 + 1,
-      ];
-    });
-
     function isAllNumbers0to1(array) {
       for (var ii = 0; ii < array.length; ++ii) {
         var v = array[ii];
@@ -18564,11 +18589,12 @@ define('src/js/main',[
     };
 
     var historyUniforms = {
+      u_mix: 0,
       u_matrix: m4.identity(),
       u_texture: undefined,
     };
 
-    function renderScene(soundHistoryTex, floatSoundHistoryTex, time, lineSize, mouse) {
+    function renderScene(touchHistoryTex, soundHistoryTex, floatSoundHistoryTex, time, lineSize, mouse) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -18590,6 +18616,7 @@ define('src/js/main',[
         uniforms._dontUseDirectly_pointSize = size;
         uniforms.sound = soundHistoryTex;
         uniforms.floatSound = floatSoundHistoryTex;
+        uniforms.touch = touchHistoryTex;
 
         gl.useProgram(programInfo.program);
         twgl.setBuffersAndAttributes(gl, programInfo, s.countBufferInfo);
@@ -18598,7 +18625,7 @@ define('src/js/main',[
       }
     }
 
-    function updateSoundHistory() {
+    function updateSoundAndTouchHistory() {
       // Swap src & dst
       var temp = s.historySrcFBI;
       s.historySrcFBI = s.historyDstFBI;
@@ -18610,6 +18637,10 @@ define('src/js/main',[
         s.floatHistoryDstFBI = temp;
       }
 
+      temp = s.touchHistorySrcFBI;
+      s.touchHistorySrcFBI = s.touchHistoryDstFBI;
+      s.touchHistoryDstFBI = temp;
+
       // Copy audio data to Nx1 texture
       s.analyser.getByteFrequencyData(s.soundTexBuffer);
       twgl.setTextureFromArray(gl, s.soundTex, s.soundTexSpec.src, s.soundTexSpec);
@@ -18619,28 +18650,35 @@ define('src/js/main',[
         twgl.setTextureFromArray(gl, s.floatSoundTex, s.floatSoundTexSpec.src, s.floatSoundTexSpec);
       }
 
+      // Copy in latest touch data
+      twgl.setTextureFromArray(gl, s.touchTex, s.touchTexSpec.src, s.touchTexSpec);
+
       gl.disable(gl.DEPTH_TEST);
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
 
       gl.viewport(0, 0, s.soundTexBuffer.length, s.numHistorySamples);
-      renderToSoundHistory(s.historyDstFBI.framebuffer, s.historySrcFBI.attachments[0], s.soundTex);
+      renderToHistory(0, s.historyDstFBI.framebuffer, s.historySrcFBI.attachments[0], s.soundTex);
       if (s.canUseFloat) {
-        renderToSoundHistory(s.floatHistoryDstFBI.framebuffer, s.floatHistorySrcFBI.attachments[0], s.floatSoundTex);
+        renderToHistory(0, s.floatHistoryDstFBI.framebuffer, s.floatHistorySrcFBI.attachments[0], s.floatSoundTex);
       }
+      gl.viewport(0, 0, s.touchColumns, s.numHistorySamples);
+      renderToHistory(1, s.touchHistoryDstFBI.framebuffer, s.touchHistorySrcFBI.attachments[0], s.touchTex);
     }
 
-    function renderToSoundHistory(destFB, oldHistoryTex, newDataTex) {
+    function renderToHistory(mix, destFB, oldHistoryTex, newDataTex) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, destFB)
 
       // copy from historySrc to historyDst one pixel down
       m4.translation([0, 2 / s.numHistorySamples, 0], historyUniforms.u_matrix);
+      historyUniforms.u_mix = 1;
       historyUniforms.u_texture = oldHistoryTex;
 
       twgl.setUniforms(s.historyProgramInfo, historyUniforms);
       twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
 
       // copy audio data into top row of historyDst
+      historyUniforms.u_mix = mix;
       historyUniforms.u_texture = newDataTex;
       m4.translation(
           [0, -(s.numHistorySamples - 0.5) / s.numHistorySamples, 0],
@@ -18649,18 +18687,19 @@ define('src/js/main',[
           historyUniforms.u_matrix,
           [1, 1 / s.numHistorySamples, 1],
           historyUniforms.u_matrix);
+      m4.identity(historyUniforms.u_matrix);
 
       twgl.setUniforms(s.historyProgramInfo, historyUniforms);
       twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
     }
 
-    function renderSoundHistory(tex) {
+    function renderHistory(tex, mix) {
       gl.disable(gl.DEPTH_TEST);
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
       m4.identity(historyUniforms.u_matrix);
+      historyUniforms.u_mix = mix;
       historyUniforms.u_texture = tex;
-      //historyUniforms.u_texture = s.soundTex;
       twgl.setUniforms(s.historyProgramInfo, historyUniforms);
       twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
     }
@@ -18675,17 +18714,21 @@ define('src/js/main',[
 
       twgl.resizeCanvasToDisplaySize(gl.canvas);
 
-      updateSoundHistory();
+      updateSoundAndTouchHistory();
 
+      var touchHistoryTex = s.touchHistoryDstFBI.attachments[0];
       var historyTex = s.historyDstFBI.attachments[0];
       var floatHistoryTex = s.canUseFloat ? s.floatHistoryDstFBI.attachments[0] : historyTex;
-      renderScene(historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
+      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
 
       if (q.showHistory) {
-        renderSoundHistory(s.historyDstFBI.attachments[0]);
+        renderHistory(s.historyDstFBI.attachments[0], 0);
       }
       if (q.showFloatHistory && s.canUseFloat) {
-        renderSoundHistory(s.floatHistoryDstFBI.attachments[0]);
+        renderHistory(s.floatHistoryDstFBI.attachments[0], 0);
+      }
+      if (q.showTouchHistory) {
+        renderHistory(s.touchHistoryDstFBI.attachments[0], 1);
       }
 
       queueRender();
@@ -18718,6 +18761,58 @@ define('src/js/main',[
 
     on(window, 'blur', pauseOnBlur);
     on(window, 'focus', unpauseOnFocus);
+
+    function addTouchPosition(column, x, y) {
+      x = x *  2 - 1;
+      y = y * -2 + 1;
+
+      if (!s.canUseFloat) {
+        x = Math.max(0, x * 255 | 0);
+        y = Math.max(0, y * 255 | 0);
+      }
+      var offset = column * 4;
+      s.touchTexBuffer[offset + 0] = x;
+      s.touchTexBuffer[offset + 1] = y;
+    }
+
+    function addTouchPressure(column, pressure, radius) {
+      if (!s.canUseFloat) {
+        pressure = Math.max(0, pressure * 255 | 0);
+        radius   = Math.max(0, radius   * 255 | 0);
+      }
+      var offset = column * 4;
+      s.touchTexBuffer[offset + 2] = pressure;
+      s.touchTexBuffer[offset + 3] = radius;
+    }
+
+    function recordMouseMove(e) {
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      var x = e.clientX / w;
+      var y = e.clientY / h;
+
+      g.mouse = [x * 2 - 1, y * -2 + 1];
+      addTouchPosition(0, x, y);
+    }
+
+    function recordMouseDown(e) {
+      addTouchPressure(0, 1, 72 * 0.25);
+    }
+
+    function recordMouseUp(e) {
+      addTouchPressure(0, 0, 0);
+    }
+
+    on(window, 'mousemove', recordMouseMove);
+    on(window, 'mousedown', recordMouseDown);
+    on(window, 'mouseup', recordMouseUp);
+
+//    on(window, 'touchstart', recordTouchStart);
+//    on(window, 'touchend', recordTouchEnd);
+//    on(window, 'touchcancel', recordTouchCancel);
+//    on(window, 'touchmove', recordTouchMove);
+
+
 
     this.stop = function() {
       g.running = false;
