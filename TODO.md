@@ -28,6 +28,8 @@
 
 *   paginate revisions
 
+*   add soundcload login
+
 # Done
 
 *   fix restore for meteor
