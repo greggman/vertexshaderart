@@ -1029,7 +1029,6 @@ define([
           historyUniforms.u_matrix,
           [1, 1 / s.numHistorySamples, 1],
           historyUniforms.u_matrix);
-      m4.identity(historyUniforms.u_matrix);
 
       twgl.setUniforms(s.historyProgramInfo, historyUniforms);
       twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
