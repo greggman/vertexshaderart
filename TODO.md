@@ -1,5 +1,7 @@
 ﻿# To Do
 
+*   put "by: user - name" on art page
+
 *   add mouse history
 
 *   add [R] revisions button next to heart
