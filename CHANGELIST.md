@@ -1,5 +1,15 @@
 # Changelist
 
+### 2015-10-27
+
+*   Make revisions pageinate
+
+*   Added username and name buttons on visualization page
+
+    name links to revisions
+
+*   Added soundcloud login
+
 ### 2015-10-26
 
 *   If the page is closed or refreshed restore your work

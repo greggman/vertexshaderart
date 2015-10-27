@@ -1,10 +1,13 @@
 ﻿# To Do
 
-*   put "by: user - name" on art page
+*   try gridfs
 
 *   add mouse history
 
-*   add [R] revisions button next to heart
+*   add time history?
+
+    I don't think many mouse effects and be done without
+    this unless I'm missing something.
 
 *   make likes active on gallery
 
@@ -28,13 +31,17 @@
 
 *   add fullscreen button?
 
-*   display individual revision
-
 *   paginate revisions
 
-*   add soundcload login
-
 # Done
+
+*   add soundcloud login
+
+*   display individual revision
+
+*   add [R] revisions button next to heart
+
+*   put "by: user - name" on art page
 
 *   fix restore for meteor
 
