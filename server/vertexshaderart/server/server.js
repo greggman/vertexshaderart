@@ -1,5 +1,9 @@
 IMAGE_PATH = process.env.IMAGE_PATH;
 
+// Its important to set `internal: true` this lets the SA know that we
+// are using this internally and it will give us direct SA api
+FS.TempStore.Storage = new FS.Store.GridFS('_tempstore', { internal: true });
+
 if (!IMAGE_PATH) {
   throw "IMAGE_PATH not set";
 }
