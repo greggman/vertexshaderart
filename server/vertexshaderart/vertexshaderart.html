@@ -39,15 +39,19 @@
       <div class='button mostviewed {{selected "mostviewed"}}'>
           views
       </div>
-      {{#each pages}}
-        {{> page}}
-      {{/each}}
+      {{> pagination}}
     </div>
 
 </template>
 
+<template name="pagination">
+      {{#each pages}}
+        {{> page}}
+      {{/each}}
+</template>
+
 <template name="page">
-     <a class='button {{samepageclass}}' href="/{{path}}/{{pageid}}">{{pagenum}}</a>
+     <a class='button {{samepageclass}}' href="{{path}}/{{pageid}}">{{pagenum}}</a>
 </template>
 
 <template name="logo">
@@ -122,6 +126,9 @@
   <div class="infoContainer">
     <h2>Revisions:</h2>
     <div class="gallery">
+        <div class="sorting">
+            {{> pagination}}
+        </div>
         {{#each revisions}}
           {{> revision}}
         {{/each}}

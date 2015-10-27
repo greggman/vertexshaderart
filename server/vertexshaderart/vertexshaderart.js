@@ -2,15 +2,6 @@ Art = new Mongo.Collection("art");
 ArtRevision = new Mongo.Collection("artrevision"); // note: username show username at time of revision
 ArtLikes = new Mongo.Collection("artlikes");
 
-//Artpages = new Meteor.Pagination(Art, {
-//  itemTemplate: "artpiece",
-//  templateName: "gallery",
-//  route: "/gallery/",
-//  router: "iron-router",
-//  routerTemplate: "gallery",
-//  routerLayout: "Layout",
-//});
-
 S_CURRENTLY_LOGGING_IN = "currentlyLoggingIn";
 S_PENDING_LIKE = "pendingLike";
 S_VIEW_STYLE = "viewstyle";
@@ -80,8 +71,17 @@ if (Meteor.isServer) {
     return Art.find({_id: id});
   });
 
-  Meteor.publish("artCount", function() {
-    Counts.publish(this, 'artCount', Art.find({}));
+  Meteor.publish("artCount", function(username) {
+    var find = {};
+    if (username) {
+      find.username = username;
+    }
+    Counts.publish(this, 'artCount', Art.find(find));
+  });
+
+  Meteor.publish("artRevisionCount", function(artId) {
+    var find = {artId: artId};
+    Counts.publish(this, 'artRevisionCount', ArtRevision.find(find));
   });
 
   Meteor.publish("artLikes", function (artId, userId) {
@@ -97,6 +97,7 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("artrevisions", function(artId, skip, limit) {
+console.log("ar: skip:", skip, "lim:", limit);
     return ArtRevision.find({artId: artId}, {
       fields: {settings: false},
       skip: skip,
@@ -187,7 +188,6 @@ AccountsTemplates.addFields([
 ]);
 
 if (Meteor.isClient) {
-  Meteor.subscribe("artCount");
   Session.set(S_VIEW_STYLE, "popular");
   Pages = new Mongo.Collection(null);
 
@@ -200,49 +200,48 @@ if (Meteor.isClient) {
     },
   });
 
-  Template.artgrid.helpers({
-    art: function () {
+  Template.artgrid.onCreated(function() {
+    var instance = this;
+    instance.loaded  = new ReactiveVar(0);
+
+    instance.autorun(function() {
       var route = Router.current();
-      var pageId = parseInt(route.params._page) || 1;
+      var pageId = route.data().page;
       var page = pageId - 1;
+      var username = route.data().username;
       var skip = page * G_PAGE_SIZE;
-      var find = {};
-      var sort;
-      var cd = Template.currentData();
-      if (cd && cd.user) {
-        var pd = Template.parentData();
-        if (pd && pd.username) {
-          find = {username: pd.username};
-        }
-      }
+
+      var sorting;
       switch (Session.get(S_VIEW_STYLE)) {
         case "mostviewed":
-          sort = { views: -1 };
+          sorting = "views";
           break;
         case "newest":
-          sort = {createdAt: -1};
+          sorting = "createdAt";
           break;
         case "popular":
         default:
-          sort = { likes: -1 };
+          sorting = "likes";
           break;
       }
 
-      var options = {
-        fields: {settings: false},
-        sort: sort,
-//        skip: skip,
-        limit: G_PAGE_SIZE,
-      };
+      var artSubscription = instance.subscribe('artForGrid', username, sorting, skip, G_PAGE_SIZE);
+      var countSubscription = instance.subscribe('artCount', username);
+      if (artSubscription.ready() && countSubscription.ready()) {
+        instance.loaded.set(1);
+      } else {
+//        console.log("> sub not ready");
+      }
+    });
 
-      return Art.find(find, options);
-      //if (Session.get("hideCompleted")) {
-      //  // If hide completed is checked, filter tasks
-      //  return Art.find({checked: {$ne: true}}, {sort: {createdAt: -1}});
-      //} else {
-      //  // Otherwise, return all of the tasks
-      //  return Art.find({}, {sort: {createdAt: -1}});
-      //}
+    instance.art = function() {
+      return Art.find({});
+    };
+  });
+
+  Template.artgrid.helpers({
+    art: function() {
+      return Template.instance().art();
     },
   });
 
@@ -250,10 +249,12 @@ if (Meteor.isClient) {
     revisions: function() {
       var route = Router.current();
       var artId = route.params._id;
-      var skip = 0;
+      var pageId = parseInt(route.params._page) || 1;
+      var page = pageId - 1;
+      var skip = page * G_PAGE_SIZE;
       var limit = 10;
       return ArtRevision.find({artId: artId}, {
-        skip: skip,
+       // skip: skip,
         limit: limit,
         sort: { createdAt: -1 },
       });
@@ -412,6 +413,49 @@ if (Meteor.isClient) {
     },
   });
 
+  Template.pagination.helpers({
+    pages: function() {
+      var instance = Template.instance();
+      var route = Router.current();
+      var countVar = route.data().count;
+      var count = Counts.get(countVar);
+      var pageId = route.data().page;
+      var page = pageId - 1;
+      var numPages = (count + G_PAGE_SIZE - 1) / G_PAGE_SIZE | 0;
+      var lastPage = numPages - 1;
+      var path = route.data().path;
+
+      Pages.remove({});
+      if (numPages > 1) {
+        var needPrevNext = numPages > G_NUM_PAGE_BUTTONS
+        if (needPrevNext) {
+          var prev = Math.max(page, 1);
+          Pages.insert({path: path, pagenum: "<<", pageid: prev, samepageclass: pageId === prev ? "selected" : ""});
+        }
+
+        var min = page - G_PAGE_RANGE;
+        var max = page + G_PAGE_RANGE;
+        if (min < 0) {
+          max = max - min;
+          min = 0;
+        }
+        if (max > lastPage) {
+          min = Math.max(0, min - (max - lastPage));
+          max = lastPage;
+        }
+        for (var ii = min; ii <= max; ++ii) {
+          Pages.insert({path: path, pagenum: ii + 1, pageid: ii + 1, samepageclass: ii === page ? "selected" : ""});
+        }
+
+        if (needPrevNext) {
+          var next = Math.min(lastPage, page + 1);
+          Pages.insert({path: path, pagenum: ">>", pageid: next + 1, samepageclass: page === next ? "selected" : ""});
+        }
+      }
+      return Pages.find({});
+    },
+  });
+
   Template.sorting.events({
     "click .sorting .popular": function() {
       Session.set(S_VIEW_STYLE, "popular");
@@ -427,53 +471,6 @@ if (Meteor.isClient) {
   Template.sorting.helpers({
     selected: function(sortType) {
       return Session.get(S_VIEW_STYLE) === sortType ? "selected" : "";
-    },
-    pages: function() {
-       var count = Counts.get("artCount");
-       var cd = Template.currentData();
-       var pd = Template.parentData();
-       var pageId = pd.page;
-       var path = cd ? cd.path : "foo";
-       if (cd && cd.user) {
-         if (pd && pd.username) {
-           var username = pd.username;
-           // HACK!!!
-           path = "user/" + username;
-           count = Art.find({username: username}).count();
-           pageId = parseInt(pd.page || 1);
-         }
-       }
-       var page = pageId - 1;
-       var numPages = (count + G_PAGE_SIZE - 1) / G_PAGE_SIZE | 0;
-       var lastPage = numPages - 1;
-       Pages.remove({});
-       if (numPages > 1) {
-         var needPrevNext = numPages > G_NUM_PAGE_BUTTONS
-         if (needPrevNext) {
-           var prev = Math.max(page, 1);
-           Pages.insert({path: path, pagenum: "<<", pageid: prev, samepageclass: pageId === prev ? "selected" : ""});
-         }
-
-         var min = page - G_PAGE_RANGE;
-         var max = page + G_PAGE_RANGE;
-         if (min < 0) {
-           max = max - min;
-           min = 0;
-         }
-         if (max > lastPage) {
-           min = Math.max(0, min - (max - lastPage));
-           max = lastPage;
-         }
-         for (var ii = min; ii <= max; ++ii) {
-           Pages.insert({path: path, pagenum: ii + 1, pageid: ii + 1, samepageclass: ii === page ? "selected" : ""});
-         }
-
-         if (needPrevNext) {
-           var next = Math.min(lastPage, page + 1);
-           Pages.insert({path: path, pagenum: ">>", pageid: next + 1, samepageclass: page === next ? "selected" : ""});
-         }
-       }
-       return Pages.find({});
     },
   });
 
@@ -614,17 +611,6 @@ AccountsTemplates.configure({
   onSubmitHook: mySubmitFunc,
 });
 
-function subscribeForGrid(pageId, username) {
-  var page = pageId - 1;
-  var skip = page * G_PAGE_SIZE;
-  var limit = G_PAGE_SIZE;
-  return [
-    Meteor.subscribe("artForGrid", username, "views", skip, limit),
-    Meteor.subscribe("artForGrid", username, "createdAt", skip, limit),
-    Meteor.subscribe("artForGrid", username, "popular", skip, limit),
-  ];
-}
-
 Router.configure({
   trackPageView: true,
 });
@@ -632,27 +618,25 @@ Router.configure({
 Router.map(function() {
   this.route('/', {
     template: 'gallery',
-    data: {
-      page: 1,
+    data: function() {
+      var page = 1;
+      return {
+        page: page,
+        path: '/gallery',
+        count: 'artCount',
+      };
     },
-    subscriptions: function() {
-      return subscribeForGrid(1);
-    },
-    cache: 5,
-    expire: 3,
   });
   this.route('/gallery/:_page', {
     template: 'gallery',
     data: function() {
+      var page = parseInt(this.params._page);
       return {
-        page: parseInt(this.params._page),
+        page: page,
+        path: '/gallery',
+        count: 'artCount',
       };
     },
-    subscriptions: function() {
-      return subscribeForGrid(parseInt(this.params._page));
-    },
-    cache: 5,
-    expire: 3,
   });
   this.route('/new/', function() {
     this.render('artpage');
@@ -660,13 +644,17 @@ Router.map(function() {
   this.route('/user/:_username', {
     template: 'userprofile',
     data: function() {
+      var page = 1;
+      var username = this.params._username;
       return {
-        page: 1,
-        username: this.params._username,
+        page: page,
+        username: username,
+        path: '/user/' + username,
+        count: 'artCount',
       };
     },
     subscriptions: function() {
-      var subs = subscribeForGrid(1, this.params._username);
+      var subs = [];
       subs.push(Meteor.subscribe('usernames', this.params._username));
       return subs;
     },
@@ -676,13 +664,17 @@ Router.map(function() {
   this.route('/user/:_username/:_page', {
     template: 'userprofile',
     data: function() {
+      var page = parseInt(this.params._page);
+      var username = this.params._username;
       return {
-        page: parseInt(this.params._page),
-        username: this.params._username,
+        page: page,
+        username: username,
+        path: '/user/' + username,
+        count: 'artCount',
       };
     },
     subscriptions: function() {
-      var subs = subscribeForGrid(parseInt(this.params._page), this.params._username);
+      var subs = [];
       subs.push(Meteor.subscribe('usernames', this.params._username));
       return subs;
     },
@@ -799,10 +791,47 @@ Router.map(function() {
   });
   this.route('/art/:_id/revisions/', {
     template: 'artrevisions',
+    data: function() {
+      var artId = this.params._id;
+      return {
+        artId: artId,
+        page: 1,
+        path: '/art/' + artId + '/revisions',
+        count: 'artRevisionCount',
+      };
+    },
     subscriptions: function() {
+      var artId = this.params._id;
       var subs = [
-        Meteor.subscribe('art', this.params._id),
-        Meteor.subscribe('artrevisions', this.params._id, 0, G_PAGE_SIZE),
+        Meteor.subscribe('art', artId),
+        Meteor.subscribe('artrevisions', artId, 0, G_PAGE_SIZE),
+        Meteor.subscribe('artRevisionCount', artId),
+      ];
+      return subs;
+    },
+    cache: 5,
+    expire: 5,
+  });
+  this.route('/art/:_id/revisions/:_page', {
+    template: 'artrevisions',
+    data: function() {
+      var artId = this.params._id;
+      var page = this.params._page;
+      return {
+        artId: artId,
+        page: page,
+        path: '/art/' + artId + '/revisions',
+        count: 'artRevisionCount',
+      };
+    },
+    subscriptions: function() {
+      var page = parseInt(this.params._page) - 1;
+      var skip = page * G_PAGE_SIZE;
+      var artId = this.params._id;
+      var subs = [
+        Meteor.subscribe('art', artId),
+        Meteor.subscribe('artrevisions', artId, skip, G_PAGE_SIZE),
+        Meteor.subscribe('artRevisionCount', artId),
       ];
       return subs;
     },
