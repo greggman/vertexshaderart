@@ -2,6 +2,8 @@
 
 *   add mouse history
 
+*   add [R] revisions button next to heart
+
 *   make likes active on gallery
 
 *   add monitoring
