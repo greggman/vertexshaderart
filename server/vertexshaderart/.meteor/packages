@@ -33,3 +33,4 @@ reywood:iron-router-ga
 service-configuration
 mrt:accounts-soundcloud
 reactive-var
+cfs:gridfs
