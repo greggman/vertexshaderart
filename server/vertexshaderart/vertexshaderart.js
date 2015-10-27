@@ -97,7 +97,6 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("artrevisions", function(artId, skip, limit) {
-console.log("ar: skip:", skip, "lim:", limit);
     return ArtRevision.find({artId: artId}, {
       fields: {settings: false},
       skip: skip,
