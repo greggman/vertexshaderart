@@ -173,7 +173,15 @@
 <template name="userinfo">
     <div id="userInfo">
         {{> userinfosignin}}
-        {{> userinfolike}}
+          {{#if ../_id}}
+            <a href="/art/{{../_id}}/revisions/" class="name shrink">
+                &ldquo;{{name}}&rdquo;
+            </a>
+            <a href="/user/{{username}}" class="username shrink">
+               by: {{username}}
+            </a>
+            {{> userinfolike}}
+          {{/if}}
     </div>
 </template>
 

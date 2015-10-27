@@ -98,7 +98,7 @@ button:focus {
     outline: 0
 }
 
-#toolbar>div, select, input, #toolbar>button, #toolbar>a, #soundInfo>a, #userInfo>div {
+#toolbar>div, select, input, #toolbar>button, #toolbar>a, #soundInfo>a, #userInfo>div, #userInfo>a {
   background-color: rgba(0,0,0,0.7);
   border: 1px solid #444;
   margin: 0.25em;
@@ -135,6 +135,10 @@ button:focus {
   -webkit-justify-content: flex-start;
   align-items: center;
   -webkit-align-items: center;
+  overflow: hidden;
+}
+#userInfo>a {
+  text-decoration: none;
 }
 #soundInfo {
   overflow: hidden;
@@ -165,7 +169,6 @@ button:focus {
   display: inline-block;
   text-decoration: none;
   white-space: nowrap;
-
 }
 #soundcloud {
   padding: 0.25em !important;
