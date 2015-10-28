@@ -17877,6 +17877,9 @@ define('src/js/main',[
     var _playIcon = "▶";
     var editorElem = $("#editor");
     var savingElem = $("#saving");
+    var stopElem = $("#stop");
+    var stopIconElem = $("#stop .stop-icon")
+    var goIconElem = $("#stop .go-icon");
     var soundElem = $("#sound");
     var soundLinkElem = $("#soundLink")
     var soundLinkNode = misc.createTextNode(soundLinkElem);
@@ -17905,6 +17908,7 @@ define('src/js/main',[
       origSettings: { shader: "" },
       pauseOnBlur: window.location.hostname === "localhost",
       saveable: false,
+      paused: false,
     };
     g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
 
@@ -17999,7 +18003,6 @@ define('src/js/main',[
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
       s.historySrcFBI = twgl.createFramebufferInfo(gl, historyAttachments, s.soundTexBuffer.length, s.numHistorySamples);
       s.historyDstFBI = twgl.createFramebufferInfo(gl, historyAttachments, s.soundTexBuffer.length, s.numHistorySamples);
-
 
       if (s.canUseFloat) {
         var floatFilter = s.canFilterFloat ? gl.LINEAR : gl.NEAREST;
@@ -18171,6 +18174,9 @@ define('src/js/main',[
 
     on(window, 'beforeunload', saveRestoreSettings);
     on(document, 'visibilitychange', clearRestore);
+    on(window, 'resize', function() {
+      queueRender(true);
+    });
 
     function takeScreenshot() {
       var touchHistoryTex = s.touchHistoryDstFBI.attachments[0];
@@ -18300,6 +18306,19 @@ define('src/js/main',[
     }
 
     var saveElem = $("#save");
+
+    function updateStop() {
+      goIconElem.style.display   = !g.pause ? "none" : "inline-block";
+      stopIconElem.style.display =  g.pause ? "none" : "inline-block";
+    }
+
+    on(stopElem, 'click', function() {
+      g.pause = !g.pause;
+      updateStop();
+      if (!g.pause) {
+        queueRender();
+      }
+    });
 
     function setSoundSuccessState(success, msg) {
       soundElem.style.borderColor = success ? "" : "red";
@@ -18567,6 +18586,8 @@ define('src/js/main',[
 
       setSoundUrl(settings.sound);
       s.cm.doc.setValue(settings.shader);
+      updateStop();
+      setPlayState();
 
       // not needed because s.cm.doc.setValue will trigger change event
       //tryNewProgram(settings.shader);
@@ -18740,8 +18761,8 @@ define('src/js/main',[
       queueRender();
     }
 
-    function queueRender() {
-      if (!g.requestId) {
+    function queueRender(force) {
+      if (!g.requestId && (force || !g.pause)) {
         g.requestId = requestAnimationFrame(render);
       }
     }

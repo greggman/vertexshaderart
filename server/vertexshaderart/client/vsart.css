@@ -660,6 +660,11 @@ button:focus {
   max-width: 90%;
   overflow: scroll;
 }
+#helpDialog .onechar {
+  width: 1ch;
+  margin: 0;
+  vertical-align: middle;
+}
 input[type="range"] {
 }
 input[type="text"] {

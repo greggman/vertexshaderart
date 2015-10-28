@@ -6,6 +6,7 @@
         <div id="toolbar">
           <button id="hide"></button>
           <button id="time" class="tooltip-bottom" data-tooltip="reset time">T</button>
+          <button id="stop" class="icon tooltip-bottom" data-tooltip="stop render"><img class="stop-icon" src="/static/resources/images/stop.svg" /><img class="go-icon" src="/static/resources/images/go.svg" style="display:none;"/></button>
           <button id="new" class="tooltip-bottom" data-tooltip="new">+</button>
           <button id="save">save</button>
           <select id="mode">
@@ -55,7 +56,8 @@ UI
 -------------------------------------------------------------
 [T]        : Resets the time to 0
 [+]        : Makes a new art piece from the current one
-[Save]     : Saves the current art
+[<img class="onechar" src="/static/resources/images/stop.svg" />]        : Stop Rendering
+[save]     : Saves the current art
 [mode]     : POINTS, LINES, LINE_STRIP, LINE_LOOP, etc...
 [NATIVE]   : Lines are native size (1 pixel) or CSS size
            : On HD-DPI display CSS will generate thicker lines
@@ -91,7 +93,10 @@ Outputs:
 gl_Position : vec4    : standard GLSL vertex shader output
 v_color     : vec4    : color to output from fragment shader
 
-<a href="http://github.com/greggman/vertexshaderart/issues">Bug?</a> <a href="http://github.com/greggman/vertexshaderart/issues">Suggestion?</a> <a href="http://github.com/greggman/vertexshaderart">Code?</a></pre>
+BLEND is enabled, function is ONE,ONE_MINUS_SRC_ALPHA,
+DEPTH_TEST is enabled.
+
+<a href="http://github.com/greggman/vertexshaderart/issues">Bug?</a> <a href="http://github.com/greggman/vertexshaderart/issues">Suggestion?</a> <a href="http://github.com/greggman/vertexshaderart">Code?</a> <a href="http://twitter.com/greggman">Contact?</a></pre>
     </div>
   <div id="nogl" class="fulldialog" style="display: none;">
     <pre>
