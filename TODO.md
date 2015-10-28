@@ -2,6 +2,8 @@
 
 *   add background color
 
+*   cmd-s / ctrl-s to save
+
 *   switch to jpg
 
 *   turn on blending
