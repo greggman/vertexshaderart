@@ -23,8 +23,6 @@ random
 ejson
 spacebars
 check
-cfs:standard-packages
-cfs:filesystem
 accounts-ui-unstyled
 accounts-ui
 useraccounts:unstyled
@@ -33,4 +31,3 @@ reywood:iron-router-ga
 service-configuration
 mrt:accounts-soundcloud
 reactive-var
-cfs:gridfs

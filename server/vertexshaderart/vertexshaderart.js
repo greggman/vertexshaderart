@@ -27,32 +27,7 @@ function padZeros(v, len) {
   return S_ZEROS.substr(0, len - s.length) + s;
 }
 
-//FS.debug = true;
-Images = new FS.Collection("images", {
-  stores: [
-    new FS.Store.FileSystem("images", {
-      path: IMAGE_PATH,
-      beforeWrite: function(fileObj) {
-        fileObj.name("thumbnail.png");
-        return {
-          extension: 'png',
-          type: 'image/png',
-        };
-      },
-    }),
-  ],
-});
-
 if (Meteor.isServer) {
-  Images.allow({
-    'insert': function() {
-        // add custom authentication code here
-        return true;
-    },
-    'download': function() {
-         return true;
-    },
-  });
 
   Meteor.publish("artForGrid", function (username, sortField, skip, limit) {
     var find = (username && username !== "undefined") ? {username: username} : {};
@@ -511,7 +486,7 @@ if (Meteor.isClient) {
       Session.set("saving", true);
       window.vsSaveData = {
         settings: window.vsart.getSettings(),
-        screenshot: window.vsart.takeScreenshot(),
+        screenshot: window.vsart.takeScreenshot("image/jpeg", 0.8),
       };
     },
     "click #new": function() {
@@ -837,60 +812,159 @@ Router.map(function() {
     cache: 5,
     expire: 5,
   });
+  this.route('imageFiles', {
+    where: 'server',
+    path: /^\/cfs\/files\/(.*)$/,
+    action: Meteor.wrapAsync(function() {
+      if (Meteor.isServer) {
+        var fs = Npm.require('fs');
+        var path = Npm.require('path');
+      }
+      return function() {
+        var req = this.request;
+        var res = this.response;
+
+        try {
+          var name = this.params[0].replace(/\//g, '-');
+          var filePath = IMAGE_PATH + '/' + name;
+          if (filePath.indexOf("thumbnail.") < 0) {
+            filePath = filePath + "-thumbnail.png";
+          }
+          var oldName = LegacyImageMap[name];
+          if (oldName) {
+            filePath = IMAGE_PATH + '/' + oldName;
+          }
+          var ext = path.extname(filePath)
+          if (fs.existsSync(filePath)) {
+            var data = fs.readFileSync(filePath);
+            var type = "image/png";
+            if (path.extname(filePath) === ".jpg") {
+              type = "image/jpg";
+            }
+            res.writeHead(200, {
+              'Content-Type': type,
+              'Cache-Control': 'public',
+            });
+            res.write(data, null);
+            res.end();
+            return;
+          } else {
+            console.error("request for non-existent file:", req.url);
+            res.statusCode = 404;
+            res.end("no such image:" + req.url);
+            return;
+          }
+        } catch (e) {
+          console.error(e);
+          if (e.stack) {
+            console.error(e.stack);
+          }
+        }
+        console.error("error in request for:", req.url);
+        res.statusCode = 400;
+        res.end("error in request for:" + req.url);
+      };
+    }()),
+  });
 });
 
-function addArt(name, origId, data, callback) {
+var G_VALID_LETTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
+function randomName(len) {
+  var l = [];
+  for (var ii = 0; ii < len; ++ii) {
+    var ndx = (Math.random() * G_VALID_LETTERS.length + Date.now()) % G_VALID_LETTERS.length;
+    l.push(G_VALID_LETTERS.substr(ndx, 1));
+  }
+  return l.join("");
+}
+
+var saveDataURLToFile = function() {
+  if (Meteor.isServer) {
+    var fs = Npm.require('fs');
+    var path = Npm.require('path');
+  }
+  var dataURLHeaderRE = /^data:(.*?),/;
+
+  return function saveDataURLToFile(dataURL) {
+    var match = dataURLHeaderRE.exec(dataURL);
+    if (!match) {
+      throw new Meteor.Error("bad dataURL: Does not start with 'data:...,'");
+    }
+    var spec = match[1].split(";");
+    if (spec.length === 1) {
+      spec.unshift("");
+    }
+
+    var header   = match[0];
+    var mimeType = spec[0];
+    var encoding = spec[1];
+    var ext = "." + mimeType.split("/").pop();
+    if (ext === ".jpeg") {
+      ext = ".jpg";
+    }
+
+    if (Meteor.isClient) {
+      return "/static/resources/images/saving-thumbnail.jpg";
+    }
+
+    var found = false;
+    while (!found) {
+      var filename = "images-" + randomName(17) + '-thumbnail' + ext;
+      var fullpath = path.join(IMAGE_PATH, filename);
+      found = !fs.existsSync(fullpath);
+    }
+
+    fs.writeFileSync(fullpath, dataURL.substr(header.length), encoding);
+    return url = "/cfs/files/" + filename.replace("-", "/"); // replaces only first '-'
+  };
+}();
+
+function addArt(name, origId, data) {
   // Make sure the user is logged in before inserting art
-//    if (! Meteor.userId()) {
-//      throw new Meteor.Error("not-authorized");
-//    }
+  //    if (! Meteor.userId()) {
+  //      throw new Meteor.Error("not-authorized");
+  //    }
   name = name || "unnamed";
   var owner = Meteor.userId();
   var username = Meteor.userId() ? Meteor.user().username : "-anon-";
   var settings = data.settings || {};
   var screenshotDataURL = data.screenshot.dataURL || "";
-  Images.insert(screenshotDataURL, function(err, fileObj) {
-    if (err) {
-      callback(err);
-      return;
-    }
-    var artId = Art.insert({
-      owner: owner,
-      createdAt: new Date(),
-      origId: origId,
-      name: name,
-      username: username,
-      settings: JSON.stringify(settings),
-      screenshotDataId: fileObj._id,
-      views: 0,
-      likes: 0,
-    });
-    var revisionId = ArtRevision.insert({
-      createdAt: new Date(),
-      owner: owner,
-      origId: origId,
-      artId: artId,
-      name: name,
-      username: username,
-      settings: JSON.stringify(settings),
-      screenshotDataId: fileObj._id,
-    }, function(err, result) {
-       if (err) {
-         callback(err);
-         return;
-       }
-       Art.update({_id: artId},
-         {$set: {
-           revisionId: revisionId,
-         },
-       }, function(err) {
-         callback(err, artId);
-       });
-    });
-  });
-}
+  var screenshotURL = "";
 
-function updateArt(name, origId, data, callback) {
+  if (screenshotDataURL) {
+    screenshotURL = saveDataURLToFile(screenshotDataURL);
+  }
+
+  var artId = Art.insert({
+    owner: owner,
+    createdAt: new Date(),
+    origId: origId,
+    name: name,
+    username: username,
+    settings: JSON.stringify(settings),
+    screenshotURL: screenshotURL,
+    views: 0,
+    likes: 0,
+  });
+  var revisionId = ArtRevision.insert({
+    createdAt: new Date(),
+    owner: owner,
+    origId: origId,
+    artId: artId,
+    name: name,
+    username: username,
+    settings: JSON.stringify(settings),
+    screenshotURL: screenshotURL,
+  });
+  Art.update({_id: artId},
+    {$set: {
+      revisionId: revisionId,
+    },
+  });
+  return artId;
+};
+
+function updateArt(name, origId, data) {
   var owner = Meteor.userId();
   if (!owner) {
     throw new Meteor.Error("not-loggedin", "use must be logged in to update");
@@ -907,46 +981,38 @@ function updateArt(name, origId, data, callback) {
   var username = Meteor.user().username;
   var settings = data.settings || {};
   var screenshotDataURL = data.screenshot.dataURL || "";
+  var screenshotURL = "";
 
-  Images.insert(screenshotDataURL, function(err, fileObj) {
-    if (err) {
-      callback(err);
-      return;
-    }
-    name = name || "unnamed";
-    var revisionId = ArtRevision.insert({
-      createdAt: new Date(),
-      owner: owner,
-      origId: origId,
-      artId: art._id,
-      prevRevisionId: art.revisionId,
+  if (screenshotDataURL) {
+    screenshotURL = saveDataURLToFile(screenshotDataURL);
+  }
+
+  name = name || "unnamed";
+  var revisionId = ArtRevision.insert({
+    createdAt: new Date(),
+    owner: owner,
+    origId: origId,
+    artId: art._id,
+    prevRevisionId: art.revisionId,
+    name: name,
+    username: username,
+    settings: JSON.stringify(settings),
+    screenshotURL: screenshotURL,
+  });
+  Art.update({_id: origId},
+    {$set: {
+      revisionId: revisionId,
       name: name,
-      username: username,
       settings: JSON.stringify(settings),
-      screenshotDataId: fileObj._id,
-    }, function(err, result) {
-       if (err) {
-         callback(err);
-         return;
-       }
-       Art.update({_id: origId},
-         {$set: {
-           revisionId: revisionId,
-           name: name,
-           settings: JSON.stringify(settings),
-           screenshotDataId: fileObj._id,
-         },
-       }, function() {
-         callback(null);
-       });
-    });
+      screenshotURL: screenshotURL,
+    },
   });
 }
 
 
 Meteor.methods({
-  addArt: Meteor.wrapAsync(addArt),
-  updateArt: Meteor.wrapAsync(updateArt),
+  addArt: addArt,
+  updateArt: updateArt,
   likeArt: function(artId) {
      var userId = Meteor.userId();
      if (!userId) {
