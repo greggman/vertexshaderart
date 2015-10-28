@@ -493,17 +493,29 @@ if (Meteor.isClient) {
     window.vsart.stop();
   });
 
-  Template.artpage.events({
-    "click #save": function() {
+  function save() {
+    if (window.vsart.isSaveable()) {
       Session.set("saving", true);
       window.vsSaveData = {
         settings: window.vsart.getSettings(),
         screenshot: window.vsart.takeScreenshot("image/jpeg", 0.8),
       };
+    }
+  }
+
+  Template.artpage.events({
+    "click #save": function() {
+      save();
     },
     "click #new": function() {
       window.location.href = "/new/";
     },
+    "keydown": function(e) {
+      if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+        e.preventDefault();
+        save();
+      }
+    }
   });
 
   Template.save.helpers({
