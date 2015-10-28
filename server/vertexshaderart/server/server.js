@@ -4,43 +4,43 @@ if (!IMAGE_PATH) {
   throw "IMAGE_PATH not set";
 }
 
-LegacyImageMap = {};
-(function () {
-  var fs = Npm.require('fs');
-  var pathRE = /(images-.*?)-/;
-  fs.readdirSync(IMAGE_PATH).forEach(function(name) {
-      var m = pathRE.exec(name);
-      if (m) {
-        LegacyImageMap[m[1]] = name;
-      }
-  });
-}());
-
-console.log("---fixing screenshots--");
-function fixScreenshots(collection) {
-  collection.find({}).fetch().forEach(function(art) {
-    if (!art.screenshotURL && art.screenshotDataId) {
-      console.log("  id:", art.screenshotDataId);
-      var oldName = LegacyImageMap["images-" + art.screenshotDataId];
-      if (!oldName) {
-        console.log("  no mapping for id", art.screenshotDataId);
-        return;
-      }
-      var url = "/cfs/files/" + oldName.replace("-", "/");
-      console.log("  url:", url);
-      collection.update({_id: art._id}, {
-        $set: {
-          screenshotURL: url,
-        },
-        //$unset: {
-        //  screenshotDataId: "",
-        //},
-      });
-    }
-  });
-}
-fixScreenshots(Art);
-fixScreenshots(ArtRevision);
+//LegacyImageMap = {};
+//(function () {
+//  var fs = Npm.require('fs');
+//  var pathRE = /(images-.*?)-/;
+//  fs.readdirSync(IMAGE_PATH).forEach(function(name) {
+//      var m = pathRE.exec(name);
+//      if (m) {
+//        LegacyImageMap[m[1]] = name;
+//      }
+//  });
+//}());
+//
+//console.log("---fixing screenshots--");
+//function fixScreenshots(collection) {
+//  collection.find({}).fetch().forEach(function(art) {
+//    if (!art.screenshotURL && art.screenshotDataId) {
+//      console.log("  id:", art.screenshotDataId);
+//      var oldName = LegacyImageMap["images-" + art.screenshotDataId];
+//      if (!oldName) {
+//        console.log("  no mapping for id", art.screenshotDataId);
+//        return;
+//      }
+//      var url = "/cfs/files/" + oldName.replace("-", "/");
+//      console.log("  url:", url);
+//      collection.update({_id: art._id}, {
+//        $set: {
+//          screenshotURL: url,
+//        },
+//        //$unset: {
+//        //  screenshotDataId: "",
+//        //},
+//      });
+//    }
+//  });
+//}
+//fixScreenshots(Art);
+//fixScreenshots(ArtRevision);
 
 function generateUsername(username) {
   username = username.toLowerCase().trim().replace(" ", "");
