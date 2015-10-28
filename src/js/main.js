@@ -943,6 +943,8 @@ define([
       gl.lineWidth(size);
 
       gl.enable(gl.DEPTH_TEST);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
       gl.clearColor.apply(gl, settings.backgroundColor);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -999,6 +1001,7 @@ define([
       twgl.setTextureFromArray(gl, s.touchTex, s.touchTexSpec.src, s.touchTexSpec);
 
       gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.BLEND);
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
 
@@ -1039,6 +1042,7 @@ define([
 
     function renderHistory(tex, mix) {
       gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.BLEND);
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
       m4.identity(historyUniforms.u_matrix);
