@@ -18190,7 +18190,7 @@ define('src/js/main',[
       return {
         width: ctx.canvas.width,
         height: ctx.canvas.height,
-        dataURL: ctx.canvas.toDataURL(),
+        dataURL: ctx.canvas.toDataURL.apply(ctx.canvas, arguments),
       };
     }
 
