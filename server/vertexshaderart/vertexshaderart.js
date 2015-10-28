@@ -162,6 +162,27 @@ AccountsTemplates.addFields([
 ]);
 
 if (Meteor.isClient) {
+  function getSorting() {
+    var sorting;
+    switch (Session.get(S_VIEW_STYLE)) {
+      case "mostviewed":
+        sorting = "views";
+        break;
+      case "newest":
+        sorting = "createdAt";
+        break;
+      case "popular":
+      default:
+        sorting = "likes";
+        break;
+    }
+    return sorting;
+  }
+}
+
+
+
+if (Meteor.isClient) {
   Session.set(S_VIEW_STYLE, "popular");
   Pages = new Mongo.Collection(null);
 
@@ -184,20 +205,7 @@ if (Meteor.isClient) {
       var page = pageId - 1;
       var username = route.data().username;
       var skip = page * G_PAGE_SIZE;
-
-      var sorting;
-      switch (Session.get(S_VIEW_STYLE)) {
-        case "mostviewed":
-          sorting = "views";
-          break;
-        case "newest":
-          sorting = "createdAt";
-          break;
-        case "popular":
-        default:
-          sorting = "likes";
-          break;
-      }
+      var sorting = getSorting();
 
       var artSubscription = instance.subscribe('artForGrid', username, sorting, skip, G_PAGE_SIZE);
       var countSubscription = instance.subscribe('artCount', username);
@@ -209,7 +217,9 @@ if (Meteor.isClient) {
     });
 
     instance.art = function() {
-      return Art.find({});
+      var sort = {};
+      sort[getSorting()] = -1;
+      return Art.find({}, { sort: sort });
     };
   });
 
