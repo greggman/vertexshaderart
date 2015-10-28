@@ -98,6 +98,9 @@ The site is split into 2 parts.
     *   Concat all the css used by the visualizer and save in
         `server/vertexshaderart/client/vsart.css`
 
+    *   Extract all the shaders from HTML into JavaScript and save in
+        `server/vertexshaderart/client/vsshaders.js`
+
 ### Options for the visualizer/editor
 
 The standalone visualizer/editor has a few options you can pass in on the URL. Options
