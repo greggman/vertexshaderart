@@ -253,3 +253,11 @@ input[type="color"] {
 .CodeMirror-focused .CodeMirror-selected { background: rgba(128,128,255,0.8); }
 
 
+@media (max-width : 600px) {
+   #toolbar, #editorWrap, #bottom {
+       display: none;
+   }
+}
+
+
+
