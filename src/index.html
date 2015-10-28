@@ -35,6 +35,7 @@
         <div id="toolbar">
           <button id="hide"></button>
           <button id="time" class="tooltip-bottom" data-tooltip="reset time">T</button>
+          <button id="stop" class="icon tooltip-bottom" data-tooltip="stop render"><img class="stop-icon" src="/static/resources/images/stop.svg" /><img class="go-icon" src="/static/resources/images/go.svg" style="display:none;"/></button>
           <button id="new" class="tooltip-bottom" data-tooltip="new">+</button>
           <button id="save">save</button>
           <select id="mode">
@@ -84,7 +85,8 @@ UI
 -------------------------------------------------------------
 [T]        : Resets the time to 0
 [+]        : Makes a new art piece from the current one
-[Save]     : Saves the current art
+[<img class="onechar" src="/static/resources/images/stop.svg" />]        : Stop Rendering
+[save]     : Saves the current art
 [mode]     : POINTS, LINES, LINE_STRIP, LINE_LOOP, etc...
 [NATIVE]   : Lines are native size (1 pixel) or CSS size
            : On HD-DPI display CSS will generate thicker lines
