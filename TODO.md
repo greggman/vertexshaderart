@@ -1,6 +1,10 @@
 ﻿# To Do
 
-*   try gridfs
+*   switch to jpg
+
+*   turn on blending
+
+*   add pause
 
 *   add mouse history
 
@@ -34,6 +38,8 @@
 *   paginate revisions
 
 # Done
+
+*   try gridfs
 
 *   add soundcloud login
 
