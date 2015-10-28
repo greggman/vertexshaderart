@@ -246,6 +246,7 @@ define([
       soundCloudClientId: '3f4914e324f9caeb23c521f0f1835a60',
       origSettings: { shader: "" },
       pauseOnBlur: window.location.hostname === "localhost",
+      saveable: false,
     };
     g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
 
@@ -641,9 +642,6 @@ define([
     }
 
     var saveElem = $("#save");
-//    on(saveElem, 'click', function() {
-//      console.log("save");
-//    });
 
     function setSoundSuccessState(success, msg) {
       soundElem.style.borderColor = success ? "" : "red";
@@ -657,8 +655,8 @@ define([
     function setShaderSuccessStatus(success) {
       var same = isSettingsSameAsOriginalSansWhitespace();
       editorElem.style.borderColor = success ? "" : "red";
-      var saveable = success && !same;
-      saveElem.disabled = !saveable;
+      g.saveable = success && !same;
+      saveElem.disabled = !g.saveable;
       g.shaderSuccess = success;
     }
 
@@ -1184,6 +1182,9 @@ define([
     };
     this.markAsSaved = markAsSaved;
     this.markAsSaving = markAsSaving;
+    this.isSaveable = function() {
+      return g.saveable;
+    }
   }
 
   var vs;
@@ -1246,6 +1247,11 @@ define([
     vs.markAsSaving();
   }
 
+  function isSaveable() {
+    init();
+    return vs.isSaveable();
+  }
+
   var missingSettings = {
     num: 256,
     mode: "POINTS",
@@ -1271,6 +1277,7 @@ define([
   return {
     start: start,
     stop: stop,
+    isSaveable: isSaveable,
     getSettings: getSettings,
     setSettings: setSettings,
     takeScreenshot: takeScreenshot,
