@@ -2,6 +2,10 @@
 
 ### 2015-10-28
 
+*   Added render pause
+
+    Useful if you want to edit really slow shaders
+
 *   Changed to jpg thumbnails. 6x-8x smaller
 
 *   Got rid of CollectionFS

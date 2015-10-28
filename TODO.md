@@ -1,19 +1,16 @@
 ﻿# To Do
 
-*   turn on blending
-
-*   add pause
-
 *   add mouse history
 
-*   add time history?
+*   add profile
 
-    I don't think many mouse effects and be done without
-    this unless I'm missing something.
+*   test email password recovery
 
-*   make likes active on gallery
+*   let user change email
 
 *   add monitoring
+
+*   make likes active on gallery
 
 *   try to request less info from accounts
 
@@ -21,13 +18,7 @@
     *   google
     *   twitter
 
-*   add profile
-
-*   test email password recovery
-
 *   make meta data work "og:...", "twitter: ..."
-
-*   let user change email
 
 *   show forking info
 
@@ -36,6 +27,19 @@
 *   add fullscreen button?
 
 # Done
+
+*   add time history?
+
+    I don't think many mouse effects can be done without
+    this unless I'm missing something.
+
+*   media query off controls on small screens
+
+*   fix music pause/play
+
+*   add pause
+
+*   turn on blending
 
 *   cmd-s / ctrl-s to save
 
