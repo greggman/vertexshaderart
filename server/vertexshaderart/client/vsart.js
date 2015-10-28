@@ -18886,7 +18886,7 @@ define('src/js/main',[
 
   function takeScreenshot() {
     init();
-    return vs.takeScreenshot();
+    return vs.takeScreenshot.apply(vs, arguments);
   }
 
   function markAsSaved() {

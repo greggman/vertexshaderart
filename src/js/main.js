@@ -1228,7 +1228,7 @@ define([
 
   function takeScreenshot() {
     init();
-    return vs.takeScreenshot();
+    return vs.takeScreenshot.apply(vs, arguments);
   }
 
   function markAsSaved() {
