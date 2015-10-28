@@ -17904,6 +17904,7 @@ define('src/js/main',[
       soundCloudClientId: '3f4914e324f9caeb23c521f0f1835a60',
       origSettings: { shader: "" },
       pauseOnBlur: window.location.hostname === "localhost",
+      saveable: false,
     };
     g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
 
@@ -18299,9 +18300,6 @@ define('src/js/main',[
     }
 
     var saveElem = $("#save");
-//    on(saveElem, 'click', function() {
-//      console.log("save");
-//    });
 
     function setSoundSuccessState(success, msg) {
       soundElem.style.borderColor = success ? "" : "red";
@@ -18315,8 +18313,8 @@ define('src/js/main',[
     function setShaderSuccessStatus(success) {
       var same = isSettingsSameAsOriginalSansWhitespace();
       editorElem.style.borderColor = success ? "" : "red";
-      var saveable = success && !same;
-      saveElem.disabled = !saveable;
+      g.saveable = success && !same;
+      saveElem.disabled = !g.saveable;
       g.shaderSuccess = success;
     }
 
@@ -18581,6 +18579,7 @@ define('src/js/main',[
     var uniforms = {
       time: 0,
       resolution: [1, 1],
+      background: [0, 0, 0, 1],
       mouse: [0, 0],
       sound: undefined,
       floatSound: undefined,
@@ -18611,6 +18610,10 @@ define('src/js/main',[
         uniforms.time = time;
         uniforms.resolution[0] = gl.canvas.width;
         uniforms.resolution[1] = gl.canvas.height;
+        uniforms.background[0] = settings.backgroundColor[0];
+        uniforms.background[1] = settings.backgroundColor[1];
+        uniforms.background[2] = settings.backgroundColor[2];
+        uniforms.background[3] = settings.backgroundColor[3];
         uniforms.mouse[0] = mouse[0];
         uniforms.mouse[1] = mouse[1];
         uniforms._dontUseDirectly_pointSize = size;
@@ -18837,6 +18840,9 @@ define('src/js/main',[
     };
     this.markAsSaved = markAsSaved;
     this.markAsSaving = markAsSaving;
+    this.isSaveable = function() {
+      return g.saveable;
+    }
   }
 
   var vs;
@@ -18899,6 +18905,11 @@ define('src/js/main',[
     vs.markAsSaving();
   }
 
+  function isSaveable() {
+    init();
+    return vs.isSaveable();
+  }
+
   var missingSettings = {
     num: 256,
     mode: "POINTS",
@@ -18924,6 +18935,7 @@ define('src/js/main',[
   return {
     start: start,
     stop: stop,
+    isSaveable: isSaveable,
     getSettings: getSettings,
     setSettings: setSettings,
     takeScreenshot: takeScreenshot,
