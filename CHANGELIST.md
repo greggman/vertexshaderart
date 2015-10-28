@@ -1,5 +1,26 @@
 # Changelist
 
+### 2015-10-28
+
+*   Changed to jpg thumbnails. 6x-8x smaller
+
+*   Got rid of CollectionFS
+
+    It was crashing the site and I couldn't figure out what
+    I was doing wrong.
+
+    Wrote my own solution.
+
+*   Added background uniform
+
+    So you can blend to the background color
+
+*   Ctrl-S / ⌘-S save
+
+    This is so you can take a screenshot with the
+    mouse in whatever position you want if your
+    creation responds to the mouse
+
 ### 2015-10-27
 
 *   Make revisions pageinate
