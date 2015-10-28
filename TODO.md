@@ -1,11 +1,5 @@
 ﻿# To Do
 
-*   add background color
-
-*   cmd-s / ctrl-s to save
-
-*   switch to jpg
-
 *   turn on blending
 
 *   add pause
@@ -27,21 +21,29 @@
     *   google
     *   twitter
 
+*   add profile
+
 *   test email password recovery
 
 *   make meta data work "og:...", "twitter: ..."
 
 *   let user change email
 
-*   track forking?
+*   show forking info
 
 *   fix music loop or at least make stop/start work
 
 *   add fullscreen button?
 
+# Done
+
+*   cmd-s / ctrl-s to save
+
 *   paginate revisions
 
-# Done
+*   switch to jpg
+
+*   add background color
 
 *   try gridfs
 
