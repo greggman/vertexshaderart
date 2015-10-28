@@ -85,7 +85,15 @@
       <img class="thumbnail" src="{{screenshotLink.url}}" />
     </a>
     <div class="galleryinfo">
-        <div class="galleryname"><a href="/art/{{_id}}">&ldquo;{{name}}&rdquo;</a> <a href="/user/{{username}}">by: {{username}}</a></div><div><a href="/art/{{_id}}"><img src="/static/resources/images/eye.svg" /> {{views}} - <img src="/static/resources/images/heart.svg" /> {{likes}}</a></div>
+        <div class="galleryname">
+            <a href="/art/{{_id}}">&ldquo;{{name}}&rdquo;</a>
+            <a href="/user/{{username}}">by: {{username}}</a>
+        </div>
+        <div>
+            <a href="/art/{{_id}}">
+              <span class="views"><img src="/static/resources/images/eye.svg" />{{views}}</span><span class="likes"><img src="/static/resources/images/heart-liked.svg" />{{likes}}</span>
+            </a>
+        </div>
     </div>
 </div>
 <!--

@@ -119,6 +119,10 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+.galleryinfo .likes {
+    color: #C44;
+    font-weight: bold;
+}
 .bottomspace {
     height: 10em;
 }
