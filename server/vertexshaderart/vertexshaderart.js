@@ -1,7 +1,3 @@
-Art = new Mongo.Collection("art");
-ArtRevision = new Mongo.Collection("artrevision"); // note: username show username at time of revision
-ArtLikes = new Mongo.Collection("artlikes");
-
 S_CURRENTLY_LOGGING_IN = "currentlyLoggingIn";
 S_PENDING_LIKE = "pendingLike";
 S_VIEW_STYLE = "viewstyle";
@@ -843,13 +839,6 @@ Router.map(function() {
         try {
           var name = this.params[0].replace(/\//g, '-');
           var filePath = IMAGE_PATH + '/' + name;
-          if (filePath.indexOf("thumbnail.") < 0) {
-            filePath = filePath + "-thumbnail.png";
-          }
-          var oldName = LegacyImageMap[name];
-          if (oldName) {
-            filePath = IMAGE_PATH + '/' + oldName;
-          }
           var ext = path.extname(filePath)
           if (fs.existsSync(filePath)) {
             var data = fs.readFileSync(filePath);

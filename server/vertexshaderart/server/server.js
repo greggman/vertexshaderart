@@ -16,6 +16,32 @@ LegacyImageMap = {};
   });
 }());
 
+console.log("---fixing screenshots--");
+function fixScreenshots(collection) {
+  collection.find({}).fetch().forEach(function(art) {
+    if (!art.screenshotURL && art.screenshotDataId) {
+      console.log("  id:", art.screenshotDataId);
+      var oldName = LegacyImageMap["images-" + art.screenshotDataId];
+      if (!oldName) {
+        console.log("  no mapping for id", art.screenshotDataId);
+        return;
+      }
+      var url = "/cfs/files/" + oldName.replace("-", "/");
+      console.log("  url:", url);
+      collection.update({_id: art._id}, {
+        $set: {
+          screenshotURL: url,
+        },
+        //$unset: {
+        //  screenshotDataId: "",
+        //},
+      });
+    }
+  });
+}
+fixScreenshots(Art);
+fixScreenshots(ArtRevision);
+
 function generateUsername(username) {
   username = username.toLowerCase().trim().replace(" ", "");
   var count = Meteor.users.find({"username": username}).count();
