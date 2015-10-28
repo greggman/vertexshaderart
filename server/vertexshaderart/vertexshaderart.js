@@ -305,6 +305,12 @@ if (Meteor.isClient) {
     },
   });
 
+  Template.userinfo.helpers({
+    artId: function() {
+      var route = Router.current();
+      return route.params._id;
+    },
+  });
   Template.userinfolike.helpers({
     likedByUser: function() {
       var route = Router.current();
