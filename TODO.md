@@ -1,5 +1,7 @@
 ﻿# To Do
 
+*   add background color
+
 *   switch to jpg
 
 *   turn on blending
