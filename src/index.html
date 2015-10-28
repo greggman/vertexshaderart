@@ -113,6 +113,7 @@ floatSound : sampler2D : data from the music Nx240, alpha only
            :           : getFloatFrequencyData and
            :           : getByteFrenquencyData.
 soundRes   : vec2      : resolution of sound
+background : vec4      : background color
 
 Outputs:
 -------------------------------------------------------------
@@ -139,6 +140,7 @@ attribute float vertexId;
 
 uniform vec2 mouse;
 uniform vec2 resolution;
+uniform vec4 background;
 uniform float time;
 uniform sampler2D sound;
 uniform sampler2D floatSound;
