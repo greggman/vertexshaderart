@@ -17909,6 +17909,7 @@ define('src/js/main',[
       pauseOnBlur: window.location.hostname === "localhost",
       saveable: false,
       paused: false,
+      touches: [],
     };
     g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
 
@@ -18032,7 +18033,7 @@ define('src/js/main',[
       }
 
 
-      var touchFilter = s.canUseFloat ? (s.canFilterFloat ? gl.LINEAR : gl.NEAREST) : gl.LINEAR;
+      var touchFilter = gl.NEAREST; //s.canUseFloat ? (s.canFilterFloat ? gl.LINEAR : gl.NEAREST) : gl.LINEAR;
       s.touchColumns = 32;
       s.touchTexBuffer = new (s.canUseFloat ? Float32Array : Uint8Array)(4 * s.touchColumns);
 
@@ -18054,6 +18055,7 @@ define('src/js/main',[
           mag: touchFilter,
           min: touchFilter,
           wrap: gl.CLAMP_TO_EDGE,
+          auto: false,
         },
       ];
       s.touchHistorySrcFBI = twgl.createFramebufferInfo(gl, touchHistoryAttachments, s.touchColumns, s.numHistorySamples);
@@ -18802,14 +18804,15 @@ define('src/js/main',[
       s.touchTexBuffer[offset + 1] = y;
     }
 
-    function addTouchPressure(column, pressure, radius) {
+    function addTouchPressure(column, pressure) {
+      var time = g.time;
       if (!s.canUseFloat) {
         pressure = Math.max(0, pressure * 255 | 0);
-        radius   = Math.max(0, radius   * 255 | 0);
+        time     = time % 256;
       }
       var offset = column * 4;
       s.touchTexBuffer[offset + 2] = pressure;
-      s.touchTexBuffer[offset + 3] = radius;
+      s.touchTexBuffer[offset + 3] = time;
     }
 
     function recordMouseMove(e) {
@@ -18820,24 +18823,78 @@ define('src/js/main',[
 
       g.mouse = [x * 2 - 1, y * -2 + 1];
       addTouchPosition(0, x, y);
+      addTouchPressure(0, 1);
     }
 
     function recordMouseDown(e) {
-      addTouchPressure(0, 1, 72 * 0.25);
+      recordMouseMove(e);
     }
 
     function recordMouseUp(e) {
-      addTouchPressure(0, 0, 0);
+      addTouchPressure(0, 0);
     }
 
     on(window, 'mousemove', recordMouseMove);
     on(window, 'mousedown', recordMouseDown);
     on(window, 'mouseup', recordMouseUp);
 
-//    on(window, 'touchstart', recordTouchStart);
-//    on(window, 'touchend', recordTouchEnd);
-//    on(window, 'touchcancel', recordTouchCancel);
-//    on(window, 'touchmove', recordTouchMove);
+    function getTouchNdx(t) {
+      var id = t.identifer;
+      var ndx = g.touches.indexOf(id);
+      if (ndx < 0) {
+        // Find empty slot
+        for (var ii = 0; ii < g.touches.length; ++ii) {
+          if (g.touches[ii] === undefined) {
+            break;
+          }
+        }
+        if (ii == 32) {
+          console.error("too many touches :(");
+          g.touches = [];
+          ii = 0;
+        }
+        ndx = ii;
+        g.touches[ndx] = id;
+      }
+      return ndx;
+    }
+
+    function recordTouchStart(e) {
+      for (var ii = 0; ii < e.touches.length; ++ii) {
+        var t = e.touches[ii];
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        var x = t.clientX / w;
+        var y = t.clientY / h;
+        var ndx = getTouchIndex(t);
+        addTouchPosition(ndx, x, y);
+        addTouchPressure(ndx, t.force || 1);
+      }
+    }
+
+    function recordTouchCancel(e) {
+      for (var ii = 0; ii < e.touches.length; ++ii) {
+        var t = e.touches[ii];
+        var ndx = getTouchIndex(t);
+        g.touches[ndx] === undefined;
+        addTouchPressure(ndx, 0);
+      }
+    }
+
+    function recordTouchEnd(e) {
+      recordTouchCancel(e);
+    }
+
+    function recordTouchMove(e) {
+      e.preventDefault();
+      recordTouchStart(e);
+      return false;
+    }
+
+    //on(gl.canvas, 'touchstart', recordTouchStart);
+    //on(gl.canvas, 'touchend', recordTouchEnd);
+    //on(gl.canvas, 'touchcancel', recordTouchCancel);
+    //on(gl.canvas, 'touchmove', recordTouchMove);
 
 
 
