@@ -17825,7 +17825,6 @@ define('src/js/main',[
     var handlers = [];
 
     this.on = function(elem, event, handler, useCapture) {
-      useCapture = useCapture || false;
       var args = Array.prototype.slice.call(arguments, 1);
       elem.addEventListener.apply(elem, args);
       handlers.push({
@@ -18678,6 +18677,12 @@ define('src/js/main',[
         twgl.setTextureFromArray(gl, s.floatSoundTex, s.floatSoundTexSpec.src, s.floatSoundTexSpec);
       }
 
+      // Update time
+      for (var ii = 0; ii < s.touchColumns; ++ii) {
+        var offset = ii * 4;
+        s.touchTexBuffer[offset + 3] = g.time;
+      }
+
       // Copy in latest touch data
       twgl.setTextureFromArray(gl, s.touchTex, s.touchTexSpec.src, s.touchTexSpec);
 
@@ -18812,7 +18817,6 @@ define('src/js/main',[
       }
       var offset = column * 4;
       s.touchTexBuffer[offset + 2] = pressure;
-      s.touchTexBuffer[offset + 3] = time;
     }
 
     function recordMouseMove(e) {
@@ -18823,11 +18827,10 @@ define('src/js/main',[
 
       g.mouse = [x * 2 - 1, y * -2 + 1];
       addTouchPosition(0, x, y);
-      addTouchPressure(0, 1);
     }
 
     function recordMouseDown(e) {
-      recordMouseMove(e);
+      addTouchPressure(0, 1);
     }
 
     function recordMouseUp(e) {
@@ -18838,7 +18841,7 @@ define('src/js/main',[
     on(window, 'mousedown', recordMouseDown);
     on(window, 'mouseup', recordMouseUp);
 
-    function getTouchNdx(t) {
+    function getTouchIndex(t) {
       var id = t.identifer;
       var ndx = g.touches.indexOf(id);
       if (ndx < 0) {
@@ -18891,10 +18894,11 @@ define('src/js/main',[
       return false;
     }
 
-    //on(gl.canvas, 'touchstart', recordTouchStart);
-    //on(gl.canvas, 'touchend', recordTouchEnd);
-    //on(gl.canvas, 'touchcancel', recordTouchCancel);
-    //on(gl.canvas, 'touchmove', recordTouchMove);
+    var touchTarget = window;
+    on(touchTarget, 'touchstart', recordTouchStart);
+    on(touchTarget, 'touchend', recordTouchEnd);
+    on(touchTarget, 'touchcancel', recordTouchCancel);
+    on(touchTarget, 'touchmove', recordTouchMove);
 
 
 
