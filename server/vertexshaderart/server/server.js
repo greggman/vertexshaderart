@@ -68,12 +68,12 @@ Accounts.onCreateUser(function (options, user) {
             user.emails = [
                 {"address": serviceData.email, "verified": true},
             ];
-            user.profile = {"first_name": serviceData.first_name, "last_name": serviceData.last_name, "avatar": getFbPicture(serviceData.id)};
+            user.profile = {"first_name": serviceData.first_name, "last_name": serviceData.last_name, };
         } else if (serviceName == "google") {
             user.emails = [
                 {"address": serviceData.email, "verified": true},
             ];
-            user.profile = {"first_name": serviceData.given_name, "last_name": serviceData.family_name, "avatar": getGooglePicture(serviceData.id)};
+            user.profile = {"first_name": serviceData.given_name, "last_name": serviceData.family_name, };
         }
     }
 
