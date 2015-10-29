@@ -860,7 +860,7 @@ Router.map(function() {
             }
             res.writeHead(200, {
               'Content-Type': type,
-              'Cache-Control': 'public',
+              'Cache-Control': 'public, max-age=8640000',
             });
             res.write(data, null);
             res.end();
