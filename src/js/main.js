@@ -1019,6 +1019,12 @@ define([
         twgl.setTextureFromArray(gl, s.floatSoundTex, s.floatSoundTexSpec.src, s.floatSoundTexSpec);
       }
 
+      // Update time
+      for (var ii = 0; ii < s.touchColumns; ++ii) {
+        var offset = ii * 4;
+        s.touchTexBuffer[offset + 3] = g.time;
+      }
+
       // Copy in latest touch data
       twgl.setTextureFromArray(gl, s.touchTex, s.touchTexSpec.src, s.touchTexSpec);
 
@@ -1153,7 +1159,6 @@ define([
       }
       var offset = column * 4;
       s.touchTexBuffer[offset + 2] = pressure;
-      s.touchTexBuffer[offset + 3] = time;
     }
 
     function recordMouseMove(e) {
@@ -1164,11 +1169,10 @@ define([
 
       g.mouse = [x * 2 - 1, y * -2 + 1];
       addTouchPosition(0, x, y);
-      addTouchPressure(0, 1);
     }
 
     function recordMouseDown(e) {
-      recordMouseMove(e);
+      addTouchPressure(0, 1);
     }
 
     function recordMouseUp(e) {
