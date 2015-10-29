@@ -167,7 +167,6 @@ define([
     var handlers = [];
 
     this.on = function(elem, event, handler, useCapture) {
-      useCapture = useCapture || false;
       var args = Array.prototype.slice.call(arguments, 1);
       elem.addEventListener.apply(elem, args);
       handlers.push({
@@ -1180,7 +1179,7 @@ define([
     on(window, 'mousedown', recordMouseDown);
     on(window, 'mouseup', recordMouseUp);
 
-    function getTouchNdx(t) {
+    function getTouchIndex(t) {
       var id = t.identifer;
       var ndx = g.touches.indexOf(id);
       if (ndx < 0) {
@@ -1233,10 +1232,11 @@ define([
       return false;
     }
 
-    //on(gl.canvas, 'touchstart', recordTouchStart);
-    //on(gl.canvas, 'touchend', recordTouchEnd);
-    //on(gl.canvas, 'touchcancel', recordTouchCancel);
-    //on(gl.canvas, 'touchmove', recordTouchMove);
+    var touchTarget = window;
+    on(touchTarget, 'touchstart', recordTouchStart);
+    on(touchTarget, 'touchend', recordTouchEnd);
+    on(touchTarget, 'touchcancel', recordTouchCancel);
+    on(touchTarget, 'touchmove', recordTouchMove);
 
 
 
