@@ -1,5 +1,9 @@
 # Changelist
 
+### 2015-10-29
+
+*   got touch events working
+
 ### 2015-10-28
 
 *   Added render pause

@@ -1,7 +1,5 @@
 ﻿# To Do
 
-*   add mouse history
-
 *   add profile
 
 *   test email password recovery
@@ -27,6 +25,8 @@
 *   add fullscreen button?
 
 # Done
+
+*   add mouse history
 
 *   add time history?
 
