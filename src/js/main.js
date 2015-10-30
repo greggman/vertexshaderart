@@ -608,8 +608,12 @@ define([
         setSoundLink();
         return;
       }
-      s.sc.get("/resolve", { url: url })
-      .then(function(result) {
+      s.sc.get("/resolve", { url: url }, function(result, err) {
+        if (err) {
+          console.error("bad url:", url, err);
+          setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
+          return;
+        }
         if (result.streamable && result.stream_url) {
           var src = result.stream_url + '?client_id=' + g.soundCloudClientId;
           setSoundSource(src);
@@ -618,11 +622,22 @@ define([
           console.error("not streamable:", url);
           setSoundSuccessState(false, "not streamable according to soundcloud");
         }
-      })
-      .catch(function(e) {
-        console.error("bad url:", url, e);
-        setSoundSuccessState(false, "not a valid soundcloud url?");
       });
+//      s.sc.get("/resolve", { url: url })
+//      .then(function(result) {
+//        if (result.streamable && result.stream_url) {
+//          var src = result.stream_url + '?client_id=' + g.soundCloudClientId;
+//          setSoundSource(src);
+//          setSoundLink(result);
+//        } else {
+//          console.error("not streamable:", url);
+//          setSoundSuccessState(false, "not streamable according to soundcloud");
+//        }
+//      })
+//      .catch(function(e) {
+//        console.error("bad url:", url, e);
+//        setSoundSuccessState(false, "not a valid soundcloud url?");
+//      });
     }
 
     on(soundElem, 'change', function(e) {
