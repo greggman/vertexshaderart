@@ -197,6 +197,9 @@
             <a href="/user/{{username}}" class="username shrink">
                by: {{username}}
             </a>
+            {{#if origId}}
+              <a href="/art/{{origId}}" class="shrink">original</a>
+            {{/if}}
             {{> userinfolike}}
           {{/if}}
     </div>
