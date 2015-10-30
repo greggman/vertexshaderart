@@ -150,9 +150,11 @@
 <template name="artgrid">
      <div class="gallery">
          {{> sorting}}
-         {{#each art}}
-           {{> artpiece}}
-         {{/each}}
+         {{#if Template.subscriptionsReady}}
+           {{#each art}}
+             {{> artpiece}}
+           {{/each}}
+         {{/if}}
         <div class="bottomspace"></div>
      </div>
 </template>

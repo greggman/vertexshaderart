@@ -193,7 +193,6 @@ if (Meteor.isClient) {
 
   Template.artgrid.onCreated(function() {
     var instance = this;
-    instance.loaded  = new ReactiveVar(0);
 
     instance.autorun(function() {
       var route = Router.current();
@@ -203,25 +202,16 @@ if (Meteor.isClient) {
       var skip = page * G_PAGE_SIZE;
       var sorting = getSorting();
 
-      var artSubscription = instance.subscribe('artForGrid', username, sorting, skip, G_PAGE_SIZE);
-      var countSubscription = instance.subscribe('artCount', username);
-      if (artSubscription.ready() && countSubscription.ready()) {
-        instance.loaded.set(1);
-      } else {
-//        console.log("> sub not ready");
-      }
+      instance.subscribe('artForGrid', username, sorting, skip, G_PAGE_SIZE);
+      instance.subscribe('artCount', username);
     });
-
-    instance.art = function() {
-      var sort = {};
-      sort[getSorting()] = -1;
-      return Art.find({}, { sort: sort });
-    };
   });
 
   Template.artgrid.helpers({
     art: function() {
-      return Template.instance().art();
+      var sort = {};
+      sort[getSorting()] = -1;
+      return Art.find({}, { sort: sort });
     },
   });
 
