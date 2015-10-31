@@ -398,19 +398,26 @@ if (Meteor.isClient) {
       var pageId = route.data().page;
       var page = pageId - 1;
       var numPages = (count + G_PAGE_SIZE - 1) / G_PAGE_SIZE | 0;
+      var numPageButtons = G_NUM_PAGE_BUTTONS;
+      var pageRange = G_PAGE_RANGE;
       var lastPage = numPages - 1;
       var path = route.data().path;
 
+      if (window.screen && window.screen.availWidth < 400) {
+        numPageButtons = 0;
+        pageRange = 0;
+      }
+
       Pages.remove({});
       if (numPages > 1) {
-        var needPrevNext = numPages > G_NUM_PAGE_BUTTONS
+        var needPrevNext = numPages > numPageButtons;
         if (needPrevNext) {
           var prev = Math.max(page, 1);
           Pages.insert({path: path, pagenum: "<<", pageid: prev, samepageclass: pageId === prev ? "selected" : ""});
         }
 
-        var min = page - G_PAGE_RANGE;
-        var max = page + G_PAGE_RANGE;
+        var min = page - pageRange;
+        var max = page + pageRange;
         if (min < 0) {
           max = max - min;
           min = 0;
@@ -419,8 +426,10 @@ if (Meteor.isClient) {
           min = Math.max(0, min - (max - lastPage));
           max = lastPage;
         }
-        for (var ii = min; ii <= max; ++ii) {
-          Pages.insert({path: path, pagenum: ii + 1, pageid: ii + 1, samepageclass: ii === page ? "selected" : ""});
+        if (min !== max) {
+          for (var ii = min; ii <= max; ++ii) {
+            Pages.insert({path: path, pagenum: ii + 1, pageid: ii + 1, samepageclass: ii === page ? "selected" : ""});
+          }
         }
 
         if (needPrevNext) {

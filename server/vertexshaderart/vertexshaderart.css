@@ -87,6 +87,7 @@
   margin: 0em 1em 1em 0em;
   display: inline-block;
   text-decoration: none;
+  text-align: left;
   width: 300px;
   color: #888;
 }
@@ -182,7 +183,7 @@ header .buttons a, header .buttons div, .button {
 .padding {
     padding: 2em;
 }
-.sorting {
+.sorting, .sorting .sorttype, .sorting .pagination {
     display: flex;
     display: -webkit-flex;
     align-items: center;
@@ -197,6 +198,9 @@ header .buttons a, header .buttons div, .button {
 }
 .sorting .selected {
     background-color: #446;
+}
+.gallery .bottomsorting {
+    display: none;
 }
 .accounts-dialog {
     background-color: black;
@@ -256,3 +260,51 @@ header .buttons a, header .buttons div, .button {
     margin-right: 0 !important;
 }
 
+
+@media (max-width : 600px) {
+    header>div {
+        flex-direction: column-reverse;
+        -webkit-flex-direction: column-reverse;
+    }
+    header h1 {
+        font-size: xx-large;
+    }
+
+    header .buttons a, header .buttons div {
+        margin: 0.25em;
+        padding: 0.5em;
+    }
+    .container {
+        padding: 0.75em;
+    }
+    .gallery .topsorting .pagination {
+        display: none;
+    }
+    .gallery .bottomsorting {
+        display: block;
+    }
+    .gallery .artpiece {
+        margin: 0 0 1em 0;
+    }
+    .gallery .artgrid {
+        text-align: center;
+    }
+    .sorting {
+        flex-direction: column;
+        -webkit-flex-direction: column;
+        justify-content: center;
+        -webkit-justify-content: center;
+        padding-bottom: 1em;
+    }
+    .sorting .sorttype {
+        justify-content: space-around;
+        -webkit-justify-content: space-around;
+        width: 100%;
+    }
+    .sorting .button {
+        padding: 1em;
+    }
+    .sorting .pagination .button {
+        margin: 1em;
+    }
+}

@@ -30,16 +30,20 @@
 <template name="sorting">
 
     <div class="sorting">
-      <div class='button popular {{selected "popular"}}'>
-          popular
+      <div class="sorttype">
+          <div class='button popular {{selected "popular"}}'>
+              popular
+          </div>
+          <div class='button newest {{selected "newest"}}'>
+              newest
+          </div>
+          <div class='button mostviewed {{selected "mostviewed"}}'>
+              views
+          </div>
       </div>
-      <div class='button newest {{selected "newest"}}'>
-          newest
+      <div class="pagination">
+          {{> pagination}}
       </div>
-      <div class='button mostviewed {{selected "mostviewed"}}'>
-          views
-      </div>
-      {{> pagination}}
     </div>
 
 </template>
@@ -149,12 +153,19 @@
 
 <template name="artgrid">
      <div class="gallery">
-         {{> sorting}}
-         {{#if Template.subscriptionsReady}}
-           {{#each art}}
-             {{> artpiece}}
-           {{/each}}
-         {{/if}}
+         <div class="topsorting">
+             {{> sorting}}
+         </div>
+         <div class="artgrid">
+             {{#if Template.subscriptionsReady}}
+               {{#each art}}
+                 {{> artpiece}}
+               {{/each}}
+             {{/if}}
+         </div>
+         <div class="bottomsorting">
+           {{> sorting}}
+         </div>
         <div class="bottomspace"></div>
      </div>
 </template>
