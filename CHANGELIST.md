@@ -1,5 +1,21 @@
 # Changelist
 
+### 2015-10-31
+
+*   Added "based on" link
+
+    When someone edits a piece and saves there's a `based on` link
+    which leads back to the original.
+
+*   Added Deploy docs
+
+*   Added some mobile CSS
+
+*   Prevented page from updating until data is ready
+
+    The gallery pages seemed to jump all over as data
+    was flowing in. I think that's mostly fixed.
+
 ### 2015-10-29
 
 *   got touch events working
