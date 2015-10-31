@@ -215,17 +215,22 @@ if (Meteor.isClient) {
     },
   });
 
-  Template.artrevisions.helpers({
-    revisions: function() {
+  Template.artrevisions.onCreated(function() {
+    var instance = this;
+    instance.autorun(function() {
       var route = Router.current();
-      var artId = route.params._id;
-      var pageId = parseInt(route.params._page) || 1;
+      var artId = route.data().artId;
+      var pageId = route.data().page;
       var page = pageId - 1;
       var skip = page * G_PAGE_SIZE;
-      var limit = 10;
-      return ArtRevision.find({artId: artId}, {
-       // skip: skip,
-        limit: limit,
+      instance.subscribe('art', artId);
+      instance.subscribe('artrevisions', artId, skip, G_PAGE_SIZE);
+    });
+  });
+
+  Template.artrevisions.helpers({
+    revisions: function() {
+      return ArtRevision.find({}, {
         sort: { createdAt: -1 },
       });
     },
@@ -800,8 +805,6 @@ Router.map(function() {
     subscriptions: function() {
       var artId = this.params._id;
       var subs = [
-        Meteor.subscribe('art', artId),
-        Meteor.subscribe('artrevisions', artId, 0, G_PAGE_SIZE),
         Meteor.subscribe('artRevisionCount', artId),
       ];
       return subs;
@@ -822,12 +825,8 @@ Router.map(function() {
       };
     },
     subscriptions: function() {
-      var page = parseInt(this.params._page) - 1;
-      var skip = page * G_PAGE_SIZE;
       var artId = this.params._id;
       var subs = [
-        Meteor.subscribe('art', artId),
-        Meteor.subscribe('artrevisions', artId, skip, G_PAGE_SIZE),
         Meteor.subscribe('artRevisionCount', artId),
       ];
       return subs;

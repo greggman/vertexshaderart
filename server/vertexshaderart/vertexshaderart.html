@@ -141,9 +141,11 @@
         <div class="sorting">
             {{> pagination}}
         </div>
-        {{#each revisions}}
-          {{> revision}}
-        {{/each}}
+        {{#if Template.subscriptionsReady}}
+          {{#each revisions}}
+            {{> revision}}
+          {{/each}}
+        {{/if}}
         <div class="bottomspace"></div>
     </div>
   </div>
