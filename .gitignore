@@ -1,4 +1,8 @@
 server/vsa-uploads
+server/deploy/settings
+server/deploy/backups
+server/deploy/settings-live.json
+server/deploy/settings-local.json
 node_modules
 output
 .DS_Store

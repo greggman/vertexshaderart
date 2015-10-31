@@ -1,0 +1,21 @@
+{
+  "public" : {
+    "ga": {
+      "account":"UA-XXXXXXXX-X"
+    },
+    "app": {
+      "pageSize": 15
+    }
+  },
+  "accounts": {
+    "twitter": {
+      "consumerKey": "twitter-consumer-key",
+      "secret": "twitter-secret"
+    },
+    "soundcloud": {
+      "clientId": "soundcloud-client-id",
+      "secret": "soundcloud-secret"
+    }
+  }
+}
+

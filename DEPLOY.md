@@ -67,19 +67,25 @@ on digital ocean. #2 it sets my user name so I can type `ssh vertexshaderart.com
 
 I'm pretty sure this will work though I haven't tested it on a fresh machine
 
-1.  edit the file `server/deploy/docker-compose-local.yml` and change this line
+1.  Copy the file `server/deploy/settings-local-orig.json` to `server/deploy/settings-local.json`
+
+        cp server/deploy/settings-local-orig.json server/deploy/settings-local.json
+
+    **IMPORTANT!! DO NOT ADD THIS FILE TO GIT!!**
+
+2.  edit the file `server/deploy/docker-compose-local.yml` and change this line
 
         - REPO=https://github.com/greggman/vertexshaderart
 
     to be the location of your github repo for your new project.
 
-2.  Start a docker terminal.
+3.  Start a docker terminal.
 
     On OSX that's done by running `Docker Quickstart Terminal` which is in `Appliations/Docker`.
 
     On Linux that's probably just opening a terminal
 
-3.  cd to the `server/deploy` folder and type
+4.  cd to the `server/deploy` folder and type
 
         ./push-local.sh
 
@@ -91,7 +97,7 @@ I'm pretty sure this will work though I haven't tested it on a fresh machine
     You may be asked for a password for docker. The default password
     is `tcuser`.
 
-4.  type
+5.  type
 
         ssh 192.168.99.100 'docker logs -f c_meteor_1'
 
@@ -99,12 +105,12 @@ I'm pretty sure this will work though I haven't tested it on a fresh machine
     meteor. Once you see "Starting Meteor..." (or if you see
     "Building the Bundle..." and you've waited 3-5 mins) then...
 
-5.  Go to `http://192.168.99.100:3000`
+6.  Go to `http://192.168.99.100:3000`
 
     If you see the website it's running. There's no data so there
     will be no art to view. You'll need to make some
 
-To update the local VM check stuff into your github repo and run steps 7-9 again
+To update the local VM check stuff into your github repo and run steps 4+ again.
 
 ### Deploy Live
 
@@ -132,7 +138,13 @@ asked for passwords a billion times as you run these scripts.
     It should connect to your droplet no questions asked. If it doesn't then you either
     didn't setup your ssh keys or something else is wrong. Type `exit` to exit or press Ctrl-D.
 
-5.  Edit the file `server/deploy/docker-compose-live.yml` and change these lines
+5.  Copy the file `server/deploy/settings-live-orig.json` to `server/deploy/settings-live.json`
+
+        cp server/deploy/settings-live-orig.json server/deploy/settings-live.json
+
+    **IMPORTANT!! DO NOT ADD THIS FILE TO GIT!!**
+
+6.  Edit the file `server/deploy/docker-compose-live.yml` and change these lines
 
         - REPO=https://github.com/greggman/vertexshaderart
         - ROOT_URL=http://www.vertexshaderart.com
@@ -141,26 +153,26 @@ asked for passwords a billion times as you run these scripts.
     The second like needs to be the place your site can be reached. If you haven't setup
     a domain name use your droplets ip address. (eg: `- ROOT_URL=http://123.234.12.34`)
 
-6.  Edit the file `server/deploy/push-live.sh`
+7.  Edit the file `server/deploy/push-live.sh`
 
     Change `DOCKER=vertexshaderart.com` to the IP address or domain of your droplet.
 
-7.  cd to the `server/deploy` folder and type
+8.  cd to the `server/deploy` folder and type
 
         ./push-live.sh
 
-8.  type
+9.  type
 
         ssh <ipaddress-of-drople> 'docker logs -f c_meteor_1'
 
     This will show you output from the docker container running
     meteor. Once you see "Starting Meteor..." ..
 
-9.  Go to `http://<ipaddresofdroplet>`
+10. Go to `http://<ipaddresofdroplet>`
 
     Your site is live.
 
-To update the site check stuff into your github repo and run steps 7-9 again
+To update the site check stuff into your github repo and run steps 8+ again
 
 #### Configuring login services
 
@@ -171,7 +183,7 @@ These are set in `server/deploy/settings-live.json` and `server/deploy/settings-
 
 **IMPORTANT!! DO NOT CHECK THESE CHANGES INTO GIT!!!**
 
-For me I copied `server/deploy` to some other folder outside of my workarea
+For me I copied the entire folder, `server/deploy`, to some other folder outside of my workarea
 and I run them from over there. That way I can not accidentally check in my
 secrets into git.
 

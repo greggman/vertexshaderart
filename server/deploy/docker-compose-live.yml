@@ -1,0 +1,38 @@
+meteor:
+  container_name: c_meteor_1
+  image: gmanjapan/meteor
+  restart: on-failure:5
+  ports:
+   - "80:80"
+  links:
+   - mongo
+  volumes_from:
+    - data
+  volumes:
+   - ./backup:/backup
+  environment:
+   - REPO=https://github.com/greggman/vertexshaderart
+   - ROOT_URL=http://www.vertexshaderart.com
+   - IMAGE_PATH=/data/images
+  env_file:
+   - ./settings.env
+data:
+  container_name: c_data_1
+  image: cogniteev/echo
+  volumes:
+   - /data/images
+   - /data/db
+mongo:
+  container_name: c_mongo_1
+  image: mongo
+  restart: on-failure:5
+  ports:
+   - "27017:27017"
+  volumes_from:
+   - data
+  volumes:
+   - ./backup:/backup
+
+#   - APP_DIR=/appgit/server/vertexshaderart
+
+
