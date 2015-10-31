@@ -2,6 +2,26 @@
 
 *   add profile
 
+*   make meta data work "og:...", "twitter: ..."
+
+*   Figure out why mobile fails so often.
+
+    When I go to mobile on my iOS9 iPhone 5s the site
+    comes up quickly (I get the logo and sort buttons)
+    but loads forever. I've waited 10mins before, no luck.
+
+    I thought maybe it was a bug and maybe it is but it's
+    possible the issue is meteor is a fucking 1MEG download
+    of compressed .js  Sigh.....
+
+    There wascan entire Mac level OS running in 128k on a commodore64.
+    A website that just sends a few k of data back
+    and forth should not take a 1MEG of compressed code >:(
+
+    If it is a bug though it would be good to track down.
+    When I try it with the safari remote debugging though
+    it seems to work so so far no luck tracking down the issue.
+
 *   test email password recovery
 
 *   let user change email
@@ -16,15 +36,15 @@
     *   google
     *   twitter
 
-*   make meta data work "og:...", "twitter: ..."
-
-*   show forking info
-
 *   fix music loop or at least make stop/start work
+
+# Done
 
 *   add fullscreen button?
 
-# Done
+    No need. Just press Cmd-Shift-F or Ctrl-F or whatever it is
+
+*   show forking info
 
 *   add mouse history
 
