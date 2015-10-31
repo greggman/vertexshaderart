@@ -56,7 +56,7 @@ The site is split into 2 parts.
 
     There's also a special `on` function to attach events to elements. Instead of
     doing `someElement.addEventListener(event, func)` you instead do
-    `on(someElement, event, func). This allows the code track and remove all event listeners
+    `on(someElement, event, func)`. This allows the code track and remove all event listeners
     when Meteor destroys the DOM because otherwise there would be a bunch of handlers
     still attached on those elements.
 
@@ -121,6 +121,14 @@ are passed in by adding a `?` and then `key=value&key=value`.
 
         This fills the screen with the texture that contains the music history.
 
+    *   `showFloatHistory=true`
+
+        This fills the screen with the texture that contains the float music history.
+
+    *   `showTouchHistory=true`
+
+        This fills the screen with the texture that contains the touch data history.
+
     *   `long=true`
 
         Along with `local=true` as in `local=true&long=true` provides a really long
@@ -132,7 +140,7 @@ are passed in by adding a `?` and then `key=value&key=value`.
 
 ## Deploying
 
-Coming soon...
+See [DEPLOY.md](DEPLOY.md)
 
 ## Changelist
 
