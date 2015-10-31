@@ -215,6 +215,14 @@ which means you either need to edit them all for live vs local or else register 
 for each service (mysite and mysite-dev).  Every where it says `<ipaddressofdroplet-or-domain>`
 above would be `192.168.99.100:3000` for local. Personally I haven't set any up for local
 
+#### Configuring Google Analytics
+
+Edit `server/deploy/settings-live.json` and change the account #
+
+    "ga": {
+      "account":"UA-XXXXXXXX-X"
+    },
+
 ### Backup and Restore
 
 make a folder `backups` in `server/deploy`
@@ -244,7 +252,7 @@ For testing and debugging it's common for me to backup the live site and restore
 point the 2 should be identical.
 
 I don't currently have a way to restore to the local OSX version (the one running in server/vertexshaderart vs the one
-running in a local docker VM). It would be easy enough to add but I find that the one running 100% local, no docker
+running in a local docker VM). It would be easy enough to add but I find that the one running 100% local, no docker,
 has lots of test data in it so I haven't had a reason to backup or restore that yet.
 
 
