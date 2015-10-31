@@ -82,7 +82,7 @@ The site is split into 2 parts.
     set to 3. This is so it's easy to test the pagination code without needing
     to add hundreds of entries. You can change that in `server/vertexshaderart/settings.json`
 
-### Updating the visiualizer into the meteor website.
+### Updating the visualizer into the meteor website.
 
     To update the visiualizer/editor into the meteor website cd to the root folder of this repo
     and type `grunt`.
