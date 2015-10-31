@@ -3,6 +3,10 @@
     cursor: pointer;
 }
 
+embed, object {
+  display: none !important;
+}
+
 .container {
   padding: 0 2em 2em 2em;
   text-align: center;
