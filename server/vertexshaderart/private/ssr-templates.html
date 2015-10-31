@@ -1,35 +1,26 @@
-<template name="artGallerySSR">
-  <h1>Yo! It's art!</h1>
-
-  {{> artSSR}}
-</template>
-
-<template name="artPage">
-
-</template>
-
 <template name="artpieceSSR">
-  <li class="{{#if checked}}checked{{/if}} {{#if private}}private{{/if}}">
-    <button class="delete">&times;</button>
+  <html>
+    <head>
+      <meta charset="utf8" />
+      <title>vertexshaderart.com - &ldquo;{{name}}&rdquo;</title>
+      <meta property="og:type" content="website" />
 
-    <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+      <meta property="og:title" content="vertexshaderart.com - {{name}}" />
+      <meta property="og:description" content="vertexshaderart.com - {{name}}" />
+      <meta property="og:image" content="http://vertexshaderart.com{{screenshotURL}}" />
 
-    {{#if isOwner}}
-      <button class="toggle-private">
-        {{#if private}}
-          Private
-        {{else}}
-          Public
-        {{/if}}
-      </button>
-    {{/if}}
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:site" content="@greggman">
+      <meta name="twitter:domain" content="vertexshaderart.com">
+      <meta name="twitter:title" content="vertexshaderart.com - {{name}}">
 
-    <span class="text">SSR <strong>{{username}}</strong> - {{text}}</span>
-  </li>
+      <meta name="twitter:description" content="vertexshaderart.com - {{name}}">
+      <meta name="twitter:creator" content="{{username}}">
+      <meta name="twitter:image:src" content="http://vertexshaderart.com{{screenshotURL}}">
+    </head>
+    <body>
+
+    </body>
+  </html>
 </template>
 
-<template name="artSSR">
-  {{#each art}}
-    {{> artpieceSSR}}
-  {{/each}}
-</template>

@@ -76,16 +76,6 @@ if (Meteor.isServer) {
     });
   });
 
-
-//  var templateRE = /<template\s+name="(.*?)">([\s\S]*?)<\/template>/g;
-//  var ssrTemplates = Assets.getText('ssr-templates.html');
-//  do {
-//    var m = templateRE.exec(ssrTemplates);
-//    if (m) {
-//      SSR.compileTemplate(m[1], m[2]);
-//    }
-//  } while (m);
-
   var urlRE = /(.*?\:)\/\/(.*)$/;
   function parseUrl(url) {
     var u = {};
@@ -114,20 +104,6 @@ if (Meteor.isServer) {
 
     return u;
   }
-
-  //var artPathRE = /\/art\/(.*)/;
-  //WebApp.connectHandlers.use("/", function(req, res, next) {
-  //   var url = parseUrl(req.url);
-  //   if (url.pathname) {
-  //     var m = artPathRE.exec(url.pathname);
-  //     if (m) {
-  //
-  //     }
-  //   }
-  //   next();
-  //});
-
-//  Inject.meta("foo", "bar");
 }
 
 var pwd = AccountsTemplates.removeField('password');

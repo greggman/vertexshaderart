@@ -84,3 +84,81 @@ WebApp.connectHandlers.use(function(req, res, next) {
     next();
   }
 });
+
+var templateRE = /<template\s+name="(.*?)">([\s\S]*?)<\/template>/g;
+var ssrTemplates = Assets.getText('ssr-templates.html');
+do {
+  var m = templateRE.exec(ssrTemplates);
+  if (m) {
+    SSR.compileTemplate(m[1], m[2]);
+  }
+} while (m);
+
+var isBot = (function() {
+  var bots = [
+    'google',
+    'googlebot',
+    'baiduspider',
+    'gurujibot',
+    'yandexbot',
+    'slurp',
+    'msnbot',
+    'bingbot',
+    'facebookexternalhit',
+    'facebot',
+    'linkedinbot',
+    'twitterbot',
+    'slackbot',
+    'telegrambot',
+    'applebot',
+    'pingdom',
+  ];
+  var botRE = new RegExp('(' + bots.join('|') + ')', RegExp.ignoreCase);
+  return function isBot(req) {
+    var ua = req.headers["user-agent"] || '';
+    var bot = botRE.test(ua);
+    return bot;
+  };
+}());
+
+function sendArtSSR(req, res, artId) {
+  var arts = Art.find({_id: artId}).fetch();
+  if (!arts || arts.length < 1) {
+    res.statusCode = 404;
+    res.end("no such art:" + req.url);
+    return;
+  }
+  var html = SSR.render('artpieceSSR', arts[0]);
+  res.write(html);
+  res.end();
+}
+
+function sendArtRevisionSSR(req, res, revisionId) {
+  var arts = ArtRevision.find({_id: revisionId}).fetch();
+  if (!arts || arts.length < 1) {
+    res.statusCode = 404;
+    res.end("no such art revision:" + req.url);
+    return;
+  }
+  var html = SSR.render('artpieceSSR', arts[0]);
+  res.write(html);
+  res.end();
+}
+
+
+var artPathRE = /\/art\/([^/]+)$/;
+var artRevisionPathRE = /\/art\/([^/]+)\/revision\/([^/]+)$/;
+WebApp.connectHandlers.use(function(req, res, next) {
+  if (isBot(req)) {
+    var m = artPathRE.exec(req.url);
+    if (m) {
+      return sendArtSSR(req, res, m[1]);
+    }
+    m = artRevisionPathRE.exec(req.url);
+    if (m) {
+      return sendArtRevision(req, res, m[2]);
+    }
+  }
+  next();
+});
+
