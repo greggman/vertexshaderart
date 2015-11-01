@@ -1,6 +1,8 @@
 S_CURRENTLY_LOGGING_IN = "currentlyLoggingIn";
 S_PENDING_LIKE = "pendingLike";
-S_VIEW_STYLE = "viewstyle";
+S_GALLERY_SORT = "gallerysort";
+S_USER_SORT = "usersort";
+S_VIEW_SORT_VAR = "sortvar";
 S_ART_OWNER_ID = "artOwnerId";
 S_ART_NAME = "artName";
 
@@ -170,27 +172,25 @@ AccountsTemplates.addFields([
 
 if (Meteor.isClient) {
   function getSorting() {
-    var sorting;
-    switch (Session.get(S_VIEW_STYLE)) {
+    var sortVar = Session.get(S_VIEW_SORT_VAR);
+    switch (Session.get(sortVar)) {
       case "mostviewed":
-        sorting = "views";
-        break;
+        return "views";
       case "newest":
-        sorting = "modifiedAt";
-        break;
+        return "modifiedAt";
       case "popular":
       default:
-        sorting = "likes";
-        break;
+        return "likes";
     }
-    return sorting;
   }
 }
 
 
 
 if (Meteor.isClient) {
-  Session.set(S_VIEW_STYLE, "popular");
+  Session.set(S_VIEW_SORT_VAR, S_GALLERY_SORT);
+  Session.set(S_GALLERY_SORT, "popular");
+  Session.set(S_USER_SORT, "newest");
   Pages = new Mongo.Collection(null);
 
   Template.gallery.helpers({
@@ -468,19 +468,23 @@ if (Meteor.isClient) {
 
   Template.sorting.events({
     "click .sorting .popular": function() {
-      Session.set(S_VIEW_STYLE, "popular");
+      var sortVar = Session.get(S_VIEW_SORT_VAR);
+      Session.set(sortVar, "popular");
     },
     "click .sorting .newest": function() {
-      Session.set(S_VIEW_STYLE, "newest");
+      var sortVar = Session.get(S_VIEW_SORT_VAR);
+      Session.set(sortVar, "newest");
     },
     "click .sorting .mostviewed": function() {
-      Session.set(S_VIEW_STYLE, "mostviewed");
+      var sortVar = Session.get(S_VIEW_SORT_VAR);
+      Session.set(sortVar, "mostviewed");
     },
   });
 
   Template.sorting.helpers({
     selected: function(sortType) {
-      return Session.get(S_VIEW_STYLE) === sortType ? "selected" : "";
+      var sortVar = Session.get(S_VIEW_SORT_VAR);
+      return Session.get(sortVar) === sortType ? "selected" : "";
     },
   });
 
@@ -649,6 +653,12 @@ AccountsTemplates.configure({
   onSubmitHook: mySubmitFunc,
 });
 
+function SetSortingVar(name) {
+  if (Meteor.isClient) {
+    Session.set(S_VIEW_SORT_VAR, name);
+  }
+}
+
 Router.configure({
   trackPageView: true,
 });
@@ -657,6 +667,7 @@ Router.map(function() {
   this.route('/', {
     template: 'gallery',
     data: function() {
+      SetSortingVar(S_GALLERY_SORT);
       var page = 1;
       return {
         page: page,
@@ -668,6 +679,7 @@ Router.map(function() {
   this.route('/gallery/:_page', {
     template: 'gallery',
     data: function() {
+      SetSortingVar(S_GALLERY_SORT);
       var page = parseInt(this.params._page);
       return {
         page: page,
@@ -682,6 +694,7 @@ Router.map(function() {
   this.route('/user/:_username', {
     template: 'userprofile',
     data: function() {
+      SetSortingVar(S_USER_SORT);
       var page = 1;
       var username = this.params._username;
       return {
@@ -702,6 +715,7 @@ Router.map(function() {
   this.route('/user/:_username/:_page', {
     template: 'userprofile',
     data: function() {
+      SetSortingVar(S_USER_SORT);
       var page = parseInt(this.params._page);
       var username = this.params._username;
       return {
