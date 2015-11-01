@@ -88,9 +88,14 @@
 <div class="artpiece">
     <a href="/art/{{_id}}">
       <img class="thumbnail" src="{{screenshotLink.url}}" />
-      {{#if private}}
-        <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/eye-closed.svg" /></a>
-      {{/if}}
+      <div class="artstate">
+          {{#if private}}
+            <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/eye-closed.svg" /></a>
+          {{/if}}
+          {{#if hasRevisions}}
+            <a href="/art/{{_id}}/revisions" class="revisions tooltip-bottom" data-tooltip="revisions">R</a>
+          {{/if}}
+      </div>
     </a>
     <div class="galleryinfo">
         <div class="galleryname">
@@ -121,13 +126,15 @@
             <div class="galleryname">&ldquo;{{name}}&rdquo; by: {{username}}</div>
             <div>{{createdAtFormatted}}</div>
           </div>
-          {{#if isOwner}}
-            {{#if private}}
-              <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/eye-closed.svg" /></a>
-            {{else}}
-              <a href="" class="private tooltip-bottom" data-tooltip="public" ><img src="/static/resources/images/eye-white.svg" /></a>
-            {{/if}}
-          {{/if}}
+          <div class="artstate">
+              {{#if isOwner}}
+                {{#if private}}
+                  <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/eye-closed.svg" /></a>
+                {{else}}
+                  <a href="" class="private tooltip-bottom" data-tooltip="public" ><img src="/static/resources/images/eye-white.svg" /></a>
+                {{/if}}
+              {{/if}}
+          </div>
         </a>
     </div>
 </template>

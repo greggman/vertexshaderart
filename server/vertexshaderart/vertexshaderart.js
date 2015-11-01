@@ -276,6 +276,9 @@ if (Meteor.isClient) {
   });
 
   Template.artpiece.helpers({
+    hasRevisions: function() {
+      return this.createdAt.getTime() !== this.modifiedAt.getTime();
+    },
     screenshotLink: function() {
       if (this.screenshotURL) {
         return { url: this.screenshotURL };
@@ -1000,10 +1003,11 @@ function addArt(name, origId, vsData, data) {
     screenshotURL = saveDataURLToFile(screenshotDataURL);
   }
 
+  var date = new Date();
   var artId = Art.insert({
     owner: owner,
-    createdAt: new Date(),
-    modifiedAt: new Date(),
+    createdAt: date,
+    modifiedAt: date,
     origId: origId,
     name: name,
     private: data.private,
@@ -1014,7 +1018,7 @@ function addArt(name, origId, vsData, data) {
     likes: 0,
   });
   var revisionId = ArtRevision.insert({
-    createdAt: new Date(),
+    createdAt: date,
     owner: owner,
     origId: origId,
     artId: artId,
