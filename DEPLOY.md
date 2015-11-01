@@ -232,7 +232,7 @@ above would be `192.168.99.100:3000` for local. Personally I haven't set any up 
 Edit `server/deploy/settings-live.json` and change the account #
 
     "ga": {
-      "account":"UA-XXXXXXXX-X"
+      "id":"UA-XXXXXXXX-X"
     },
 
 ### Backup and Restore

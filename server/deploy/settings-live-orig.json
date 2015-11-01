@@ -1,7 +1,7 @@
 {
   "public" : {
     "ga": {
-      "account":"UA-XXXXXXXX-X"
+      "id":"UA-XXXXXXXX-X"
     },
     "app": {
       "pageSize": 15
