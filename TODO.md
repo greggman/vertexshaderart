@@ -1,5 +1,7 @@
 ﻿# To Do
 
+*   fix Cmd-S/Ctrl-S
+
 *   add infinite scroll
 
     *   update URL to reflect position?
