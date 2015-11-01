@@ -277,7 +277,7 @@ if (Meteor.isClient) {
 
   Template.artpiece.helpers({
     hasRevisions: function() {
-      return this.createdAt.getTime() !== this.modifiedAt.getTime();
+      return Router.current().data().showRevisions && this.createdAt.getTime() !== this.modifiedAt.getTime();
     },
     screenshotLink: function() {
       if (this.screenshotURL) {
@@ -705,6 +705,7 @@ Router.map(function() {
         username: username,
         path: '/user/' + username,
         count: 'artCount',
+        showRevisions: true,
       };
     },
     subscriptions: function() {
@@ -726,6 +727,7 @@ Router.map(function() {
         username: username,
         path: '/user/' + username,
         count: 'artCount',
+        showRevisions: true,
       };
     },
     subscriptions: function() {
