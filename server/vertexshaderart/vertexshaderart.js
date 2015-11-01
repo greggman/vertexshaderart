@@ -514,7 +514,7 @@ if (Meteor.isClient) {
       Session.set("saving", true);
       window.vsSaveData = {
         settings: window.vsart.getSettings(),
-        screenshot: window.vsart.takeScreenshot("image/jpeg", 0.8),
+        screenshot: window.vsart.takeScreenshot("image/jpeg", 0.7),
       };
     }
   }

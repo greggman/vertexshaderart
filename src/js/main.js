@@ -35,8 +35,8 @@ define([
     restoreKey: "restore",
     show: !isMobile,
   };
-  s.screenshotCanvas.width = 300;
-  s.screenshotCanvas.height = 168;
+  s.screenshotCanvas.width = 600;
+  s.screenshotCanvas.height = 336;
 
   function getShader(id) {
     var elem = $("#" + id);
