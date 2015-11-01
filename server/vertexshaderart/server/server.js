@@ -14,26 +14,26 @@ function generateUsername(username) {
   }
 }
 
-function addModifiedAt() {
-  var arts = Art.find({}).fetch();
-  arts.forEach(function(art) {
-    var newestPublicRevision = ArtRevision.findOne({
-      artId: art._id,
-      private: {$ne: true},
-    }, {
-      sort: {createdAt: -1},
-    });
-    if (newestPublicRevision && art.modifiedAt.getTime() !== newestPublicRevision.createdAt.getTime()) {
-console.log("updating art: " + art._id);
-      Art.update({_id: art._id}, {
-        $set: {
-          modifiedAt: newestPublicRevision.createdAt,
-        },
-      });
-    }
-  });
-}
-addModifiedAt();
+//function addModifiedAt() {
+//  var arts = Art.find({}).fetch();
+//  arts.forEach(function(art) {
+//    var newestPublicRevision = ArtRevision.findOne({
+//      artId: art._id,
+//      private: {$ne: true},
+//    }, {
+//      sort: {createdAt: -1},
+//    });
+//    if (newestPublicRevision && art.modifiedAt.getTime() !== newestPublicRevision.createdAt.getTime()) {
+//console.log("updating art: " + art._id);
+//      Art.update({_id: art._id}, {
+//        $set: {
+//          modifiedAt: newestPublicRevision.createdAt,
+//        },
+//      });
+//    }
+//  });
+//}
+//addModifiedAt();
 
 Accounts.onCreateUser(function (options, user) {
     if (options && options.profile) {
