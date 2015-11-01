@@ -23,7 +23,7 @@ function addModifiedAt() {
     }, {
       sort: {createdAt: -1},
     });
-    if (newestPublicRevision) {
+    if (newestPublicRevision && art.modifiedAt.getTime() !== newestPublicRevision.createdAt.getTime()) {
 console.log("updating art: " + art._id);
       Art.update({_id: art._id}, {
         $set: {
