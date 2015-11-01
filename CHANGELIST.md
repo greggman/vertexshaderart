@@ -2,6 +2,10 @@
 
 ### 2015-11-01
 
+*   Added `vertexCount` input to shader
+
+*   Added Revision button for each piece with more than 1 revision on user's page
+
 *   Added metadata for FB, Twitter
 
     This should mean if you post a link to a piece on facebook
