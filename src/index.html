@@ -99,23 +99,24 @@ UI
 
 Inputs
 -------------------------------------------------------------
-vertexId   : float     : number of the vertex 0, 1, 2
-resoluton  : vec2      : resolution of the art
-mouse      : vec2      : mouse position normalized (-1 to 1)
-touch      : sampler2D : touch history 32x240 (4sec @60fps)
-           :           : x = x, y = y, z = pressure, w = time
-           :           : column 0 is mouse or first finger.
-           :           : column 1 is second finger ...
-time       : float     : time in seconds
-sound      : sampler2D : data from the music Nx240, alpha only
-           :           : 240 rows of history (4secs @60fps)
-floatSound : sampler2D : data from the music Nx240, alpha only
-           :           : 240 rows of history (4secs @60fps)
-           :           : <a href="http://webaudio.github.io/web-audio-api/#widl-AnalyserNode-getFloatFrequencyData-void-Float32Array-array">see spec</a> for difference between
-           :           : getFloatFrequencyData and
-           :           : getByteFrenquencyData.
-soundRes   : vec2      : resolution of sound
-background : vec4      : background color
+vertexId    : float     : number of the vertex 0, 1, 2
+vertexCount : float     : total number of vertices
+resoluton   : vec2      : resolution of the art
+mouse       : vec2      : mouse position normalized (-1 to 1)
+touch       : sampler2D : touch history 32x240 (4sec @60fps)
+            :           : x = x, y = y, z = pressure, w = time
+            :           : column 0 is mouse or first finger.
+            :           : column 1 is second finger ...
+time        : float     : time in seconds
+sound       : sampler2D : data from the music Nx240, alpha only
+            :           : 240 rows of history (4secs @60fps)
+floatSound  : sampler2D : data from the music Nx240, alpha only
+            :           : 240 rows of history (4secs @60fps)
+            :           : <a href="http://webaudio.github.io/web-audio-api/#widl-AnalyserNode-getFloatFrequencyData-void-Float32Array-array">see spec</a> for difference between
+            :           : getFloatFrequencyData and
+            :           : getByteFrenquencyData.
+soundRes    : vec2      : resolution of sound
+background  : vec4      : background color
 
 Outputs:
 -------------------------------------------------------------
@@ -147,6 +148,7 @@ uniform vec2 mouse;
 uniform vec2 resolution;
 uniform vec4 background;
 uniform float time;
+uniform float vertexCount;
 uniform sampler2D sound;
 uniform sampler2D floatSound;
 uniform sampler2D touch;
