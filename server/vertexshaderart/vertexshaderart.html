@@ -118,6 +118,13 @@
             <div class="galleryname">&ldquo;{{name}}&rdquo; by: {{username}}</div>
             <div>{{createdAtFormatted}}</div>
           </div>
+          {{#if isOwner}}
+            {{#if private}}
+              <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/eye-closed.svg" /></a>
+            {{else}}
+              <a href="" class="private tooltip-bottom" data-tooltip="public" ><img src="/static/resources/images/eye-white.svg" /></a>
+            {{/if}}
+          {{/if}}
         </a>
     </div>
 </template>
@@ -316,6 +323,15 @@
                        -anon- <button class="signin button">sign in</button> to set.
                     {{/if}}
                  </div>
+             </div>
+             <div class="saveline">
+                 <div class="label">
+                     private:
+                 </div>
+                 <div class="checkbox">
+                    <input type="checkbox" value="None" id="private" name="check" />
+                    <label for="private"></label>
+                </div>
              </div>
          </div>
          <div class="buttons">

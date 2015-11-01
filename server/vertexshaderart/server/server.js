@@ -14,6 +14,21 @@ function generateUsername(username) {
   }
 }
 
+function addModifiedAt() {
+  var arts = Art.find({}).fetch();
+  arts.forEach(function(art) {
+      if (!art.modifiedAt) {
+console.log("updaing art:", art._id);
+        Art.update({_id: art._id}, {
+          $set: {
+            modifiedAt: art.createdAt,
+          },
+        });
+      }
+  });
+}
+addModifiedAt();
+
 Accounts.onCreateUser(function (options, user) {
     if (options && options.profile) {
         user.profile = options.profile;

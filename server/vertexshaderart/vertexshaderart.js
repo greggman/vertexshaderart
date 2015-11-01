@@ -26,7 +26,10 @@ function padZeros(v, len) {
 if (Meteor.isServer) {
 
   Meteor.publish("artForGrid", function (username, sortField, skip, limit) {
-    var find = (username && username !== "undefined") ? {username: username} : {};
+    var find = { private: {$ne: true} };
+    if (username && username !== "undefined") {
+      find.username = username;
+    }
     var sort = {};
     sort[sortField] = -1;
     var options = {
@@ -39,7 +42,13 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("art", function(id) {
-    return Art.find({_id: id});
+    return Art.find({
+      _id: id,
+      $or: [
+        { private: {$ne: true} },
+        { owner: this.userId },
+      ],
+    });
   });
 
   Meteor.publish("artCount", function(username) {
@@ -51,7 +60,13 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("artRevisionCount", function(artId) {
-    var find = {artId: artId};
+    var find = {
+      artId: artId,
+      $or: [
+        { private: {$ne: true} },
+        { owner: this.userId },
+      ],
+    };
     Counts.publish(this, 'artRevisionCount', ArtRevision.find(find));
   });
 
@@ -64,11 +79,23 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("artrevision", function(id) {
-    return ArtRevision.find({_id: id});
+    return ArtRevision.find({
+      _id: id,
+      $or: [
+        { private: {$ne: true} },
+        { owner: this.userId },
+      ],
+    });
   });
 
   Meteor.publish("artrevisions", function(artId, skip, limit) {
-    return ArtRevision.find({artId: artId}, {
+    return ArtRevision.find({
+      artId: artId,
+      $or: [
+        { private: {$ne: true} },
+        { owner: this.userId },
+      ],
+    }, {
       fields: {settings: false},
       skip: skip,
       limit: limit,
@@ -141,7 +168,7 @@ if (Meteor.isClient) {
         sorting = "views";
         break;
       case "newest":
-        sorting = "createdAt";
+        sorting = "modifiedAt";
         break;
       case "popular":
       default:
@@ -225,9 +252,18 @@ if (Meteor.isClient) {
         return { url:"/static/resources/images/missing-thumbnail.jpg" };
       }
     },
+    isOwner: function() {
+      return this.owner === Meteor.userId();
+    },
     createdAtFormatted: function() {
       var d = this.createdAt;
       return d.getFullYear() + "/" + padZeros(d.getMonth(), 2) + "/" + padZeros(d.getDate(), 2) + " " + padZeros(d.getHours(), 2) + ":" + padZeros(d.getMinutes(), 2);
+    },
+  });
+
+  Template.revision.events({
+    "click .artpiece .private": function(e) {
+      Meteor.call("setPrivate", this._id, !this.private);
     },
   });
 
@@ -535,7 +571,10 @@ if (Meteor.isClient) {
       }
       window.vsart.markAsSaving();
       Session.set("saving", false);
-      Meteor.call("addArt", $("#savedialog #name").val(), origId, window.vsSaveData, function(err, result) {
+      var data = {
+        private: $("#savedialog #private").is(':checked'),
+      };
+      Meteor.call("addArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
         window.vsart.markAsSaved();
         if (err) {
           console.error(err);
@@ -552,8 +591,11 @@ if (Meteor.isClient) {
         origId = route.params._id;
       }
       window.vsart.markAsSaving();
+      var data = {
+        private: $("#savedialog #private").is(':checked'),
+      };
       Session.set("saving", false);
-      Meteor.call("updateArt", $("#savedialog #name").val(), origId, window.vsSaveData, function(err, result) {
+      Meteor.call("updateArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
         window.vsart.markAsSaved();
       });
     },
@@ -910,7 +952,7 @@ var saveDataURLToFile = function() {
   };
 }();
 
-function addArt(name, origId, data) {
+function addArt(name, origId, vsData, data) {
   // Make sure the user is logged in before inserting art
   //    if (! Meteor.userId()) {
   //      throw new Meteor.Error("not-authorized");
@@ -918,8 +960,8 @@ function addArt(name, origId, data) {
   name = name || "unnamed";
   var owner = Meteor.userId();
   var username = Meteor.userId() ? Meteor.user().username : "-anon-";
-  var settings = data.settings || {};
-  var screenshotDataURL = data.screenshot.dataURL || "";
+  var settings = vsData.settings || {};
+  var screenshotDataURL = vsData.screenshot.dataURL || "";
   var screenshotURL = "";
 
   if (screenshotDataURL) {
@@ -929,8 +971,10 @@ function addArt(name, origId, data) {
   var artId = Art.insert({
     owner: owner,
     createdAt: new Date(),
+    modifiedAt: new Date(),
     origId: origId,
     name: name,
+    private: data.private,
     username: username,
     settings: JSON.stringify(settings),
     screenshotURL: screenshotURL,
@@ -943,6 +987,7 @@ function addArt(name, origId, data) {
     origId: origId,
     artId: artId,
     name: name,
+    private: data.private,
     username: username,
     settings: JSON.stringify(settings),
     screenshotURL: screenshotURL,
@@ -955,7 +1000,7 @@ function addArt(name, origId, data) {
   return artId;
 };
 
-function updateArt(name, origId, data) {
+function updateArt(name, origId, vsData, data) {
   var owner = Meteor.userId();
   if (!owner) {
     throw new Meteor.Error("not-loggedin", "use must be logged in to update");
@@ -970,8 +1015,8 @@ function updateArt(name, origId, data) {
   }
 
   var username = Meteor.user().username;
-  var settings = data.settings || {};
-  var screenshotDataURL = data.screenshot.dataURL || "";
+  var settings = vsData.settings || {};
+  var screenshotDataURL = vsData.screenshot.dataURL || "";
   var screenshotURL = "";
 
   if (screenshotDataURL) {
@@ -986,18 +1031,22 @@ function updateArt(name, origId, data) {
     artId: art._id,
     prevRevisionId: art.revisionId,
     name: name,
+    private: data.private,
     username: username,
     settings: JSON.stringify(settings),
     screenshotURL: screenshotURL,
   });
-  Art.update({_id: origId},
-    {$set: {
-      revisionId: revisionId,
-      name: name,
-      settings: JSON.stringify(settings),
-      screenshotURL: screenshotURL,
-    },
-  });
+  if (!data.private) {
+    Art.update({_id: origId},
+      {$set: {
+        revisionId: revisionId,
+        modifiedAt: new Date(),
+        name: name,
+        settings: JSON.stringify(settings),
+        screenshotURL: screenshotURL,
+      },
+    });
+  }
 }
 
 
@@ -1016,6 +1065,47 @@ Meteor.methods({
        ArtLikes.insert({artId: artId, userId: userId});
      }
      Art.update({_id: artId}, {$inc: {likes: like ? -1 : 1}});
+  },
+  setPrivate: function (revisionId, setToPrivate) {
+    var revision = ArtRevision.findOne(revisionId);
+    if (!revision) {
+      throw new Meteor.Error("no such revisions");
+    }
+
+    if (revision.owner !== Meteor.userId()) {
+      throw new Meteor.Error("not-authorized");
+    }
+
+    ArtRevision.update(revisionId, { $set: { private: setToPrivate } });
+    var newestPublicRevision = ArtRevision.findOne({
+      artId: revision.artId,
+      private: {$ne: true},
+    }, {
+      sort: {createdAt: -1},
+    });
+
+
+    var art = Art.findOne(revision.artId);
+    if (art) {
+      if (newestPublicRevision) {
+        Art.update({_id: revision.artId},
+          {$set: {
+            revisionId: newestPublicRevision._id,
+            modifiedAt: newestPublicRevision.createdAt,
+            name: newestPublicRevision.name,
+            settings: newestPublicRevision.settings,
+            screenshotURL: newestPublicRevision.screenshotURL,
+            private: false,
+          },
+        });
+      } else {
+        Art.update({_id: revision.artId},
+          {$set: {
+            private: true,
+          },
+        });
+      }
+    }
   },
   changeUsername: function(username) {
     username = username.trim();
@@ -1058,16 +1148,6 @@ Meteor.methods({
   //  }
   //
   //  Art.update(artId, { $set: { checked: setChecked} });
-  //},
-  //setPrivate: function (artId, setToPrivate) {
-  //  var art = Art.findOne(artId);
-  //
-  //  // Make sure only the task owner can make a task private
-  //  if (art.owner !== Meteor.userId()) {
-  //    throw new Meteor.Error("not-authorized");
-  //  }
-  //
-  //  Art.update(artId, { $set: { private: setToPrivate } });
   //},
   //testSSR: function() {
   //  if (Meteor.isServer) {
