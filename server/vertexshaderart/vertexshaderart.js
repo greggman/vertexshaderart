@@ -1050,6 +1050,7 @@ function updateArt(name, origId, vsData, data) {
         revisionId: revisionId,
         modifiedAt: new Date(),
         name: name,
+        private: false,
         settings: JSON.stringify(settings),
         screenshotURL: screenshotURL,
       },
