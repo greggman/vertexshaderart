@@ -26,9 +26,17 @@ function padZeros(v, len) {
 if (Meteor.isServer) {
 
   Meteor.publish("artForGrid", function (username, sortField, skip, limit) {
-    var find = { private: {$ne: true} };
+    var find = {
+      private: {$ne: true},
+    };
     if (username && username !== "undefined") {
-      find.username = username;
+      find = {
+        username: username,
+        $or: [
+          { private: {$ne: true} },
+          { owner: this.userId },
+        ],
+      };
     }
     var sort = {};
     sort[sortField] = -1;

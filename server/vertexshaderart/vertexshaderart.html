@@ -88,6 +88,9 @@
 <div class="artpiece">
     <a href="/art/{{_id}}">
       <img class="thumbnail" src="{{screenshotLink.url}}" />
+      {{#if private}}
+        <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/eye-closed.svg" /></a>
+      {{/if}}
     </a>
     <div class="galleryinfo">
         <div class="galleryname">
