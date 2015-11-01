@@ -18615,6 +18615,7 @@ define('src/js/main',[
 
     var uniforms = {
       time: 0,
+      vertexCount: 0,
       resolution: [1, 1],
       background: [0, 0, 0, 1],
       mouse: [0, 0],
@@ -18647,6 +18648,7 @@ define('src/js/main',[
       if (programInfo) {
 
         uniforms.time = time;
+        uniforms.vertexCount = settings.num;
         uniforms.resolution[0] = gl.canvas.width;
         uniforms.resolution[1] = gl.canvas.height;
         uniforms.background[0] = settings.backgroundColor[0];
