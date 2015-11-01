@@ -605,6 +605,16 @@ if (Meteor.isClient) {
       Session.set("saving", false);
       Meteor.call("updateArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
         window.vsart.markAsSaved();
+        if (err) {
+          console.error(err);
+          return;
+        }
+
+        // Were we editing a revisions?
+        if (route.params._revisionId) {
+          var url = "/art/" + origId + "/revision/" + result;
+          Router.go(url);
+        }
       });
     },
     "click #cancel": function() {
@@ -1056,6 +1066,7 @@ function updateArt(name, origId, vsData, data) {
       },
     });
   }
+  return revisionId;
 }
 
 
