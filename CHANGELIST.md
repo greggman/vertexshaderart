@@ -1,5 +1,22 @@
 # Changelist
 
+### 2015-11-01
+
+*   Added metadata for FB, Twitter
+
+    This should mean if you post a link to a piece on facebook
+    you'll get a screenshot of the piece instead of the generic
+    site image.
+
+*   Made thumbnails 600x336
+
+    Because FB complained images must be at least 200x200
+
+*   Added private flag.
+
+    When saving you can mark as private. From the revisions
+    page you and toggle the privacy of any revision.
+
 ### 2015-10-31
 
 *   Added "based on" link

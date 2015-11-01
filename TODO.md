@@ -1,17 +1,5 @@
 ﻿# To Do
 
-*   add private flag
-
-*   update Art date (or use modifiedAt)
-
-*   bump images to 600x300?
-
-    FB doesn't like 300x150.
-
-    check what size they'd be first.
-
-    batch current ones into 600x300
-
 *   add infinite scroll
 
     *   update URL to reflect position?
@@ -84,6 +72,18 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   add private flag
+
+*   update Art date (or use modifiedAt)
+
+*   bump images to 600x300?
+
+    FB doesn't like 300x150.
+
+    check what size they'd be first.
+
+    batch current ones into 600x300
 
 *   make meta data work "og:...", "twitter: ..."
 
