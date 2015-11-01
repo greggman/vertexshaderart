@@ -84,22 +84,22 @@ The site is split into 2 parts.
 
 ### Updating the visualizer into the meteor website.
 
-    To update the visiualizer/editor into the meteor website cd to the root folder of this repo
-    and type `grunt`.
+To update the visiualizer/editor into the meteor website cd to the root folder of this repo
+and type `grunt`.
 
-    That will
+That will
 
-    *   Compile all the JavaScript used in the visualizer app into 1 file and copy it
-        to `server/vertexshaderart/client/vsart.js`
+*   Compile all the JavaScript used in the visualizer app into 1 file and copy it
+    to `server/vertexshaderart/client/vsart.js`
 
-    *   Convert `src/index.html` into meteor templates and save them in
-        `server/vertexshaderart/client/vsart.html`
+*   Convert `src/index.html` into meteor templates and save them in
+    `server/vertexshaderart/client/vsart.html`
 
-    *   Concat all the css used by the visualizer and save in
-        `server/vertexshaderart/client/vsart.css`
+*   Concat all the css used by the visualizer and save in
+    `server/vertexshaderart/client/vsart.css`
 
-    *   Extract all the shaders from HTML into JavaScript and save in
-        `server/vertexshaderart/client/vsshaders.js`
+*   Extract all the shaders from HTML into JavaScript and save in
+    `server/vertexshaderart/client/vsshaders.js`
 
 ### Options for the visualizer/editor
 
@@ -107,36 +107,36 @@ The standalone visualizer/editor has a few options you can pass in on the URL. O
 are passed in by adding a `?` and then `key=value&key=value`.
 (eg: `http://localhost:8080/src/?settings=audio2&local=true`)
 
-    *   `local=true`
+*   `local=true`
 
-        This makes it use local music instead of going through soundcloud.
+    This makes it use local music instead of going through soundcloud.
 
-    *   `settings=<name>`
+*   `settings=<name>`
 
-        Where name is one of `audio`, `audio2`, `spiro`, `default`.
+    Where name is one of `audio`, `audio2`, `spiro`, `default`.
 
-        There are 4 built in visualiations. In the code search for `s.sets`
+    There are 4 built in visualiations. In the code search for `s.sets`
 
-    *   `showHistory=true`
+*   `showHistory=true`
 
-        This fills the screen with the texture that contains the music history.
+    This fills the screen with the texture that contains the music history.
 
-    *   `showFloatHistory=true`
+*   `showFloatHistory=true`
 
-        This fills the screen with the texture that contains the float music history.
+    This fills the screen with the texture that contains the float music history.
 
-    *   `showTouchHistory=true`
+*   `showTouchHistory=true`
 
-        This fills the screen with the texture that contains the touch data history.
+    This fills the screen with the texture that contains the touch data history.
 
-    *   `long=true`
+*   `long=true`
 
-        Along with `local=true` as in `local=true&long=true` provides a really long
-        name and title for the music to test that layout doesn't get broken.
+    Along with `local=true` as in `local=true&long=true` provides a really long
+    name and title for the music to test that layout doesn't get broken.
 
-    *   `pauseOnBlur=false`
+*   `pauseOnBlur=false`
 
-        See above.
+    See above.
 
 ## Deploying
 

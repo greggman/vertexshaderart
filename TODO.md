@@ -1,8 +1,53 @@
 ﻿# To Do
 
+*   add private flag
+
+*   update Art date (or use modifiedAt)
+
+*   bump images to 600x300?
+
+    FB doesn't like 300x150.
+
+    check what size they'd be first.
+
+    batch current ones into 600x300
+
+*   add infinite scroll
+
+    *   update URL to reflect position?
+
+        I want back to take me where I was.
+        I hade being 20 pages down and coming
+        back and being at page 1 and having
+        to find my place
+
+    *   Do I care about memory?
+
+        If you scroll 100 pages you end up
+        with 100 pages of data in the browser.
+
+        Ideally you'd delete elements at the
+        top so the browser can collect them
+        but you have the issue that the scroll
+        bar won't reflect how far you can scroll.
+
+        Do I care? I'll never have that many
+        images.
+
+        Or maybe I should just set a limit
+        of XX pages and then page?
+
+        Do I care?
+
+        Another thing I hate about infinite
+        scroll is it's hard to go to end.
+
 *   add profile
 
-*   make meta data work "og:...", "twitter: ..."
+    Users need a way to put contact info if they
+    want. I guess just a simple text field,
+    maybe markdown. Simple markdown, no html
+    no images.
 
 *   Figure out why mobile fails so often.
 
@@ -39,6 +84,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   make meta data work "og:...", "twitter: ..."
 
 *   add fullscreen button?
 
