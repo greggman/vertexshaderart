@@ -378,7 +378,7 @@ if (Meteor.isClient) {
     },
     userIsCurrentUser: function() {
       var route = Router.current();
-      return Meteor.userId() &&
+      return Meteor.userId() && Meteor.user() &&
              route.params._username === Meteor.user().username;
     },
   });
