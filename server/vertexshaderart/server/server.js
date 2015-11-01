@@ -17,14 +17,20 @@ function generateUsername(username) {
 function addModifiedAt() {
   var arts = Art.find({}).fetch();
   arts.forEach(function(art) {
-      if (!art.modifiedAt) {
-console.log("updaing art:", art._id);
-        Art.update({_id: art._id}, {
-          $set: {
-            modifiedAt: art.createdAt,
-          },
-        });
-      }
+    var newestPublicRevision = ArtRevision.findOne({
+      artId: art._id,
+      private: {$ne: true},
+    }, {
+      sort: {createdAt: -1},
+    });
+    if (newestPublicRevision) {
+console.log("updating art: " + art._id);
+      Art.update({_id: art._id}, {
+        $set: {
+          modifiedAt: newestPublicRevision.createdAt,
+        },
+      });
+    }
   });
 }
 addModifiedAt();
