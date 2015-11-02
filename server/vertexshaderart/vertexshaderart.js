@@ -85,7 +85,12 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("usernames", function(username) {
-    return Meteor.users.find({username: username}, {fields: {username: 1}});
+    return Meteor.users.find({username: username}, {
+      fields: {
+        username: 1,
+        profile: 1,
+      },
+    });
   });
 
   Meteor.publish("artrevision", function(id) {
@@ -171,6 +176,10 @@ AccountsTemplates.addFields([
 ]);
 
 if (Meteor.isClient) {
+  marked.setOptions({
+    sanitize: true,
+    breaks: true,
+  });
   function getSorting() {
     var sortVar = Session.get(S_VIEW_SORT_VAR);
     switch (Session.get(sortVar)) {
@@ -370,7 +379,7 @@ if (Meteor.isClient) {
     },
     userExists: function() {
       var route = Router.current();
-      var username = route.params._username;
+      var username = route.data().username;
       if (Meteor.users.findOne({username: username})) {
         return true;
       }
@@ -380,6 +389,21 @@ if (Meteor.isClient) {
       var route = Router.current();
       return Meteor.userId() && Meteor.user() &&
              route.params._username === Meteor.user().username;
+    },
+    userdata: function() {
+      var route = Router.current();
+      var username = route.data().username;
+      return Meteor.users.findOne({username: username});
+    },
+    userinfoprocessed: function() {
+console.log("uip");
+      var route = Router.current();
+      var username = route.data().username;
+      var user = Meteor.users.findOne({username: username});
+      if (user && user.profile && user.profile.info) {
+console.log(user.profile.info);
+        return marked(user.profile.info);
+      }
     },
   });
 
@@ -391,7 +415,7 @@ if (Meteor.isClient) {
     },
     "click .username": function(e) {
       var route = Router.current();
-      if (Meteor.userId() &&
+      if (Meteor.userId() && Meteor.user() &&
           Meteor.user().username === route.params._username) {
         Session.set("editUsername", true);
         $(".infoContainer .username").hide();
@@ -408,6 +432,37 @@ if (Meteor.isClient) {
             return;
           }
         });
+      }
+    },
+    "blur .userinfoedit": function() {
+      Session.set("editUserinfo", false);
+      $(".infoContainer .userinfo").show();
+      $(".infoContainer .userinfoedit").hide();
+    },
+    "click .userinfo": function(e) {
+      var route = Router.current();
+      if (Meteor.userId() && Meteor.user() &&
+          Meteor.user().username === route.params._username) {
+        e.preventDefault();
+        Session.set("editUserinfo", true);
+        $(".infoContainer .userinfo").hide();
+        $(".infoContainer .userinfoedit").show().focus();
+      }
+    },
+    "keydown .userinfoedit": function(e) {
+      if (e.keyCode === 13 && !e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+        e.preventDefault();
+        if (Meteor.userId()) {
+          var info = e.target.value.trim();
+          Meteor.call("changeUserinfo", info, function(error) {
+            if (!error) {
+              Session.set("editUserinfo", false);
+              $(".infoContainer .userinfo").show();
+              $(".infoContainer .userinfoedit").hide();
+              return;
+            }
+          });
+        }
       }
     },
     "click .logout": function() {
@@ -1173,6 +1228,19 @@ Meteor.methods({
       throw e;
     }
     Art.update({owner: Meteor.userId()}, {$set: {username: username}}, {multi: true});
+  },
+  changeUserinfo: function(info) {
+    if (!Meteor.userId()) {
+      throw new Meteor.Error("not loggedin", "please login to change your username");
+    }
+    if (!Meteor.isServer) {
+      return;
+    }
+    Meteor.users.update({_id: Meteor.userId()}, {
+      $set: {
+        profile: { info: info, },
+      },
+    });
   },
   //deleteArt: function (artId) {
   //  var art = Art.findOne(artId);

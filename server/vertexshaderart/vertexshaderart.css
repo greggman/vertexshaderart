@@ -17,6 +17,7 @@ embed, object {
 .infoContainer {
     padding: 0 2em 2em 2em;
     display: inline-block;
+    width: 100%;
     height: 100%;
     overflow: scroll;
 }
@@ -25,11 +26,46 @@ embed, object {
     display: -webkit-flex;
     justify-content: flex-start;
     -webkit-justify-content: flex-start;
-    align-items: center;
-    -webkit-align-items: center;
+    align-items: flex-start;
+    -webkit-align-items: flex-start;
+    galign-items: center;
+    g-webkit-align-items: center;
+    width: 100%;
 }
 .infoContainer .label {
     padding: 1em;
+    min-width: 8em;
+}
+.infoContainer p {
+    padding: 0;
+    margin: 0;
+    margin-bottom: 1em;
+}
+.infoContainer a {
+    text-decoration: none;
+    color: #888;
+}
+.infoContainer .info {
+    flex: 1 1 auto;
+    padding: 1em;
+}
+.infoContainer input[type=text] {
+    margin-top: -1em;
+}
+.infoContainer textarea {
+    width: 100%;
+    background-color: black;
+    color: white;
+    min-height: 3em;
+    font-family: monospace;
+    font-size: medium;
+}
+.infoContainer .userinfo {
+    min-width: 5em;
+    min-height: 1em;
+}
+.infoContainer .editable {
+    color: #444;
 }
 
 #vsloginback {

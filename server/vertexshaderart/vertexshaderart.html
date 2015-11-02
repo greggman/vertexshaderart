@@ -259,11 +259,25 @@
        <div class="profile">
            <div class="infoline">
                <div class="label">username:</div>
-               <!-- {{#if editUsername}} -->
-                 <input class="usernameedit" type="text" value="{{username}}" style="display: none" />
-               <!-- {{else}} -->
-                 <div class="username">{{username}}</div>
-               <!-- {{/if}} -->
+               <div class="info">
+                   <input class="usernameedit" type="text" value="{{username}}" style="display: none;" />
+                   <div class="username">{{username}}</div>
+               </div>
+           </div>
+           <div class="infoline">
+               <div class="label">info: </div>
+               <div class="info">
+                 <textarea class="userinfoedit" style="display: none;" value="{{userdata.profile.info}}"></textarea>
+                 {{#if userIsCurrentUser}}
+                     {{#if userdata.profile.info}}
+                       <div class="userinfo">{{{userinfoprocessed}}}</div>
+                     {{else}}
+                       <div class="userinfo editable">..click.to.edit..(markdown)</div>
+                     {{/if}}
+                 {{else}}
+                       <div class="userinfo">{{{userinfoprocessed}}}</div>
+                 {{/if}}
+               </div>
            </div>
        </div>
        <h2>Creations:</h2>
