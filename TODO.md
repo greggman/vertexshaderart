@@ -1,6 +1,10 @@
 ﻿# To Do
 
-*   fix Cmd-S/Ctrl-S
+*   stop music
+
+*   move soundcloud files local or remove them
+
+    If there's no internet I can't use :(
 
 *   add infinite scroll
 
@@ -74,6 +78,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   fix Cmd-S/Ctrl-S
 
 *   add private flag
 
