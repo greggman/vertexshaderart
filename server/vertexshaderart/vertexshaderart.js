@@ -396,12 +396,10 @@ if (Meteor.isClient) {
       return Meteor.users.findOne({username: username});
     },
     userinfoprocessed: function() {
-console.log("uip");
       var route = Router.current();
       var username = route.data().username;
       var user = Meteor.users.findOne({username: username});
       if (user && user.profile && user.profile.info) {
-console.log(user.profile.info);
         return marked(user.profile.info);
       }
     },
