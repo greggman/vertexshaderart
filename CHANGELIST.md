@@ -2,6 +2,18 @@
 
 ### 2015-11-01
 
+*   Added user info
+
+    Rather than fields for email, twitter, irc, etc it's just
+    an open field with markup. If you can write GLSL you can
+    probably figure it out
+
+*   Fixed music bug where going to a piece with music
+    and then back before the music started would play
+    the music in the background
+
+### 2015-11-01
+
 *   Added `vertexCount` input to shader
 
 *   Added Revision button for each piece with more than 1 revision on user's page
