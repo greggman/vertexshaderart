@@ -465,7 +465,7 @@ define([
         setSoundSuccessState(false, e.toString());
       });
       s.streamSource.on('newSource', function(source) {
-        if (!g.running) {
+        if (!s.running) {
           s.streamSource.stop();
           return;
         }
@@ -967,7 +967,7 @@ define([
       //tryNewProgram(settings.shader);
       markAsSaved();
 
-      g.running = true;
+      s.running = true;
       queueRender();
     }
 
@@ -1163,7 +1163,7 @@ define([
     }
 
     function unpauseOnFocus() {
-      if (g.pauseOnBlur && g.running) {
+      if (g.pauseOnBlur && s.running) {
         queueRender();
       }
     }
@@ -1278,7 +1278,7 @@ define([
 
 
     this.stop = function() {
-      g.running = false;
+      s.running = false;
       stopRender();
       if (s.streamSource.isPlaying()) {
         s.streamSource.stop();
