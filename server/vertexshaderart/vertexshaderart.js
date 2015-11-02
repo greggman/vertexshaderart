@@ -513,7 +513,9 @@ if (Meteor.isClient) {
     if (!settings && window.location.pathname.substr(0, 5) !== "/new/") {
       settings = window.vsart.missingSettings;
     }
-    window.vsart.setSettings(settings);
+    window.vsart.setSettings(settings, {
+      saveFn: save,
+    });
   }
 
   Template.artpage.onRendered(function() {
@@ -525,7 +527,7 @@ if (Meteor.isClient) {
   });
 
   function save() {
-    if (window.vsart.isSaveable()) {
+    if (!Session.get("saving") && window.vsart.isSaveable()) {
       Session.set("saving", true);
       window.vsSaveData = {
         settings: window.vsart.getSettings(),
@@ -541,12 +543,12 @@ if (Meteor.isClient) {
     "click #new": function() {
       window.location.href = "/new/";
     },
-    "keydown": function(e) {
-      if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
-        e.preventDefault();
-        save();
-      }
-    }
+    //"keydown": function(e) {
+    //  if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+    //    e.preventDefault();
+    //    save();
+    //  }
+    //}
   });
 
   Template.save.helpers({

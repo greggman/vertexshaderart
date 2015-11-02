@@ -18173,6 +18173,16 @@ define('src/js/main',[
       }
     }
 
+    function trySave(e) {
+      if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+        e.preventDefault();
+        if (g.saveFn) {
+          g.saveFn();
+        }
+      }
+    }
+
+    on(window, 'keydown', trySave);
     on(window, 'beforeunload', saveRestoreSettings);
     on(document, 'visibilitychange', clearRestore);
     on(window, 'resize', function() {
@@ -18589,7 +18599,9 @@ define('src/js/main',[
       return settings;
     }
 
-    function setSettings(_settings) {
+    function setSettings(_settings, options) {
+      options = options || {};
+      g.saveFn = options.saveFn;
       g.restoreCleared = false;
       settings = restoreSettings(_settings);
       settings = JSON.parse(JSON.stringify(settings));
@@ -18974,7 +18986,7 @@ define('src/js/main',[
     }
   }
 
-  function setSettings(settings) {
+  function setSettings(settings, options) {
     vs = new VS(); //init();
 
     if (!settings) {
@@ -18985,7 +18997,7 @@ define('src/js/main',[
       settings = sets[keys[ndx]];
     }
 
-    vs.setSettings(settings);
+    vs.setSettings(settings, options);
   }
 
   function getSettings() {
