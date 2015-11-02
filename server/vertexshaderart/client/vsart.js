@@ -18123,6 +18123,10 @@ define('src/js/main',[
         setSoundSuccessState(false, e.toString());
       });
       s.streamSource.on('newSource', function(source) {
+        if (!g.running) {
+          s.streamSource.stop();
+          return;
+        }
         source.connect(s.analyser);
         setPlayState();
         setSoundSuccessState(true);
