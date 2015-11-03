@@ -177,7 +177,7 @@ WebApp.connectHandlers.use(function(req, res, next) {
     }
     m = artRevisionPathRE.exec(req.url);
     if (m) {
-      return sendArtRevision(req, res, m[2]);
+      return sendArtRevisionSSR(req, res, m[2]);
     }
   }
   next();
