@@ -1275,8 +1275,6 @@ define([
     on(touchTarget, 'touchcancel', recordTouchCancel);
     on(touchTarget, 'touchmove', recordTouchMove);
 
-
-
     this.stop = function() {
       s.running = false;
       stopRender();
