@@ -69,17 +69,21 @@ embed, object {
     font-size: x-large;
     display: flex;
     display: -webkit-flex;
-    justify-content: space-between;
-    -webkit-justify-content: space-between;
+    justify-content: flex-start;
+    -webkit-justify-content: flex-start;
     margin-bottom: 0.25em;
     width: 10em;
 }
 .sortcriteria .title .right {
     font-size: medium;
+    margin-left: 1em;
 }
 
 .sortcriteria .title a {
-    font-size: x-large;
+    border: 1px solid #444;
+    border-radius: 0.5em;
+    padding: 0.25em;
+    display: inline-block;
     color: white;
     text-decoration: none;
 }
