@@ -1,10 +1,18 @@
 ﻿# To Do
 
-*   stop music
+*   put newest on front page
 
-*   move soundcloud files local or remove them
+*   add tooltips for more stuff
 
-    If there's no internet I can't use :(
+*   add "loading" to gallery?
+
+*   embeddable?
+
+    should I make it possible to embed like a youtube video?
+
+    You'd basicaly put `<iframe src="http://vertexshaderart.com/view/?id=xxx"></iframe>` or
+    something. Not sure what the point is. I just thought it would
+    be nice to embed on my blog :P
 
 *   add infinite scroll
 
@@ -35,13 +43,6 @@
 
         Another thing I hate about infinite
         scroll is it's hard to go to end.
-
-*   add profile
-
-    Users need a way to put contact info if they
-    want. I guess just a simple text field,
-    maybe markdown. Simple markdown, no html
-    no images.
 
 *   Figure out why mobile fails so often.
 
@@ -78,6 +79,15 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   add profile
+
+    Users need a way to put contact info if they
+    want. I guess just a simple text field,
+    maybe markdown. Simple markdown, no html
+    no images.
+
+*   stop music
 
 *   fix Cmd-S/Ctrl-S
 
