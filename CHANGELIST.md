@@ -1,5 +1,13 @@
 # Changelist
 
+### 2015-11-02
+
+*   Added newest to front page.
+
+    I felt like new stuff was buried but I also
+    want popular stuff on the front page
+    since that's usually the most impressive.
+
 ### 2015-11-01
 
 *   Added user info

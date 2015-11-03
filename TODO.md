@@ -1,7 +1,5 @@
 ﻿# To Do
 
-*   put newest on front page
-
 *   add tooltips for more stuff
 
 *   add "loading" to gallery?
