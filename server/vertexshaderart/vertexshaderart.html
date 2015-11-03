@@ -63,6 +63,43 @@
         <div class="logo"><h1><a href="/">vertexshaderart.com</a></h1></div>
 </template>
 
+<template name="front">
+  <header>
+
+    <div>
+        <div class="buttons">
+            {{> userinfosignin}}
+            <a href="/new/">create new</a>
+            <a href="http://github.com/greggman/vertexshaderart">github</a>
+        </div>
+        {{> logo}}
+    </div>
+  </header>
+  <div class="container">
+     <div class="gallery">
+         {{> artselection sort="newest" limit="8"}}
+         {{> artselection sort="popular" limit="8"}}
+     </div>
+  </div>
+
+  {{> vslogin}}
+</template>
+
+<template name="artselection">
+   <div class="sortcriteria">
+       <div class="title">
+           <div>{{sort}}:</div><div class="right"> <a href="/gallery/1/?sort={{sort}}">see all</a></div>
+       </div>
+       <div class="artgrid">
+           {{#if Template.subscriptionsReady}}
+             {{#each art}}
+               {{> artpiece}}
+             {{/each}}
+           {{/if}}
+       </div>
+   </div>
+</template>
+
 <template name="gallery">
   <header>
 
@@ -306,11 +343,6 @@
 </template>
 
 <template name="vslogin">
-  <!--
-  <div style="z-index: 1000; position: absolute; left: 0; top: 0; background-color:red; color: white;">
-      login template!
-  </div>
-  -->
   {{#if currentlyLoggingIn}}
 
     <div id="vsloginback" class="fulldialog">

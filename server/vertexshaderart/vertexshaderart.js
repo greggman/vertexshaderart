@@ -27,7 +27,7 @@ function padZeros(v, len) {
 
 if (Meteor.isServer) {
 
-  Meteor.publish("artForGrid", function (username, sortField, skip, limit) {
+  Meteor.publish("artForGrid", function(username, sortField, skip, limit) {
     var find = {
       private: {$ne: true},
     };
@@ -46,6 +46,20 @@ if (Meteor.isServer) {
       fields: {settings: false},
       sort: sort,
       skip: skip,
+      limit: limit,
+    };
+    return Art.find(find, options);
+  });
+
+  Meteor.publish("artSelection", function(sortField, limit) {
+    var find = {
+      private: {$ne: true},
+    };
+    var sort = {};
+    sort[sortField] = -1;
+    var options = {
+      fields: {settings: false},
+      sort: sort,
       limit: limit,
     };
     return Art.find(find, options);
@@ -180,9 +194,8 @@ if (Meteor.isClient) {
     sanitize: true,
     breaks: true,
   });
-  function getSorting() {
-    var sortVar = Session.get(S_VIEW_SORT_VAR);
-    switch (Session.get(sortVar)) {
+  function getSortingType(sort) {
+    switch (sort) {
       case "mostviewed":
         return "views";
       case "newest":
@@ -191,6 +204,10 @@ if (Meteor.isClient) {
       default:
         return "likes";
     }
+  }
+  function getSorting() {
+    var sortVar = Session.get(S_VIEW_SORT_VAR);
+    return getSortingType(Session.get(sortVar));
   }
 }
 
@@ -201,6 +218,28 @@ if (Meteor.isClient) {
   Session.set(S_GALLERY_SORT, "popular");
   Session.set(S_USER_SORT, "newest");
   Pages = new Mongo.Collection(null);
+
+  Template.artselection.onCreated(function() {
+    var instance = this;
+    instance.autorun(function() {
+      var sort = getSortingType(instance.data.sort);
+      instance.subscribe('artSelection', sort, parseInt(instance.data.limit));
+    });
+  });
+
+  Template.artselection.helpers({
+    art: function() {
+      var instance = Template.instance();
+      var sortField = getSortingType(instance.data.sort);
+      var sort = {};
+      sort[sortField] = -1;
+      var options = {
+        sort: sort,
+        limit: parseInt(instance.data.limit),
+      };
+      return Art.find({}, options);
+    },
+  });
 
   Template.gallery.helpers({
     hideCompleted: function () {
@@ -286,7 +325,7 @@ if (Meteor.isClient) {
 
   Template.artpiece.helpers({
     hasRevisions: function() {
-      return Router.current().data().showRevisions && this.createdAt.getTime() !== this.modifiedAt.getTime();
+      return Router.current() && Router.current().data && Router.current().data().showRevisions && this.createdAt.getTime() !== this.modifiedAt.getTime();
     },
     screenshotLink: function() {
       if (this.screenshotURL) {
@@ -524,16 +563,13 @@ if (Meteor.isClient) {
 
   Template.sorting.events({
     "click .sorting .popular": function() {
-      var sortVar = Session.get(S_VIEW_SORT_VAR);
-      Session.set(sortVar, "popular");
+      SetSorting("popular");
     },
     "click .sorting .newest": function() {
-      var sortVar = Session.get(S_VIEW_SORT_VAR);
-      Session.set(sortVar, "newest");
+      SetSorting("newest");
     },
     "click .sorting .mostviewed": function() {
-      var sortVar = Session.get(S_VIEW_SORT_VAR);
-      Session.set(sortVar, "mostviewed");
+      SetSorting("mostViewed");
     },
   });
 
@@ -717,27 +753,28 @@ function SetSortingVar(name) {
   }
 }
 
+function SetSorting(sortType) {
+  if (Meteor.isClient) {
+    var sortVar = Session.get(S_VIEW_SORT_VAR);
+    Session.set(sortVar, sortType);
+  }
+}
+
 Router.configure({
   trackPageView: true,
 });
 
 Router.map(function() {
   this.route('/', {
-    template: 'gallery',
-    data: function() {
-      SetSortingVar(S_GALLERY_SORT);
-      var page = 1;
-      return {
-        page: page,
-        path: '/gallery',
-        count: 'artCount',
-      };
-    },
+    template: 'front',
   });
   this.route('/gallery/:_page', {
     template: 'gallery',
     data: function() {
       SetSortingVar(S_GALLERY_SORT);
+      if (this.params.query && this.params.query.sort) {
+        SetSorting(this.params.query.sort);
+      }
       var page = parseInt(this.params._page);
       return {
         page: page,

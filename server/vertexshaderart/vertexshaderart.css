@@ -28,8 +28,6 @@ embed, object {
     -webkit-justify-content: flex-start;
     align-items: flex-start;
     -webkit-align-items: flex-start;
-    galign-items: center;
-    g-webkit-align-items: center;
     width: 100%;
 }
 .infoContainer .label {
@@ -67,7 +65,24 @@ embed, object {
 .infoContainer .editable {
     color: #444;
 }
+.sortcriteria .title {
+    font-size: x-large;
+    display: flex;
+    display: -webkit-flex;
+    justify-content: space-between;
+    -webkit-justify-content: space-between;
+    margin-bottom: 0.25em;
+    width: 10em;
+}
+.sortcriteria .title .right {
+    font-size: medium;
+}
 
+.sortcriteria .title a {
+    font-size: x-large;
+    color: white;
+    text-decoration: none;
+}
 #vsloginback {
     z-index: 20;
 }
@@ -381,6 +396,17 @@ header .buttons a, header .buttons div, .button {
         margin: 0 0 1em 0;
     }
     .gallery .artgrid {
+        text-align: center;
+    }
+    .gallery .sortcriteria .title {
+        width: 100%;
+        justify-content: center;
+        -webkit-justify-content: center;
+    }
+    .gallery .sortcriteria .title .right {
+        margin-left: 2em;
+    }
+    .gallery .sortcriteria {
         text-align: center;
     }
     .sorting {
