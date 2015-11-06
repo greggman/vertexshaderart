@@ -32,15 +32,15 @@
 
     <div class="sorting">
       <div class="sorttype">
-          <div class='button popular {{selected "popular"}}'>
+          <a class='button popular {{selected "popular"}}' href="{{url 'popular'}}">
               popular
-          </div>
-          <div class='button newest {{selected "newest"}}'>
+          </a>
+          <a class='button newest {{selected "newest"}}' href="{{url 'newest'}}">
               newest
-          </div>
-          <div class='button mostviewed {{selected "mostviewed"}}'>
+          </a>
+          <a class='button mostviewed {{selected "mostviewed"}}' href="{{url 'mostviewed'}}">
               views
-          </div>
+          </a>
       </div>
       <div class="pagination">
           {{> pagination}}
@@ -56,7 +56,7 @@
 </template>
 
 <template name="page">
-     <a class='button {{samepageclass}}' href="{{path}}/{{pageid}}">{{pagenum}}</a>
+     <a class='button {{samepageclass}}' href="{{purl}}">{{pagenum}}</a>
 </template>
 
 <template name="logo">

@@ -1,8 +1,5 @@
 S_CURRENTLY_LOGGING_IN = "currentlyLoggingIn";
 S_PENDING_LIKE = "pendingLike";
-S_GALLERY_SORT = "gallerysort";
-S_USER_SORT = "usersort";
-S_VIEW_SORT_VAR = "sortvar";
 S_ART_OWNER_ID = "artOwnerId";
 S_ART_NAME = "artName";
 
@@ -205,18 +202,11 @@ if (Meteor.isClient) {
         return "likes";
     }
   }
-  function getSorting() {
-    var sortVar = Session.get(S_VIEW_SORT_VAR);
-    return getSortingType(Session.get(sortVar));
-  }
 }
 
 
 
 if (Meteor.isClient) {
-  Session.set(S_VIEW_SORT_VAR, S_GALLERY_SORT);
-  Session.set(S_GALLERY_SORT, "popular");
-  Session.set(S_USER_SORT, "newest");
   Pages = new Mongo.Collection(null);
 
   Template.artselection.onCreated(function() {
@@ -259,7 +249,7 @@ if (Meteor.isClient) {
       var page = pageId - 1;
       var username = route.data().username;
       var skip = page * G_PAGE_SIZE;
-      var sorting = getSorting();
+      var sorting = route.data().sortType;
 
       instance.subscribe('artForGrid', username, sorting, skip, G_PAGE_SIZE);
       instance.subscribe('artCount', username);
@@ -268,8 +258,9 @@ if (Meteor.isClient) {
 
   Template.artgrid.helpers({
     art: function() {
+      var route = Router.current();
       var sort = {};
-      sort[getSorting()] = -1;
+      sort[route.data().sortType] = -1;
       return Art.find({}, { sort: sort });
     },
   });
@@ -522,18 +513,23 @@ if (Meteor.isClient) {
       var pageRange = G_PAGE_RANGE;
       var lastPage = numPages - 1;
       var path = route.data().path;
+      var sort = route.data().sort;
 
       if (window.screen && window.screen.availWidth < 400) {
         numPageButtons = 0;
         pageRange = 0;
       }
 
+      var makeUrl = function(pageId) {
+        return path + '/' + pageId + (sort ? ('?sort=' + sort) : '');
+      };
+
       Pages.remove({});
       if (numPages > 1) {
         var needPrevNext = numPages > numPageButtons;
         if (needPrevNext) {
           var prev = Math.max(page, 1);
-          Pages.insert({path: path, pagenum: "<<", pageid: prev, samepageclass: pageId === prev ? "selected" : ""});
+          Pages.insert({purl: makeUrl(prev), pagenum: "<<", samepageclass: pageId === prev ? "selected" : ""});
         }
 
         var min = page - pageRange;
@@ -548,35 +544,40 @@ if (Meteor.isClient) {
         }
         if (min !== max) {
           for (var ii = min; ii <= max; ++ii) {
-            Pages.insert({path: path, pagenum: ii + 1, pageid: ii + 1, samepageclass: ii === page ? "selected" : ""});
+            Pages.insert({purl: makeUrl(ii + 1), pagenum: ii + 1, samepageclass: ii === page ? "selected" : ""});
           }
         }
 
         if (needPrevNext) {
           var next = Math.min(lastPage, page + 1);
-          Pages.insert({path: path, pagenum: ">>", pageid: next + 1, samepageclass: page === next ? "selected" : ""});
+          Pages.insert({purl: makeUrl(next + 1), pagenum: ">>", samepageclass: page === next ? "selected" : ""});
         }
       }
       return Pages.find({});
     },
   });
 
-  Template.sorting.events({
-    "click .sorting .popular": function() {
-      SetSorting("popular");
-    },
-    "click .sorting .newest": function() {
-      SetSorting("newest");
-    },
-    "click .sorting .mostviewed": function() {
-      SetSorting("mostViewed");
-    },
-  });
+  //Template.sorting.events({
+  //  "click .sorting .popular": function() {
+  //    SetSorting("popular");
+  //  },
+  //  "click .sorting .newest": function() {
+  //    SetSorting("newest");
+  //  },
+  //  "click .sorting .mostviewed": function() {
+  //    SetSorting("mostViewed");
+  //  },
+  //});
 
   Template.sorting.helpers({
     selected: function(sortType) {
-      var sortVar = Session.get(S_VIEW_SORT_VAR);
-      return Session.get(sortVar) === sortType ? "selected" : "";
+      var route = Router.current();
+      var sort = route.data().sort || "popular";
+      return sort === sortType ? "selected" : "";
+    },
+    url: function(sortType) {
+      var route = Router.current();
+      return route.data().path + '/' + route.data().page + '?sort=' + sortType;
     },
   });
 
@@ -747,287 +748,279 @@ AccountsTemplates.configure({
   onSubmitHook: mySubmitFunc,
 });
 
-function SetSortingVar(name) {
-  if (Meteor.isClient) {
-    Session.set(S_VIEW_SORT_VAR, name);
-  }
-}
-
-function SetSorting(sortType) {
-  if (Meteor.isClient) {
-    var sortVar = Session.get(S_VIEW_SORT_VAR);
-    Session.set(sortVar, sortType);
-  }
-}
-
 Router.configure({
   trackPageView: true,
 });
 
-Router.map(function() {
-  this.route('/', {
-    template: 'front',
-  });
-  this.route('/gallery/:_page', {
-    template: 'gallery',
-    data: function() {
-      SetSortingVar(S_GALLERY_SORT);
-      if (this.params.query && this.params.query.sort) {
-        SetSorting(this.params.query.sort);
-      }
-      var page = parseInt(this.params._page);
-      return {
-        page: page,
-        path: '/gallery',
-        count: 'artCount',
-      };
-    },
-  });
-  this.route('/new/', function() {
-    this.render('artpage');
-  });
-  this.route('/user/:_username', {
-    template: 'userprofile',
-    data: function() {
-      SetSortingVar(S_USER_SORT);
-      var page = 1;
-      var username = this.params._username;
-      return {
-        page: page,
-        username: username,
-        path: '/user/' + username,
-        count: 'artCount',
-        showRevisions: true,
-      };
-    },
-    subscriptions: function() {
-      var subs = [];
-      subs.push(Meteor.subscribe('usernames', this.params._username));
-      return subs;
-    },
-    cache: 5,
-    expire: 5,
-  });
-  this.route('/user/:_username/:_page', {
-    template: 'userprofile',
-    data: function() {
-      SetSortingVar(S_USER_SORT);
-      var page = parseInt(this.params._page);
-      var username = this.params._username;
-      return {
-        page: page,
-        username: username,
-        path: '/user/' + username,
-        count: 'artCount',
-        showRevisions: true,
-      };
-    },
-    subscriptions: function() {
-      var subs = [];
-      subs.push(Meteor.subscribe('usernames', this.params._username));
-      return subs;
-    },
-    cache: 5,
-    expire: 5,
-  });
-  this.route('/art/:_id', {
-    template: 'artpage',
-    subscriptions: function() {
-      var subs = [
-        Meteor.subscribe('art', this.params._id),
-      ];
-      if (Meteor.userId()) {
-        subs.push(Meteor.subscribe('artLikes', this.params._id, Meteor.userId()));
-      }
-      return subs;
-    },
-    cache: 5,
-    expire: 5,
-    data: function() {
-      return Art.findOne({_id: this.params._id});
-    },
-    action: function() {
-      if (this.ready()) {
-        Session.set(S_CURRENTLY_LOGGING_IN, false);
-        this.render();
-      } else {
-        this.render('loading');
-      }
-    },
-    onAfterAction: function() {
-      if (!Meteor.isClient) {
-        return;
-      }
+Router.route('/', {
+  template: 'front',
+});
+Router.route('/gallery/:_page', {
+  name: 'galleryroute',
+  template: 'gallery',
+  data: function() {
+    var sort = this.params.query.sort;
+    var sortType = getSortingType(sort);
+    var page = parseInt(this.params._page);
+    return {
+      page: page,
+      path: '/gallery',
+      count: 'artCount',
+      sort: sort,
+      sortType: sortType,
+    };
+  },
+});
+Router.route('/new/', function() {
+  this.render('artpage');
+});
+Router.route('/user/:_username', {
+  template: 'userprofile',
+  data: function() {
+    var sort = this.params.query.sort;
+    var sortType = getSortingType(sort);
+    var page = 1;
+    var username = this.params._username;
+    return {
+      page: page,
+      username: username,
+      path: '/user/' + username,
+      count: 'artCount',
+      showRevisions: true,
+      sort: sort,
+      sortType: sortType,
+    };
+  },
+  subscriptions: function() {
+    var subs = [];
+    subs.push(Meteor.subscribe('usernames', this.params._username));
+    return subs;
+  },
+  cache: 5,
+  expire: 5,
+});
+Router.route('/user/:_username/:_page', {
+  template: 'userprofile',
+  data: function() {
+    var page = parseInt(this.params._page);
+    var username = this.params._username;
+    var sort = this.params.query.sort;
+    var sortType = getSortingType(sort);
+    return {
+      page: page,
+      username: username,
+      path: '/user/' + username,
+      count: 'artCount',
+      showRevisions: true,
+      sort: sort,
+      sortType: sortType,
+    };
+  },
+  subscriptions: function() {
+    var subs = [];
+    subs.push(Meteor.subscribe('usernames', this.params._username));
+    return subs;
+  },
+  cache: 5,
+  expire: 5,
+});
+Router.route('/art/:_id', {
+  template: 'artpage',
+  subscriptions: function() {
+    var subs = [
+      Meteor.subscribe('art', this.params._id),
+    ];
+    if (Meteor.userId()) {
+      subs.push(Meteor.subscribe('artLikes', this.params._id, Meteor.userId()));
+    }
+    return subs;
+  },
+  cache: 5,
+  expire: 5,
+  data: function() {
+    return Art.findOne({_id: this.params._id});
+  },
+  action: function() {
+    if (this.ready()) {
+      Session.set(S_CURRENTLY_LOGGING_IN, false);
+      this.render();
+    } else {
+      this.render('loading');
+    }
+  },
+  onAfterAction: function() {
+    if (!Meteor.isClient) {
+      return;
+    }
 
-      // hard to decide what's the best way to do this
-      // this just makes it not get into an infinite loop.
-      // Do we care that if you just refresh the page it's a new view?
-      // Youtube doesn't care so should I?
-      var artId = this.params._id;
-      var lastArtId = Session.get("view_art_id");
-      if (artId !== lastArtId) {
-        Session.set("view_art_id", artId);
-        Meteor.call("incArtViews", artId);
-      }
-      //SEO.set({
-      //  title: "foobar",
-      //  meta: {
-      //    'description': "foobar-desc",
-      //  },
-      //  og: {
-      //    'title': this.params._id,
-      //    'description': "foobar-desc",
-      //  },
-      //});
+    // hard to decide what's the best way to do this
+    // this just makes it not get into an infinite loop.
+    // Do we care that if you just refresh the page it's a new view?
+    // Youtube doesn't care so should I?
+    var artId = this.params._id;
+    var lastArtId = Session.get("view_art_id");
+    if (artId !== lastArtId) {
+      Session.set("view_art_id", artId);
+      Meteor.call("incArtViews", artId);
+    }
+    //SEO.set({
+    //  title: "foobar",
+    //  meta: {
+    //    'description': "foobar-desc",
+    //  },
+    //  og: {
+    //    'title': this.params._id,
+    //    'description': "foobar-desc",
+    //  },
+    //});
 
-    },
-  });
-  this.route('/art/:_id/revision/:_revisionId', {
-    template: 'artpage',
-    subscriptions: function() {
-      var subs = [
-        Meteor.subscribe('artrevision', this.params._revisionId),
-        Meteor.subscribe('art', this.params._id),
-      ];
-      if (Meteor.userId()) {
-        subs.push(Meteor.subscribe('artLikes', this.params._id, Meteor.userId()));
-      }
-      return subs;
-    },
-    cache: 5,
-    expire: 5,
-    data: function() {
-      return ArtRevision.findOne({_id: this.params._revisionId});
-    },
-    action: function() {
-      if (this.ready()) {
-        Session.set(S_CURRENTLY_LOGGING_IN, false);
-        this.render();
-      } else {
-        this.render('loading');
-      }
-    },
-    onAfterAction: function() {
-      if (!Meteor.isClient) {
-        return;
-      }
+  },
+});
+Router.route('/art/:_id/revision/:_revisionId', {
+  template: 'artpage',
+  subscriptions: function() {
+    var subs = [
+      Meteor.subscribe('artrevision', this.params._revisionId),
+      Meteor.subscribe('art', this.params._id),
+    ];
+    if (Meteor.userId()) {
+      subs.push(Meteor.subscribe('artLikes', this.params._id, Meteor.userId()));
+    }
+    return subs;
+  },
+  cache: 5,
+  expire: 5,
+  data: function() {
+    return ArtRevision.findOne({_id: this.params._revisionId});
+  },
+  action: function() {
+    if (this.ready()) {
+      Session.set(S_CURRENTLY_LOGGING_IN, false);
+      this.render();
+    } else {
+      this.render('loading');
+    }
+  },
+  onAfterAction: function() {
+    if (!Meteor.isClient) {
+      return;
+    }
 
-      // hard to decide what's the best way to do this
-      // this just makes it not get into an infinite loop.
-      // Do we care that if you just refresh the page it's a new view?
-      // Youtube doesn't care so should I?
-      //
-      // -- let's not track views for revisions
-      //
-      // var artId = this.params._id;
-      // var lastArtId = Session.get("view_art_id");
-      // if (artId !== lastArtId) {
-      //   Session.set("view_art_id", artId);
-      //   Meteor.call("incArtViews", artId);
-      // }
-      //SEO.set({
-      //  title: "foobar",
-      //  meta: {
-      //    'description': "foobar-desc",
-      //  },
-      //  og: {
-      //    'title': this.params._id,
-      //    'description': "foobar-desc",
-      //  },
-      //});
+    // hard to decide what's the best way to do this
+    // this just makes it not get into an infinite loop.
+    // Do we care that if you just refresh the page it's a new view?
+    // Youtube doesn't care so should I?
+    //
+    // -- let's not track views for revisions
+    //
+    // var artId = this.params._id;
+    // var lastArtId = Session.get("view_art_id");
+    // if (artId !== lastArtId) {
+    //   Session.set("view_art_id", artId);
+    //   Meteor.call("incArtViews", artId);
+    // }
+    //SEO.set({
+    //  title: "foobar",
+    //  meta: {
+    //    'description': "foobar-desc",
+    //  },
+    //  og: {
+    //    'title': this.params._id,
+    //    'description': "foobar-desc",
+    //  },
+    //});
 
-    },
-  });
-  this.route('/art/:_id/revisions/', {
-    template: 'artrevisions',
-    data: function() {
-      var artId = this.params._id;
-      return {
-        artId: artId,
-        page: 1,
-        path: '/art/' + artId + '/revisions',
-        count: 'artRevisionCount',
-      };
-    },
-    subscriptions: function() {
-      var artId = this.params._id;
-      var subs = [
-        Meteor.subscribe('artRevisionCount', artId),
-      ];
-      return subs;
-    },
-    cache: 5,
-    expire: 5,
-  });
-  this.route('/art/:_id/revisions/:_page', {
-    template: 'artrevisions',
-    data: function() {
-      var artId = this.params._id;
-      var page = this.params._page;
-      return {
-        artId: artId,
-        page: page,
-        path: '/art/' + artId + '/revisions',
-        count: 'artRevisionCount',
-      };
-    },
-    subscriptions: function() {
-      var artId = this.params._id;
-      var subs = [
-        Meteor.subscribe('artRevisionCount', artId),
-      ];
-      return subs;
-    },
-    cache: 5,
-    expire: 5,
-  });
-  this.route('imageFiles', {
-    where: 'server',
-    path: /^\/cfs\/files\/(.*)$/,
-    action: Meteor.wrapAsync(function() {
-      if (Meteor.isServer) {
-        var fs = Npm.require('fs');
-        var path = Npm.require('path');
-      }
-      return function() {
-        var req = this.request;
-        var res = this.response;
+  },
+});
+Router.route('/art/:_id/revisions/', {
+  template: 'artrevisions',
+  data: function() {
+    var artId = this.params._id;
+    return {
+      artId: artId,
+      page: 1,
+      path: '/art/' + artId + '/revisions',
+      count: 'artRevisionCount',
+    };
+  },
+  subscriptions: function() {
+    var artId = this.params._id;
+    var subs = [
+      Meteor.subscribe('artRevisionCount', artId),
+    ];
+    return subs;
+  },
+  cache: 5,
+  expire: 5,
+});
+Router.route('/art/:_id/revisions/:_page', {
+  template: 'artrevisions',
+  data: function() {
+    var artId = this.params._id;
+    var page = this.params._page;
+    return {
+      artId: artId,
+      page: page,
+      path: '/art/' + artId + '/revisions',
+      count: 'artRevisionCount',
+    };
+  },
+  subscriptions: function() {
+    var artId = this.params._id;
+    var subs = [
+      Meteor.subscribe('artRevisionCount', artId),
+    ];
+    return subs;
+  },
+  cache: 5,
+  expire: 5,
+});
+Router.route('imageFiles', {
+  where: 'server',
+  path: /^\/cfs\/files\/(.*)$/,
+  action: Meteor.wrapAsync(function() {
+    if (Meteor.isServer) {
+      var fs = Npm.require('fs');
+      var path = Npm.require('path');
+    }
+    return function() {
+      var req = this.request;
+      var res = this.response;
 
-        try {
-          var name = this.params[0].replace(/\//g, '-');
-          var filePath = IMAGE_PATH + '/' + name;
-          var ext = path.extname(filePath)
-          if (fs.existsSync(filePath)) {
-            var data = fs.readFileSync(filePath);
-            var type = "image/png";
-            if (path.extname(filePath) === ".jpg") {
-              type = "image/jpg";
-            }
-            res.writeHead(200, {
-              'Content-Type': type,
-              'Cache-Control': 'public, max-age=8640000',
-            });
-            res.write(data, null);
-            res.end();
-            return;
-          } else {
-            console.error("request for non-existent file:", req.url);
-            res.statusCode = 404;
-            res.end("no such image:" + req.url);
-            return;
+      try {
+        var name = this.params[0].replace(/\//g, '-');
+        var filePath = IMAGE_PATH + '/' + name;
+        var ext = path.extname(filePath)
+        if (fs.existsSync(filePath)) {
+          var data = fs.readFileSync(filePath);
+          var type = "image/png";
+          if (path.extname(filePath) === ".jpg") {
+            type = "image/jpg";
           }
-        } catch (e) {
-          console.error(e);
-          if (e.stack) {
-            console.error(e.stack);
-          }
+          res.writeHead(200, {
+            'Content-Type': type,
+            'Cache-Control': 'public, max-age=8640000',
+          });
+          res.write(data, null);
+          res.end();
+          return;
+        } else {
+          console.error("request for non-existent file:", req.url);
+          res.statusCode = 404;
+          res.end("no such image:" + req.url);
+          return;
         }
-        console.error("error in request for:", req.url);
-        res.statusCode = 400;
-        res.end("error in request for:" + req.url);
-      };
-    }()),
-  });
+      } catch (e) {
+        console.error(e);
+        if (e.stack) {
+          console.error(e.stack);
+        }
+      }
+      console.error("error in request for:", req.url);
+      res.statusCode = 400;
+      res.end("error in request for:" + req.url);
+    };
+  }()),
 });
 
 var G_VALID_LETTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
