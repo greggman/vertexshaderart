@@ -249,7 +249,7 @@ To backup type
 
     ./backup-live.sh
 
-This will connect the meteor container inside your docker droplet runnin on digital ocean.
+This will connect the meteor container inside your docker droplet running on digital ocean.
 It will dump the database and make a tar.gz for it. It will then also make a tar.gz for
 all the images. Finally it will use scp to download both of those files and copy them
 into `backups` with the date inserted in the name
@@ -258,21 +258,31 @@ To restore type
 
     ./restore-live.sh <date-of-backup-to-restore>
 
+For example if you wanted to restore `backup-2015-11-07.16:32:57-dev.tar.gz` you'd type
+
+    ./restore-live.sh 2015-11-07.16:32:57
+
 You can also backup and restore the local docker version with `./backup-local.sh` and `./restore-local.sh`.
 
 For testing and debugging it's common for me to backup the live site and restore to the local site. At that
 point the 2 should be identical.
 
-I don't currently have a way to restore to the local OSX version (the one running in server/vertexshaderart vs the one
-running in a local docker VM). It would be easy enough to add but I find that the one running 100% local, no docker,
-has lots of test data in it so I haven't had a reason to backup or restore that yet.
+There's also `./backup-dev.sh` and `./restore-dev.sh` to restore the local OSX version
+(the one running in server/vertexshaderart vs the one
+running in a local docker VM). Backups made with this version have `-dev` at the end as in
+`backup-2015-11-07.16:32:57-dev.tar.gz`. This is because what's usually in my dev database is
+unrelated to what's on the live site so I don't want to get them mixed up.
+For example I have pieces with lots of revisions to test paginating revisions, something
+that might not exist on the live site. To restore a dev backup just add the `-dev` as in
 
+    # restoring a backup made with backup-dev.sh to the dev version
+    ./restore-dev.sh 2015-11-07.16:32:57-dev
 
+of course you should also be able to restore a live backup as well which can be useful
+for debugging or testing new ideas with actual data
 
-
-
-
-
+    # restoring a backup made with backup-live.sh to the dev version
+    ./restore-dev.sh 2015-11-07.16:32:57
 
 
 
