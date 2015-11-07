@@ -1377,6 +1377,13 @@ define('twgl/twgl',[], function () {
     return name === "indices";
   }
 
+  /**
+   * Get the GL type for a typedArray
+   * @param {ArrayBuffer|ArrayBufferView} typedArray a typedArray
+   * @return {number} the GL type for array. For example pass in an `Int8Array` and `gl.BYTE` will
+   *   be returned. Pass in a `Uint32Array` and `gl.UNSIGNED_INT` will be returned
+   * @memberOf module:twgl
+   */
   function getGLTypeForTypedArray(typedArray) {
     if (typedArray instanceof Int8Array)    { return BYTE; }           // eslint-disable-line
     if (typedArray instanceof Uint8Array)   { return UNSIGNED_BYTE; }  // eslint-disable-line
@@ -1388,15 +1395,21 @@ define('twgl/twgl',[], function () {
     throw "unsupported typed array type";
   }
 
-  function getTypedArrayTypeForGLType(gl, type) {
+  /**
+   * Get the typed array constructor for a given GL type
+   * @param {number} type the GL type. (eg: `gl.UNSIGNED_INT`)
+   * @return {function} the constructor for a the corresponding typed array. (eg. `Uint32Array`).
+   * @memberOf module:twgl
+   */
+  function getTypedArrayTypeForGLType(type) {
     switch (type) {
-      case gl.BYTE:           return Int8Array;     // eslint-disable-line
-      case gl.UNSIGNED_BYTE:  return Uint8Array;    // eslint-disable-line
-      case gl.SHORT:          return Int16Array;    // eslint-disable-line
-      case gl.UNSIGNED_SHORT: return Uint16Array;   // eslint-disable-line
-      case gl.INT:            return Int32Array;    // eslint-disable-line
-      case gl.UNSIGNED_INT:   return Uint32Array;   // eslint-disable-line
-      case gl.FLOAT:          return Float32Array;  // eslint-disable-line
+      case BYTE:           return Int8Array;     // eslint-disable-line
+      case UNSIGNED_BYTE:  return Uint8Array;    // eslint-disable-line
+      case SHORT:          return Int16Array;    // eslint-disable-line
+      case UNSIGNED_SHORT: return Uint16Array;   // eslint-disable-line
+      case INT:            return Int32Array;    // eslint-disable-line
+      case UNSIGNED_INT:   return Uint32Array;   // eslint-disable-line
+      case FLOAT:          return Float32Array;  // eslint-disable-line
       default:
         throw "unknown gl type";
     }
@@ -2468,6 +2481,7 @@ define('twgl/twgl',[], function () {
    * Gets the number of compontents for a given image format.
    * @param {number} format the format.
    * @return {number} the number of components for the format.
+   * @memberOf module:twgl
    */
   function getNumComponentsForFormat(format) {
     switch (format) {
@@ -2541,7 +2555,7 @@ define('twgl/twgl',[], function () {
       }
     }
     if (!isArrayBuffer(src)) {
-      var Type = getTypedArrayTypeForGLType(gl, type);
+      var Type = getTypedArrayTypeForGLType(type);
       src = new Type(src);
     }
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, options.unpackAlignment || 1);
@@ -2871,8 +2885,6 @@ define('twgl/twgl',[], function () {
    * @typedef {Object} FramebufferInfo
    * @property {WebGLFramebuffer} framebuffer The WebGLFramebuffer for this framebufferInfo
    * @property {WebGLObject[]} attachments The created attachments in the same order as passed in to {@link module:twgl.createFramebufferInfo}.
-   * @property {number} width width of framebuffer attachments
-   * @property {number} height height of framebuffer attachments
    * @memberOf module:twgl
    */
 
@@ -3043,6 +3055,7 @@ define('twgl/twgl',[], function () {
    * @param {module:twgl.FramebufferInfo} [framebufferInfo] a framebufferInfo as returned from {@link module:twgl.createFramebuffer}.
    *   If not passed will bind the canvas.
    * @param {number} [target] The target. If not passed `gl.FRAMEBUFFER` will be used.
+   * @memberOf module:twgl
    */
 
   function bindFramebufferInfo(gl, framebufferInfo, target) {
@@ -3095,6 +3108,10 @@ define('twgl/twgl',[], function () {
     "bindFramebufferInfo": bindFramebufferInfo,
     "createFramebufferInfo": createFramebufferInfo,
     "resizeFramebufferInfo": resizeFramebufferInfo,
+
+    "getNumComponentsForFormat": getNumComponentsForFormat,
+    "getGLTypeForTypedArray": getGLTypeForTypedArray,
+    "getTypedArrayTypeForGLType": getTypedArrayTypeForGLType,
   };
 
 });
