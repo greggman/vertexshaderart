@@ -215,7 +215,7 @@ embed, object {
     align-items: center;
     -webkit-align-items: center;
 }
-.artpiece .artstate .private, .artpiece .artstate .revisions {
+.artpiece .artstate .private, .artpiece .artstate .revisions, .artstate .hasSound {
     width: 2em;
     height: 2em;
     background-color: rgba(0,0,0,0.8);

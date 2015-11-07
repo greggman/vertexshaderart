@@ -314,9 +314,14 @@ if (Meteor.isClient) {
     },
   });
 
+  function safeGetTime(date) {
+    return date ? date.getTime() : 0;
+  }
+
   Template.artpiece.helpers({
     hasRevisions: function() {
-      return Router.current() && Router.current().data && Router.current().data().showRevisions && this.createdAt.getTime() !== this.modifiedAt.getTime();
+
+      return Router.current() && Router.current().data && Router.current().data().showRevisions && safeGetTime(this.createdAt) !== safeGetTime(this.modifiedAt);
     },
     screenshotLink: function() {
       if (this.screenshotURL) {
@@ -1085,6 +1090,7 @@ function addArt(name, origId, vsData, data) {
   var settings = vsData.settings || {};
   var screenshotDataURL = vsData.screenshot.dataURL || "";
   var screenshotURL = "";
+  var hasSound = settings.sound && settings.sound.length > 0;
 
   if (screenshotDataURL) {
     screenshotURL = saveDataURLToFile(screenshotDataURL);
@@ -1101,6 +1107,7 @@ function addArt(name, origId, vsData, data) {
     username: username,
     settings: JSON.stringify(settings),
     screenshotURL: screenshotURL,
+    hasSound: hasSound,
     views: 0,
     likes: 0,
   });
@@ -1113,6 +1120,7 @@ function addArt(name, origId, vsData, data) {
     private: data.private,
     username: username,
     settings: JSON.stringify(settings),
+    hasSound: hasSound,
     screenshotURL: screenshotURL,
   });
   Art.update({_id: artId},
@@ -1141,6 +1149,7 @@ function updateArt(name, origId, vsData, data) {
   var settings = vsData.settings || {};
   var screenshotDataURL = vsData.screenshot.dataURL || "";
   var screenshotURL = "";
+  var hasSound = settings.sound && settings.sound.length > 0;
 
   if (screenshotDataURL) {
     screenshotURL = saveDataURLToFile(screenshotDataURL);
@@ -1157,6 +1166,7 @@ function updateArt(name, origId, vsData, data) {
     private: data.private,
     username: username,
     settings: JSON.stringify(settings),
+    hasSound: hasSound,
     screenshotURL: screenshotURL,
   });
   if (!data.private) {
@@ -1167,6 +1177,7 @@ function updateArt(name, origId, vsData, data) {
         name: name,
         private: false,
         settings: JSON.stringify(settings),
+        hasSound: hasSound,
         screenshotURL: screenshotURL,
       },
     });

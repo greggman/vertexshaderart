@@ -133,6 +133,9 @@
           {{#if hasRevisions}}
             <a href="/art/{{_id}}/revisions" class="revisions tooltip-bottom" data-tooltip="revisions">R</a>
           {{/if}}
+          {{#if hasSound}}
+            <div class="hasSound tooltip-bottom" data-tooltip="has sound"><img src="/static/resources/images/speaker.svg" /></div>
+          {{/if}}
       </div>
     </a>
     <div class="galleryinfo">
@@ -171,6 +174,9 @@
                 {{else}}
                   <a href="" class="private tooltip-bottom" data-tooltip="public" ><img src="/static/resources/images/eye-white.svg" /></a>
                 {{/if}}
+              {{/if}}
+              {{#if hasSound}}
+                <div class="hasSound tooltip-bottom" data-tooltip="has sound"><img src="/static/resources/images/speaker.svg" /></div>
               {{/if}}
           </div>
         </a>
