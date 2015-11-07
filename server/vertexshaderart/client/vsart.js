@@ -11690,6 +11690,13 @@ define('twgl/twgl',[], function () {
     return name === "indices";
   }
 
+  /**
+   * Get the GL type for a typedArray
+   * @param {ArrayBuffer|ArrayBufferView} typedArray a typedArray
+   * @return {number} the GL type for array. For example pass in an `Int8Array` and `gl.BYTE` will
+   *   be returned. Pass in a `Uint32Array` and `gl.UNSIGNED_INT` will be returned
+   * @memberOf module:twgl
+   */
   function getGLTypeForTypedArray(typedArray) {
     if (typedArray instanceof Int8Array)    { return BYTE; }           // eslint-disable-line
     if (typedArray instanceof Uint8Array)   { return UNSIGNED_BYTE; }  // eslint-disable-line
@@ -11701,15 +11708,21 @@ define('twgl/twgl',[], function () {
     throw "unsupported typed array type";
   }
 
-  function getTypedArrayTypeForGLType(gl, type) {
+  /**
+   * Get the typed array constructor for a given GL type
+   * @param {number} type the GL type. (eg: `gl.UNSIGNED_INT`)
+   * @return {function} the constructor for a the corresponding typed array. (eg. `Uint32Array`).
+   * @memberOf module:twgl
+   */
+  function getTypedArrayTypeForGLType(type) {
     switch (type) {
-      case gl.BYTE:           return Int8Array;     // eslint-disable-line
-      case gl.UNSIGNED_BYTE:  return Uint8Array;    // eslint-disable-line
-      case gl.SHORT:          return Int16Array;    // eslint-disable-line
-      case gl.UNSIGNED_SHORT: return Uint16Array;   // eslint-disable-line
-      case gl.INT:            return Int32Array;    // eslint-disable-line
-      case gl.UNSIGNED_INT:   return Uint32Array;   // eslint-disable-line
-      case gl.FLOAT:          return Float32Array;  // eslint-disable-line
+      case BYTE:           return Int8Array;     // eslint-disable-line
+      case UNSIGNED_BYTE:  return Uint8Array;    // eslint-disable-line
+      case SHORT:          return Int16Array;    // eslint-disable-line
+      case UNSIGNED_SHORT: return Uint16Array;   // eslint-disable-line
+      case INT:            return Int32Array;    // eslint-disable-line
+      case UNSIGNED_INT:   return Uint32Array;   // eslint-disable-line
+      case FLOAT:          return Float32Array;  // eslint-disable-line
       default:
         throw "unknown gl type";
     }
@@ -12781,6 +12794,7 @@ define('twgl/twgl',[], function () {
    * Gets the number of compontents for a given image format.
    * @param {number} format the format.
    * @return {number} the number of components for the format.
+   * @memberOf module:twgl
    */
   function getNumComponentsForFormat(format) {
     switch (format) {
@@ -12854,7 +12868,7 @@ define('twgl/twgl',[], function () {
       }
     }
     if (!isArrayBuffer(src)) {
-      var Type = getTypedArrayTypeForGLType(gl, type);
+      var Type = getTypedArrayTypeForGLType(type);
       src = new Type(src);
     }
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, options.unpackAlignment || 1);
@@ -13234,6 +13248,8 @@ define('twgl/twgl',[], function () {
     var framebufferInfo = {
       framebuffer: fb,
       attachments: [],
+      width: width,
+      height: height,
     };
     attachments.forEach(function(attachmentOptions) {
       var attachment = attachmentOptions.attachment;
@@ -13318,6 +13334,8 @@ define('twgl/twgl',[], function () {
   function resizeFramebufferInfo(gl, framebufferInfo, attachments, width, height) {
     width  = width  || gl.drawingBufferWidth;
     height = height || gl.drawingBufferHeight;
+    framebufferInfo.width = width;
+    framebufferInfo.height = height;
     attachments = attachments || defaultAttachments;
     attachments.forEach(function(attachmentOptions, ndx) {
       var attachment = framebufferInfo.attachments[ndx];
@@ -13333,7 +13351,36 @@ define('twgl/twgl',[], function () {
     });
   }
 
+  /**
+   * Binds a framebuffer
+   *
+   * This function pretty much soley exists because I spent hours
+   * trying to figure out why something I wrote wasn't working only
+   * to realize I forget to set the viewport dimensions.
+   * My hope is this function will fix that.
+   *
+   * It is effectively the same as
+   *
+   *     gl.bindFramebuffer(gl.FRAMEBUFFER, someFramebufferInfo.framebuffer);
+   *     gl.viewport(0, 0, someFramebufferInfo.width, someFramebufferInfo.height);
+   *
+   * @param {WebGLRenderingContext} gl the WebGLRenderingContext
+   * @param {module:twgl.FramebufferInfo} [framebufferInfo] a framebufferInfo as returned from {@link module:twgl.createFramebuffer}.
+   *   If not passed will bind the canvas.
+   * @param {number} [target] The target. If not passed `gl.FRAMEBUFFER` will be used.
+   * @memberOf module:twgl
+   */
 
+  function bindFramebufferInfo(gl, framebufferInfo, target) {
+    target = target || gl.FRAMEBUFFER;
+    if (framebufferInfo) {
+      gl.bindFramebuffer(target, framebufferInfo.framebuffer);
+      gl.viewport(0, 0, framebufferInfo.width, framebufferInfo.height);
+    } else {
+      gl.bindFramebuffer(target, null);
+      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    }
+  }
 
   // Using quotes prevents Uglify from changing the names.
   // No speed diff AFAICT.
@@ -13371,8 +13418,13 @@ define('twgl/twgl',[], function () {
     "createTextures": createTextures,
     "resizeTexture": resizeTexture,
 
+    "bindFramebufferInfo": bindFramebufferInfo,
     "createFramebufferInfo": createFramebufferInfo,
     "resizeFramebufferInfo": resizeFramebufferInfo,
+
+    "getNumComponentsForFormat": getNumComponentsForFormat,
+    "getGLTypeForTypedArray": getGLTypeForTypedArray,
+    "getTypedArrayTypeForGLType": getTypedArrayTypeForGLType,
   };
 
 });
@@ -17009,6 +17061,64 @@ define('3rdparty/notifier',[], function() {
 
 
 /*
+ * Copyright 2015, Gregg Tavares.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Gregg Tavares. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+define('src/js/listenermanager',[], function() {
+  "use strict";
+
+  function ListenerManager() {
+    var listeners = [];
+
+    this.on = function(elem, event, listener, useCapture) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      elem.addEventListener.apply(elem, args);
+      listeners.push({
+        elem: elem,
+        args: args,
+      });
+    };
+
+    this.removeAll = function() {
+      var old = listeners;
+      listeners = [];
+      old.forEach(function(listener) {
+        listener.elem.removeEventListener.apply(listener.elem, listener.args);
+      });
+    };
+  }
+
+  return ListenerManager;
+});
+
+
+/*
  * Copyright 2014, Gregg Tavares.
  * All rights reserved.
  *
@@ -17656,6 +17766,36 @@ define('src/js/strings',[], function() {
 });
 
 
+/*
+ * Copyright 2015, Gregg Tavares.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Gregg Tavares. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 define('src/js/main',[
     '3rdparty/audiostreamsource',
     '3rdparty/codemirror/lib/codemirror',
@@ -17664,6 +17804,7 @@ define('src/js/main',[
     '3rdparty/glsl',
     '3rdparty/twgl-full',
     '3rdparty/notifier',
+    './listenermanager',
     './misc',
     './strings',
   ], function(
@@ -17674,6 +17815,7 @@ define('src/js/main',[
      glsl,
      twgl,
      Notifier,
+     ListenerManager,
      misc,
      strings
   ) {
@@ -17821,27 +17963,6 @@ define('src/js/main',[
     }
   };
 
-  function HandlerManager() {
-    var handlers = [];
-
-    this.on = function(elem, event, handler, useCapture) {
-      var args = Array.prototype.slice.call(arguments, 1);
-      elem.addEventListener.apply(elem, args);
-      handlers.push({
-        elem: elem,
-        args: args,
-      });
-    };
-
-    this.removeAll = function() {
-      var old = handlers;
-      handlers = [];
-      old.forEach(function(handler) {
-        handler.elem.removeEventListener.apply(handler.elem, handler.args);
-      });
-    };
-  }
-
   function checkCanUseFloat(gl) {
     if (!gl.getExtension("OES_texture_float")) {
       return false;
@@ -17887,8 +18008,8 @@ define('src/js/main',[
     var bandLinkNode = misc.createTextNode(bandLinkElem);
     var playElem = $("#play");
     var playNode = misc.createTextNode(playElem, _playIcon);
-    var handlerManager = new HandlerManager();
-    var on = handlerManager.on.bind(handlerManager);
+    var listenerManager = new ListenerManager();
+    var on = listenerManager.on.bind(listenerManager);
     var settings = {
       lineSize: 1,
       backgroundColor: [0,0,0,1],
@@ -17975,90 +18096,117 @@ define('src/js/main',[
       s.analyser = s.context.createAnalyser();
       s.analyser.connect(s.context.destination);
 
-      var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-      s.soundTexBuffer = new Uint8Array(Math.min(maxTextureSize, s.analyser.frequencyBinCount));
-      s.soundTexSpec = {
-        src: s.soundTexBuffer,
-        height: 1,
-        min: gl.LINEAR,
-        mag: gl.LINEAR,
-        wrap: gl.CLAMP_TO_EDGE,
-        format: gl.ALPHA,
-      }
-      s.soundTex = twgl.createTexture(gl, s.soundTexSpec);
-
-      s.numHistorySamples = 60 * 4; // 4 seconds
-      var historyAttachments = [
-        {
-          format: gl.RGBA,
-          mag: gl.LINEAR,
-          min: gl.LINEAR,
-          wrap: gl.CLAMP_TO_EDGE,
-        },
-      ];
-      if (q.showHistory) {
-        console.log("history size:", s.soundTexBuffer.length, s.numHistorySamples);
-      }
-
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
-      s.historySrcFBI = twgl.createFramebufferInfo(gl, historyAttachments, s.soundTexBuffer.length, s.numHistorySamples);
-      s.historyDstFBI = twgl.createFramebufferInfo(gl, historyAttachments, s.soundTexBuffer.length, s.numHistorySamples);
 
-      if (s.canUseFloat) {
-        var floatFilter = s.canFilterFloat ? gl.LINEAR : gl.NEAREST;
-        s.floatSoundTexBuffer = new Float32Array(Math.min(maxTextureSize, s.analyser.frequencyBinCount));
-        s.floatSoundTexSpec = {
-          src: s.floatSoundTexBuffer,
+      function HistoryTexture(gl, options) {
+        var _width = options.width;
+        var type  = options.type || gl.UNSIGNED_BYTE;
+        var format = options.format || gl.RGBA;
+        var ctor  = twgl.getTypedArrayTypeForGLType(type);
+        var numComponents = twgl.getNumComponentsForFormat(format);
+        var size  = _width * numComponents;
+        var _buffer = new ctor(size);
+        var _texSpec = {
+          src: _buffer,
           height: 1,
-          min: floatFilter,
-          mag: floatFilter,
+          min: options.min || gl.LINEAR,
+          mag: options.mag || gl.LINEAR,
           wrap: gl.CLAMP_TO_EDGE,
-          format: gl.ALPHA,
+          format: format,
         }
-        s.floatSoundTex = twgl.createTexture(gl, s.floatSoundTexSpec);
+        var _tex = twgl.createTexture(gl, _texSpec);
 
-        var floatHistoryAttachments = [
+        var _length = options.length;
+        var _historyAttachments = [
           {
-            format: gl.RGBA,
-            type: gl.FLOAT,
-            mag: floatFilter,
-            min: floatFilter,
+            format: options.historyFormat || gl.RGBA,
+            type: type,
+            mag: options.mag || gl.LINEAR,
+            min: options.min || gl.LINEAR,
             wrap: gl.CLAMP_TO_EDGE,
           },
         ];
 
-        s.floatHistorySrcFBI = twgl.createFramebufferInfo(gl, floatHistoryAttachments, s.floatSoundTexBuffer.length, s.numHistorySamples);
-        s.floatHistoryDstFBI = twgl.createFramebufferInfo(gl, floatHistoryAttachments, s.floatSoundTexBuffer.length, s.numHistorySamples);
+        var _srcFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
+        var _dstFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
+
+        var _historyUniforms = {
+          u_mix: 0,
+          u_matrix: m4.identity(),
+          u_texture: undefined,
+        };
+
+        this.buffer = _buffer;
+
+        this.update = function update() {
+          var temp = _srcFBI;
+          _srcFBI = _dstFBI;
+          _dstFBI = temp;
+
+          twgl.setTextureFromArray(gl, _tex, _texSpec.src, _texSpec);
+
+          gl.useProgram(s.historyProgramInfo.program);
+          twgl.bindFramebufferInfo(gl, _dstFBI);
+
+          // copy from historySrc to historyDst one pixel down
+          m4.translation([0, 2 / _length, 0], _historyUniforms.u_matrix);
+          _historyUniforms.u_mix = 1;
+          _historyUniforms.u_texture = _srcFBI.attachments[0];
+
+          twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
+          twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+
+          // copy audio data into top row of historyDst
+          _historyUniforms.u_mix = format === gl.ALPHA ? 0 : 1;
+          _historyUniforms.u_texture = _tex;
+          m4.translation(
+              [0, -(_length - 0.5) / _length, 0],
+              _historyUniforms.u_matrix)
+          m4.scale(
+              _historyUniforms.u_matrix,
+              [1, 1 / _length, 1],
+              _historyUniforms.u_matrix);
+
+          twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
+          twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+        };
+
+        this.getTexture = function getTexture() {
+          return _dstFBI.attachments[0];
+        };
       }
 
+      var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+      s.numSoundSamples = Math.min(maxTextureSize, s.analyser.frequencyBinCount);
+      s.numHistorySamples = 60 * 4, // 4 seconds;
 
-      var touchFilter = gl.NEAREST; //s.canUseFloat ? (s.canFilterFloat ? gl.LINEAR : gl.NEAREST) : gl.LINEAR;
+      s.soundHistory = new HistoryTexture(gl, {
+        width: s.numSoundSamples,
+        length: s.numHistorySamples,
+        format: gl.ALPHA,
+      });
+
+      if (s.canUseFloat) {
+        var floatFilter = s.canFilterFloat ? gl.LINEAR : gl.NEAREST;
+        s.floatSoundHistory = new HistoryTexture(gl, {
+          width: s.numSoundSamples,
+          length: s.numHistorySamples,
+          min: floatFilter,
+          mag: floatFilter,
+          format: gl.ALPHA,
+          type: gl.FLOAT,
+        });
+      }
+
       s.touchColumns = 32;
-      s.touchTexBuffer = new (s.canUseFloat ? Float32Array : Uint8Array)(4 * s.touchColumns);
-
-      s.touchTexSpec = {
-        src: s.touchTexBuffer,
-        height: 1,
-        min: touchFilter,
-        mag: touchFilter,
-        wrap: gl.CLAMP_TO_EDGE,
-        format: gl.RGBA,
-        auto: false,
-      };
-      s.touchTex = twgl.createTexture(gl, s.touchTexSpec);
-
-      var touchHistoryAttachments = [
-        {
-          format: gl.RGBA,
-          type: s.canUseFloat ? gl.FLOAT : gl.UNSIGNED_BYTE,
-          mag: touchFilter,
-          min: touchFilter,
-          wrap: gl.CLAMP_TO_EDGE,
-          auto: false,
-        },
-      ];
-      s.touchHistorySrcFBI = twgl.createFramebufferInfo(gl, touchHistoryAttachments, s.touchColumns, s.numHistorySamples);
-      s.touchHistoryDstFBI = twgl.createFramebufferInfo(gl, touchHistoryAttachments, s.touchColumns, s.numHistorySamples);
+      s.touchHistory = new HistoryTexture(gl, {
+        width: s.touchColumns,
+        length: s.numHistorySamples,
+        type: s.canUseFloat ? gl.FLOAT : gl.UNSIGNED_BYTE,
+        min: gl.NEAREST,
+        mag: gl.NEAREST,
+      });
+//        auto: false,
 
       var count = new Float32Array(g.maxCount);
       for (var ii = 0; ii < count.length; ++ii) {
@@ -18081,30 +18229,39 @@ define('src/js/main',[
             console.log("noop");
           };
           this.initialize = noop;
-          this.get = function(url, options) {
-            return {
-              then: function(fn) {
-                setTimeout(function() {
-                  var longName = "This is a really long name that might mess up formatting so let's use it to test that long names don't totally mess up formatting just so we have some idea of how messed up things can get if we don't set any limits";
-                  fn({
-                    title: q.long ? longName : "DOCTOR VOX - Level Up [Argofox]",
-                    streamable: true,
-                    stream_url: "/static/resources/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+          this.get = function(url, options, callback) {
+
+            var provideResult = function(fn) {
+              setTimeout(function() {
+                var longName = "This is a really long name that might mess up formatting so let's use it to test that long names don't totally mess up formatting just so we have some idea of how messed up things can get if we don't set any limits";
+                fn({
+                  title: q.long ? longName : "DOCTOR VOX - Level Up [Argofox]",
+                  streamable: true,
+                  stream_url: "/static/resources/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+                  permalink_url: "http://soundcloud.com/argofox",
+                  user: {
+                    username: q.long ? longName : "Argofox Creative Commons",
                     permalink_url: "http://soundcloud.com/argofox",
-                    user: {
-                      username: q.long ? longName : "Argofox Creative Commons",
-                      permalink_url: "http://soundcloud.com/argofox",
-                    }
-                  });
-                }, 1);
-                return {
-                  catch: function() {
-                  },
-                };
-              },
+                  }
+                });
+              }, 1);
             };
-          }
-        }
+
+            if (callback) {
+              provideResult(callback);
+            } else {
+              return {
+                then: function(fn) {
+                  provideResult(fn);
+                  return {
+                    catch: function() {
+                    },
+                  };
+                },
+              };
+            }
+          };
+        };
       }
 
       s.sc.initialize({
@@ -18194,9 +18351,9 @@ define('src/js/main',[
     });
 
     function takeScreenshot() {
-      var touchHistoryTex = s.touchHistoryDstFBI.attachments[0];
-      var historyTex = s.historyDstFBI.attachments[0];
-      var floatHistoryTex = s.canUseFloat ? s.floatHistoryDstFBI.attachments[0] : historyTex;
+      var touchHistoryTex = s.touchHistory.getTexture();
+      var historyTex = s.soundHistory.getTexture();
+      var floatHistoryTex = s.canUseFloat ? s.floatSoundHistory.getTexture() : historyTex;
       renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, "CSS", [0, 0]);
       var ctx = s.screenshotCanvas.getContext("2d");
       var w = ctx.canvas.width  / gl.canvas.width;
@@ -18637,7 +18794,7 @@ define('src/js/main',[
       mouse: [0, 0],
       sound: undefined,
       floatSound: undefined,
-      soundRes: [s.soundTexBuffer.length, s.numHistorySamples],
+      soundRes: [s.numSoundSamples, s.numHistorySamples],
       _dontUseDirectly_pointSize: 1,
     };
 
@@ -18648,8 +18805,7 @@ define('src/js/main',[
     };
 
     function renderScene(touchHistoryTex, soundHistoryTex, floatSoundHistoryTex, time, lineSize, mouse) {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+      twgl.bindFramebufferInfo(gl);
 
       var size = lineSize === "NATIVE" ? 1 : (window.devicePixelRatio || 1);
       gl.lineWidth(size);
@@ -18686,77 +18842,29 @@ define('src/js/main',[
     }
 
     function updateSoundAndTouchHistory() {
-      // Swap src & dst
-      var temp = s.historySrcFBI;
-      s.historySrcFBI = s.historyDstFBI;
-      s.historyDstFBI = temp;
-
-      if (s.canUseFloat) {
-        temp = s.floatHistorySrcFBI;
-        s.floatHistorySrcFBI = s.floatHistoryDstFBI;
-        s.floatHistoryDstFBI = temp;
-      }
-
-      temp = s.touchHistorySrcFBI;
-      s.touchHistorySrcFBI = s.touchHistoryDstFBI;
-      s.touchHistoryDstFBI = temp;
-
       // Copy audio data to Nx1 texture
-      s.analyser.getByteFrequencyData(s.soundTexBuffer);
-      twgl.setTextureFromArray(gl, s.soundTex, s.soundTexSpec.src, s.soundTexSpec);
+      s.analyser.getByteFrequencyData(s.soundHistory.buffer);
 
       if (s.canUseFloat) {
-        s.analyser.getFloatFrequencyData(s.floatSoundTexBuffer);
-        twgl.setTextureFromArray(gl, s.floatSoundTex, s.floatSoundTexSpec.src, s.floatSoundTexSpec);
+        s.analyser.getFloatFrequencyData(s.floatSoundHistory.buffer);
       }
 
       // Update time
       for (var ii = 0; ii < s.touchColumns; ++ii) {
         var offset = ii * 4;
-        s.touchTexBuffer[offset + 3] = g.time;
+        s.touchHistory.buffer[offset + 3] = g.time;
       }
-
-      // Copy in latest touch data
-      twgl.setTextureFromArray(gl, s.touchTex, s.touchTexSpec.src, s.touchTexSpec);
 
       gl.disable(gl.DEPTH_TEST);
       gl.disable(gl.BLEND);
-      gl.useProgram(s.historyProgramInfo.program);
+
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
 
-      gl.viewport(0, 0, s.soundTexBuffer.length, s.numHistorySamples);
-      renderToHistory(0, s.historyDstFBI.framebuffer, s.historySrcFBI.attachments[0], s.soundTex);
+      s.soundHistory.update();
       if (s.canUseFloat) {
-        renderToHistory(0, s.floatHistoryDstFBI.framebuffer, s.floatHistorySrcFBI.attachments[0], s.floatSoundTex);
+        s.floatSoundHistory.update();
       }
-      gl.viewport(0, 0, s.touchColumns, s.numHistorySamples);
-      renderToHistory(1, s.touchHistoryDstFBI.framebuffer, s.touchHistorySrcFBI.attachments[0], s.touchTex);
-    }
-
-    function renderToHistory(mix, destFB, oldHistoryTex, newDataTex) {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, destFB)
-
-      // copy from historySrc to historyDst one pixel down
-      m4.translation([0, 2 / s.numHistorySamples, 0], historyUniforms.u_matrix);
-      historyUniforms.u_mix = 1;
-      historyUniforms.u_texture = oldHistoryTex;
-
-      twgl.setUniforms(s.historyProgramInfo, historyUniforms);
-      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
-
-      // copy audio data into top row of historyDst
-      historyUniforms.u_mix = mix;
-      historyUniforms.u_texture = newDataTex;
-      m4.translation(
-          [0, -(s.numHistorySamples - 0.5) / s.numHistorySamples, 0],
-          historyUniforms.u_matrix)
-      m4.scale(
-          historyUniforms.u_matrix,
-          [1, 1 / s.numHistorySamples, 1],
-          historyUniforms.u_matrix);
-
-      twgl.setUniforms(s.historyProgramInfo, historyUniforms);
-      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+      s.touchHistory.update();
     }
 
     function renderHistory(tex, mix) {
@@ -18783,19 +18891,19 @@ define('src/js/main',[
 
       updateSoundAndTouchHistory();
 
-      var touchHistoryTex = s.touchHistoryDstFBI.attachments[0];
-      var historyTex = s.historyDstFBI.attachments[0];
-      var floatHistoryTex = s.canUseFloat ? s.floatHistoryDstFBI.attachments[0] : historyTex;
+      var touchHistoryTex = s.touchHistory.getTexture();
+      var historyTex = s.soundHistory.getTexture();
+      var floatHistoryTex = s.canUseFloat ? s.floatSoundHistory.getTexture() : historyTex;
       renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
 
       if (q.showHistory) {
-        renderHistory(s.historyDstFBI.attachments[0], 0);
+        renderHistory(s.soundHistory.getTexture(), 0);
       }
       if (q.showFloatHistory && s.canUseFloat) {
-        renderHistory(s.floatHistoryDstFBI.attachments[0], 0);
+        renderHistory(s.floatSoundHistory.getTexture(), 0);
       }
       if (q.showTouchHistory) {
-        renderHistory(s.touchHistoryDstFBI.attachments[0], 1);
+        renderHistory(s.touchHistory.getTexture(), 1);
       }
 
       queueRender();
@@ -18838,8 +18946,8 @@ define('src/js/main',[
         y = Math.max(0, y * 255 | 0);
       }
       var offset = column * 4;
-      s.touchTexBuffer[offset + 0] = x;
-      s.touchTexBuffer[offset + 1] = y;
+      s.touchHistory.buffer[offset + 0] = x;
+      s.touchHistory.buffer[offset + 1] = y;
     }
 
     function addTouchPressure(column, pressure) {
@@ -18849,7 +18957,7 @@ define('src/js/main',[
         time     = time % 256;
       }
       var offset = column * 4;
-      s.touchTexBuffer[offset + 2] = pressure;
+      s.touchHistory.buffer[offset + 2] = pressure;
     }
 
     function recordMouseMove(e) {
@@ -18933,8 +19041,6 @@ define('src/js/main',[
     on(touchTarget, 'touchcancel', recordTouchCancel);
     on(touchTarget, 'touchmove', recordTouchMove);
 
-
-
     this.stop = function() {
       s.running = false;
       stopRender();
@@ -18942,7 +19048,7 @@ define('src/js/main',[
         s.streamSource.stop();
       }
       s.programManager.clear();
-      handlerManager.removeAll();
+      listenerManager.removeAll();
       clearLineErrors();
       s.cm.off('change', handleChange);
       gl.canvas.parentNode.removeChild(gl.canvas);
