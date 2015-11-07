@@ -14,26 +14,24 @@ function generateUsername(username) {
   }
 }
 
-//function addModifiedAt() {
-//  var arts = Art.find({}).fetch();
-//  arts.forEach(function(art) {
-//    var newestPublicRevision = ArtRevision.findOne({
-//      artId: art._id,
-//      private: {$ne: true},
-//    }, {
-//      sort: {createdAt: -1},
-//    });
-//    if (newestPublicRevision && art.modifiedAt.getTime() !== newestPublicRevision.createdAt.getTime()) {
-//console.log("updating art: " + art._id);
-//      Art.update({_id: art._id}, {
-//        $set: {
-//          modifiedAt: newestPublicRevision.createdAt,
-//        },
-//      });
-//    }
-//  });
-//}
-//addModifiedAt();
+function addHasSound() {
+  function updateCollection(Art) {
+    var arts = Art.find({}).fetch();
+    arts.forEach(function(art) {
+      var settings = JSON.parse(art.settings);
+      if (settings.sound) {
+        Art.update({_id: art._id}, {
+          $set: {
+            hasSound: true,
+          },
+        });
+      }
+    });
+  }
+  updateCollection(ArtRevision);
+  updateCollection(Art);
+}
+addHasSound();
 
 Accounts.onCreateUser(function (options, user) {
     if (options && options.profile) {
