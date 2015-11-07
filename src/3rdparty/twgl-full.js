@@ -2871,6 +2871,8 @@ define('twgl/twgl',[], function () {
    * @typedef {Object} FramebufferInfo
    * @property {WebGLFramebuffer} framebuffer The WebGLFramebuffer for this framebufferInfo
    * @property {WebGLObject[]} attachments The created attachments in the same order as passed in to {@link module:twgl.createFramebufferInfo}.
+   * @property {number} width width of framebuffer attachments
+   * @property {number} height height of framebuffer attachments
    * @memberOf module:twgl
    */
 
@@ -2921,6 +2923,8 @@ define('twgl/twgl',[], function () {
     var framebufferInfo = {
       framebuffer: fb,
       attachments: [],
+      width: width,
+      height: height,
     };
     attachments.forEach(function(attachmentOptions) {
       var attachment = attachmentOptions.attachment;
@@ -3005,6 +3009,8 @@ define('twgl/twgl',[], function () {
   function resizeFramebufferInfo(gl, framebufferInfo, attachments, width, height) {
     width  = width  || gl.drawingBufferWidth;
     height = height || gl.drawingBufferHeight;
+    framebufferInfo.width = width;
+    framebufferInfo.height = height;
     attachments = attachments || defaultAttachments;
     attachments.forEach(function(attachmentOptions, ndx) {
       var attachment = framebufferInfo.attachments[ndx];
@@ -3020,7 +3026,35 @@ define('twgl/twgl',[], function () {
     });
   }
 
+  /**
+   * Binds a framebuffer
+   *
+   * This function pretty much soley exists because I spent hours
+   * trying to figure out why something I wrote wasn't working only
+   * to realize I forget to set the viewport dimensions.
+   * My hope is this function will fix that.
+   *
+   * It is effectively the same as
+   *
+   *     gl.bindFramebuffer(gl.FRAMEBUFFER, someFramebufferInfo.framebuffer);
+   *     gl.viewport(0, 0, someFramebufferInfo.width, someFramebufferInfo.height);
+   *
+   * @param {WebGLRenderingContext} gl the WebGLRenderingContext
+   * @param {module:twgl.FramebufferInfo} [framebufferInfo] a framebufferInfo as returned from {@link module:twgl.createFramebuffer}.
+   *   If not passed will bind the canvas.
+   * @param {number} [target] The target. If not passed `gl.FRAMEBUFFER` will be used.
+   */
 
+  function bindFramebufferInfo(gl, framebufferInfo, target) {
+    target = target || gl.FRAMEBUFFER;
+    if (framebufferInfo) {
+      gl.bindFramebuffer(target, framebufferInfo.framebuffer);
+      gl.viewport(0, 0, framebufferInfo.width, framebufferInfo.height);
+    } else {
+      gl.bindFramebuffer(target, null);
+      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    }
+  }
 
   // Using quotes prevents Uglify from changing the names.
   // No speed diff AFAICT.
@@ -3058,6 +3092,7 @@ define('twgl/twgl',[], function () {
     "createTextures": createTextures,
     "resizeTexture": resizeTexture,
 
+    "bindFramebufferInfo": bindFramebufferInfo,
     "createFramebufferInfo": createFramebufferInfo,
     "resizeFramebufferInfo": resizeFramebufferInfo,
   };

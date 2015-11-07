@@ -1,3 +1,33 @@
+/*
+ * Copyright 2015, Gregg Tavares.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Gregg Tavares. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 define([
     '3rdparty/audiostreamsource',
     '3rdparty/codemirror/lib/codemirror',
@@ -6,6 +36,7 @@ define([
     '3rdparty/glsl',
     '3rdparty/twgl-full',
     '3rdparty/notifier',
+    './listenermanager',
     './misc',
     './strings',
   ], function(
@@ -16,6 +47,7 @@ define([
      glsl,
      twgl,
      Notifier,
+     ListenerManager,
      misc,
      strings
   ) {
@@ -163,27 +195,6 @@ define([
     }
   };
 
-  function HandlerManager() {
-    var handlers = [];
-
-    this.on = function(elem, event, handler, useCapture) {
-      var args = Array.prototype.slice.call(arguments, 1);
-      elem.addEventListener.apply(elem, args);
-      handlers.push({
-        elem: elem,
-        args: args,
-      });
-    };
-
-    this.removeAll = function() {
-      var old = handlers;
-      handlers = [];
-      old.forEach(function(handler) {
-        handler.elem.removeEventListener.apply(handler.elem, handler.args);
-      });
-    };
-  }
-
   function checkCanUseFloat(gl) {
     if (!gl.getExtension("OES_texture_float")) {
       return false;
@@ -229,8 +240,8 @@ define([
     var bandLinkNode = misc.createTextNode(bandLinkElem);
     var playElem = $("#play");
     var playNode = misc.createTextNode(playElem, _playIcon);
-    var handlerManager = new HandlerManager();
-    var on = handlerManager.on.bind(handlerManager);
+    var listenerManager = new ListenerManager();
+    var on = listenerManager.on.bind(listenerManager);
     var settings = {
       lineSize: 1,
       backgroundColor: [0,0,0,1],
@@ -990,8 +1001,7 @@ define([
     };
 
     function renderScene(touchHistoryTex, soundHistoryTex, floatSoundHistoryTex, time, lineSize, mouse) {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+      twgl.bindFramebufferInfo(gl);
 
       var size = lineSize === "NATIVE" ? 1 : (window.devicePixelRatio || 1);
       gl.lineWidth(size);
@@ -1066,17 +1076,15 @@ define([
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
 
-      gl.viewport(0, 0, s.soundTexBuffer.length, s.numHistorySamples);
       renderToHistory(0, s.historyDstFBI.framebuffer, s.historySrcFBI.attachments[0], s.soundTex);
       if (s.canUseFloat) {
         renderToHistory(0, s.floatHistoryDstFBI.framebuffer, s.floatHistorySrcFBI.attachments[0], s.floatSoundTex);
       }
-      gl.viewport(0, 0, s.touchColumns, s.numHistorySamples);
       renderToHistory(1, s.touchHistoryDstFBI.framebuffer, s.touchHistorySrcFBI.attachments[0], s.touchTex);
     }
 
     function renderToHistory(mix, destFB, oldHistoryTex, newDataTex) {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, destFB)
+      twgl.bindFramebufferInfo(gl, destFB);
 
       // copy from historySrc to historyDst one pixel down
       m4.translation([0, 2 / s.numHistorySamples, 0], historyUniforms.u_matrix);
@@ -1282,7 +1290,7 @@ define([
         s.streamSource.stop();
       }
       s.programManager.clear();
-      handlerManager.removeAll();
+      listenerManager.removeAll();
       clearLineErrors();
       s.cm.off('change', handleChange);
       gl.canvas.parentNode.removeChild(gl.canvas);
