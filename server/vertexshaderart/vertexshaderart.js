@@ -408,6 +408,17 @@ if (Meteor.isClient) {
     },
   });
 
+  Template.userprofile.onCreated(function() {
+    var instance = this;
+
+    instance.autorun(function() {
+      var route = Router.current();
+      var username = route.data().username;
+
+      instance.subscribe('usernames', username);
+    });
+  });
+
   Template.userprofile.helpers({
     editUsername: function() {
       return Session.get("editUsername");
@@ -803,13 +814,6 @@ Router.route('/user/:_username', {
       sortType: sortType,
     };
   },
-  subscriptions: function() {
-    var subs = [];
-    subs.push(Meteor.subscribe('usernames', this.params._username));
-    return subs;
-  },
-  cache: 5,
-  expire: 5,
 });
 Router.route('/user/:_username/:_page', {
   template: 'userprofile',
@@ -828,13 +832,6 @@ Router.route('/user/:_username/:_page', {
       sortType: sortType,
     };
   },
-  subscriptions: function() {
-    var subs = [];
-    subs.push(Meteor.subscribe('usernames', this.params._username));
-    return subs;
-  },
-  cache: 5,
-  expire: 5,
 });
 Router.route('/art/:_id', {
   template: 'artpage',
