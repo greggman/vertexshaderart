@@ -320,7 +320,7 @@ input[type="color"] {
    font-size: xx-small;
 }
 
-@media (max-width : 600px) {
+@media (max-width : 500px) {
    #toolbar, #editorWrap, #bottom {
        display: none;
    }

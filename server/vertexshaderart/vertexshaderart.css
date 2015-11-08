@@ -374,7 +374,7 @@ header .buttons a, header .buttons div, .button {
 }
 
 
-@media (max-width : 600px) {
+@media (max-width : 500px) {
     header>div {
         flex-direction: column-reverse;
         -webkit-flex-direction: column-reverse;
