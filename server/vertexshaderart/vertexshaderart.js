@@ -731,6 +731,13 @@ if (Meteor.isClient) {
 
   Accounts.ui.config({
     passwordSignupFields: "USERNAME_ONLY",
+    // How can I ask less info? I don't need any info.
+    // I only need these services to provided authentication.
+    // nothing else.
+    requestPermissions: {
+      github: [],
+      google: ['profile'],
+    },
   });
 
 }
