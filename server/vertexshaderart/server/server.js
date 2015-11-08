@@ -91,7 +91,6 @@ function setupAccounts(accounts) {
 }
 
 WebApp.connectHandlers.use(function(req, res, next) {
-console.log(req.headers.host);
   if (req.headers && req.headers.host && req.headers.host.match(/^vertexshaderart.com/) !== null ) {
        /* Redirect to the proper address */
         var correctURL = 'http://www.' + req.headers.host + req.url;
