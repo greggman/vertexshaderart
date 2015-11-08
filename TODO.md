@@ -1,12 +1,8 @@
 ﻿# To Do
 
-*   show sound icon on galleries
-
 *   add tooltips for more stuff
 
 *   add "loading" to gallery?
-
-*   add "loading" to user page so it doesn't show no such user
 
 *   embeddable?
 
@@ -81,6 +77,10 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   add "loading" to user page so it doesn't show no such user
+
+*   show sound icon on galleries
 
 *   add profile
 
