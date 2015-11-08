@@ -36,6 +36,7 @@ define([
     '3rdparty/glsl',
     '3rdparty/twgl-full',
     '3rdparty/notifier',
+    './fullscreen',
     './listenermanager',
     './misc',
     './strings',
@@ -47,6 +48,7 @@ define([
      glsl,
      twgl,
      Notifier,
+     fullScreen,
      ListenerManager,
      misc,
      strings
@@ -66,6 +68,8 @@ define([
     screenshotCanvas: document.createElement("canvas"),
     restoreKey: "restore",
     show: !isMobile,
+    inIframe: window.self !== window.top,
+    running: true, // true vs.stop has not been called (this is inside the website)
   };
   s.screenshotCanvas.width = 600;
   s.screenshotCanvas.height = 336;
@@ -218,9 +222,10 @@ define([
     return status == gl.FRAMEBUFFER_COMPLETE;
   }
 
-  var storage = window.localStorage || {
+  var storage = (window.localStorage && !s.inIframe) ? window.localStorage : {
     getItem: function() {},
     setItem: function() {},
+    removeItem: function() {},
   };
 
   function VS() {
@@ -238,14 +243,22 @@ define([
     var soundcloudElem = $("#soundcloud");
     var bandLinkElem = $("#bandLink");
     var bandLinkNode = misc.createTextNode(bandLinkElem);
-    var playElem = $("#play");
-    var playNode = misc.createTextNode(playElem, _playIcon);
+    var playElems = Array.prototype.slice.call(document.querySelectorAll(".play"));
+    var playNodes = playElems.map(function(playElem) {
+      return misc.createTextNode(playElem, _playIcon);
+    });
+    var fullScreenElem = $("#vsa .fullscreen");
+    var playElem2 = $("#vsa .play");
     var listenerManager = new ListenerManager();
     var on = listenerManager.on.bind(listenerManager);
     var settings = {
       lineSize: 1,
       backgroundColor: [0,0,0,1],
     };
+
+    if (s.inIframe) {
+      $("#loading").style.display = "";
+    }
 
     var g = {
       maxCount: 100000,
@@ -269,6 +282,18 @@ define([
     if (q.pauseOnBlur !== undefined) {
       g.pauseOnBlur = q.pauseOnBlur.toLowerCase() === "true";
     }
+
+    if (s.inIframe) {
+      $("#uicontainer").className = "iframe";
+    }
+
+    on(fullScreenElem, 'click', function(e) {
+      if (fullScreen.isFullScreen()) {
+        fullScreen.cancelFullScreen();
+      } else {
+        fullScreen.requestFullScreen(document.body);
+      }
+    });
 
     if (gl) {
       editorElem.parentNode.insertBefore(s.editorElem, editorElem);
@@ -512,24 +537,20 @@ define([
         setSoundSuccessState(false, e.toString());
       });
       s.streamSource.on('newSource', function(source) {
+        source.connect(s.analyser);
         if (!s.running) {
           s.streamSource.stop();
+          if (s.inIframe) {
+            waitForStart();
+          }
           return;
         }
-        source.connect(s.analyser);
         setPlayState();
         setSoundSuccessState(true);
       });
       s.streamSource.on('clickToStart', function() {
-        if (!g.startMobileSound) {
-          if (!g.waitMobileSound) {
-            g.waitMobileSound = true;
-            $("#startSound").style.display = "";
-            on($("#startSound"), 'click', function() {
-              $("#startSound").style.display = "none";
-              s.streamSource.play();
-            });
-          }
+        if (!g.startMobileSound || !s.running) {
+          waitForStart();
         }
       });
 
@@ -543,6 +564,24 @@ define([
         lineNumbers: true,
       });
     }
+
+
+    function waitForStart() {
+      if (!g.waitForStart) {
+        g.waitForStart = true;
+        $("#loading").style.display = "none";
+        $("#start").style.display = "";
+        on($("#start"), 'click', function() {
+          $("#start").style.display = "none";
+          s.streamSource.play();
+          s.running = true;
+          setPlayState();
+          setSoundSuccessState(true);
+          queueRender();
+        });
+      }
+    }
+
 
     // Replace the canvas in the DOM with ours
     var c = document.getElementById("c");
@@ -628,21 +667,36 @@ define([
       s.streamSource.setSource(src);
     }
 
-    on(playElem, 'click', function() {
-      if (s.streamSource.isPlaying()) {
-        s.streamSource.stop();
-      } else {
-        s.streamSource.play();
-      }
-      setPlayState();
+    playElems.forEach(function(playElem) {
+      on(playElem, 'click', function() {
+        if (s.streamSource.isPlaying()) {
+          s.streamSource.stop();
+          if (s.inIframe) {
+            g.pause = true;
+          }
+        } else {
+          s.streamSource.play();
+          if (s.inIframe) {
+            g.pause = false;
+            queueRender();
+          }
+        }
+        setPlayState();
+      });
     });
 
     function setPlayState() {
-      playNode.nodeValue = s.streamSource.isPlaying() ? _pauseIcon : _playIcon;
+      playNodes.forEach(function(playNode) {
+        playNode.nodeValue = s.streamSource.isPlaying() ? _pauseIcon : _playIcon;
+      });
+    }
+
+    function showOrHide(elem, show) {
+      elem.style.display = show ? "inline-block" : "none";
     }
 
     function setLinkOrHide(elem, link) {
-      elem.style.display = link ? "inline-block" : "none";
+      showOrHide(elem, link);
       if (link) {
         elem.href = link;
       }
@@ -983,7 +1037,9 @@ define([
         try {
           var restore = JSON.parse(restoreStr);
           if (restore.pathname === window.location.pathname) {
-            settings = restore.settings;
+            if (restore.settings.shader) {
+              settings = restore.settings;
+            }
           }
         } catch (e) {
         }
@@ -1014,8 +1070,28 @@ define([
       //tryNewProgram(settings.shader);
       markAsSaved();
 
-      s.running = true;
-      queueRender();
+      s.running = !s.inIframe;
+      queueRender(true);
+      $("#uicontainer").style.display = "block";
+      $("#vsa a").href = window.location.href;
+      on($("#vsa a"), 'click', function() {
+        if (s.streamSource.isPlaying()) {
+          s.streamSource.stop();
+        }
+      });
+
+      if (s.inIframe) {
+        if (q.autoPlay || q.autoplay) {
+          s.running = true;
+          $("#loading").style.display = "none";
+        } else {
+          if (settings.sound) {
+            // sound is preping and will handle waitForStart
+          } else {
+            waitForStart();
+          }
+        }
+      }
     }
 
     var uniforms = {
@@ -1050,6 +1126,7 @@ define([
 
       var programInfo = s.programManager.getProgramInfo();
       if (programInfo) {
+        g.wasRendered = true;
 
         uniforms.time = time;
         uniforms.vertexCount = settings.num;
@@ -1142,7 +1219,7 @@ define([
     }
 
     function queueRender(force) {
-      if (!g.requestId && (force || !g.pause)) {
+      if (!g.requestId && (force || (s.inIframe && !g.wasRendered) || (s.running && !g.pause))) {
         g.requestId = requestAnimationFrame(render);
       }
     }

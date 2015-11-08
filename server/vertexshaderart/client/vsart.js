@@ -17090,6 +17090,113 @@ define('3rdparty/notifier',[], function() {
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+define('src/js/fullscreen',[], function() {
+  "use strict";
+
+  var requestFullScreen = function(element) {
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.msRequestFullscreen) {
+      element.msRequestFullscreen();
+    } else if (element.webkitRequestFullScreen) {
+      element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+    } else if (element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+    } else if (element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if (element.mozRequestFullscreen) {
+      element.mozRequestFullscreen();
+    }
+  };
+
+  var noop = function() {
+  };
+
+  var cancelFullScreen = (
+      document.exitFullscreen ||
+      document.exitFullScreen ||
+      document.msExitFullscreen ||
+      document.msExitFullScreen ||
+      document.webkitCancelFullscreen ||
+      document.webkitCancelFullScreen ||
+      document.mozCancelFullScreen ||
+      document.mozCancelFullscreen ||
+      noop).bind(document);
+
+  function isFullScreen() {
+    var f = document.fullscreenElement ||
+            document.fullScreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.webkitIsFullScreen;
+    return (f !== undefined && f !== null && f !== false);
+  }
+
+  var onFullScreenChange = function(element, callback) {
+    document.addEventListener('fullscreenchange', function(/*event*/) {
+        callback(isFullScreen());
+      });
+    element.addEventListener('webkitfullscreenchange', function(/*event*/) {
+        callback(isFullScreen());
+      });
+    document.addEventListener('mozfullscreenchange', function(/*event*/) {
+        callback(isFullScreen());
+      });
+  };
+
+  function canGoFullScreen() {
+    var body = window.document.body || {};
+    var r = body.requestFullscreen ||
+            body.requestFullScreen ||
+            body.msRequestFullscreen ||
+            body.msRequestFullScreen ||
+            body.webkitRequestFullScreen ||
+            body.webkitRequestFullscreen ||
+            body.mozRequestFullScreen ||
+            body.mozRequestFullscreen;
+    return r !== undefined && r !== null;
+  }
+
+  return {
+    cancelFullScreen: cancelFullScreen,
+    isFullScreen: isFullScreen,
+    canGoFullScreen: canGoFullScreen,
+    onFullScreenChange: onFullScreenChange,
+    requestFullScreen: requestFullScreen,
+  };
+});
+
+
+/*
+ * Copyright 2015, Gregg Tavares.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Gregg Tavares. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 define('src/js/listenermanager',[], function() {
   "use strict";
 
@@ -17804,6 +17911,7 @@ define('src/js/main',[
     '3rdparty/glsl',
     '3rdparty/twgl-full',
     '3rdparty/notifier',
+    './fullscreen',
     './listenermanager',
     './misc',
     './strings',
@@ -17815,6 +17923,7 @@ define('src/js/main',[
      glsl,
      twgl,
      Notifier,
+     fullScreen,
      ListenerManager,
      misc,
      strings
@@ -17834,6 +17943,8 @@ define('src/js/main',[
     screenshotCanvas: document.createElement("canvas"),
     restoreKey: "restore",
     show: !isMobile,
+    inIframe: window.self !== window.top,
+    running: true, // true vs.stop has not been called (this is inside the website)
   };
   s.screenshotCanvas.width = 600;
   s.screenshotCanvas.height = 336;
@@ -17986,9 +18097,10 @@ define('src/js/main',[
     return status == gl.FRAMEBUFFER_COMPLETE;
   }
 
-  var storage = window.localStorage || {
+  var storage = (window.localStorage && !s.inIframe) ? window.localStorage : {
     getItem: function() {},
     setItem: function() {},
+    removeItem: function() {},
   };
 
   function VS() {
@@ -18006,14 +18118,22 @@ define('src/js/main',[
     var soundcloudElem = $("#soundcloud");
     var bandLinkElem = $("#bandLink");
     var bandLinkNode = misc.createTextNode(bandLinkElem);
-    var playElem = $("#play");
-    var playNode = misc.createTextNode(playElem, _playIcon);
+    var playElems = Array.prototype.slice.call(document.querySelectorAll(".play"));
+    var playNodes = playElems.map(function(playElem) {
+      return misc.createTextNode(playElem, _playIcon);
+    });
+    var fullScreenElem = $("#vsa .fullscreen");
+    var playElem2 = $("#vsa .play");
     var listenerManager = new ListenerManager();
     var on = listenerManager.on.bind(listenerManager);
     var settings = {
       lineSize: 1,
       backgroundColor: [0,0,0,1],
     };
+
+    if (s.inIframe) {
+      $("#loading").style.display = "";
+    }
 
     var g = {
       maxCount: 100000,
@@ -18037,6 +18157,18 @@ define('src/js/main',[
     if (q.pauseOnBlur !== undefined) {
       g.pauseOnBlur = q.pauseOnBlur.toLowerCase() === "true";
     }
+
+    if (s.inIframe) {
+      $("#uicontainer").className = "iframe";
+    }
+
+    on(fullScreenElem, 'click', function(e) {
+      if (fullScreen.isFullScreen()) {
+        fullScreen.cancelFullScreen();
+      } else {
+        fullScreen.requestFullScreen(document.body);
+      }
+    });
 
     if (gl) {
       editorElem.parentNode.insertBefore(s.editorElem, editorElem);
@@ -18280,24 +18412,20 @@ define('src/js/main',[
         setSoundSuccessState(false, e.toString());
       });
       s.streamSource.on('newSource', function(source) {
+        source.connect(s.analyser);
         if (!s.running) {
           s.streamSource.stop();
+          if (s.inIframe) {
+            waitForStart();
+          }
           return;
         }
-        source.connect(s.analyser);
         setPlayState();
         setSoundSuccessState(true);
       });
       s.streamSource.on('clickToStart', function() {
-        if (!g.startMobileSound) {
-          if (!g.waitMobileSound) {
-            g.waitMobileSound = true;
-            $("#startSound").style.display = "";
-            on($("#startSound"), 'click', function() {
-              $("#startSound").style.display = "none";
-              s.streamSource.play();
-            });
-          }
+        if (!g.startMobileSound || !s.running) {
+          waitForStart();
         }
       });
 
@@ -18311,6 +18439,24 @@ define('src/js/main',[
         lineNumbers: true,
       });
     }
+
+
+    function waitForStart() {
+      if (!g.waitForStart) {
+        g.waitForStart = true;
+        $("#loading").style.display = "none";
+        $("#start").style.display = "";
+        on($("#start"), 'click', function() {
+          $("#start").style.display = "none";
+          s.streamSource.play();
+          s.running = true;
+          setPlayState();
+          setSoundSuccessState(true);
+          queueRender();
+        });
+      }
+    }
+
 
     // Replace the canvas in the DOM with ours
     var c = document.getElementById("c");
@@ -18396,21 +18542,36 @@ define('src/js/main',[
       s.streamSource.setSource(src);
     }
 
-    on(playElem, 'click', function() {
-      if (s.streamSource.isPlaying()) {
-        s.streamSource.stop();
-      } else {
-        s.streamSource.play();
-      }
-      setPlayState();
+    playElems.forEach(function(playElem) {
+      on(playElem, 'click', function() {
+        if (s.streamSource.isPlaying()) {
+          s.streamSource.stop();
+          if (s.inIframe) {
+            g.pause = true;
+          }
+        } else {
+          s.streamSource.play();
+          if (s.inIframe) {
+            g.pause = false;
+            queueRender();
+          }
+        }
+        setPlayState();
+      });
     });
 
     function setPlayState() {
-      playNode.nodeValue = s.streamSource.isPlaying() ? _pauseIcon : _playIcon;
+      playNodes.forEach(function(playNode) {
+        playNode.nodeValue = s.streamSource.isPlaying() ? _pauseIcon : _playIcon;
+      });
+    }
+
+    function showOrHide(elem, show) {
+      elem.style.display = show ? "inline-block" : "none";
     }
 
     function setLinkOrHide(elem, link) {
-      elem.style.display = link ? "inline-block" : "none";
+      showOrHide(elem, link);
       if (link) {
         elem.href = link;
       }
@@ -18751,7 +18912,9 @@ define('src/js/main',[
         try {
           var restore = JSON.parse(restoreStr);
           if (restore.pathname === window.location.pathname) {
-            settings = restore.settings;
+            if (restore.settings.shader) {
+              settings = restore.settings;
+            }
           }
         } catch (e) {
         }
@@ -18782,8 +18945,28 @@ define('src/js/main',[
       //tryNewProgram(settings.shader);
       markAsSaved();
 
-      s.running = true;
-      queueRender();
+      s.running = !s.inIframe;
+      queueRender(true);
+      $("#uicontainer").style.display = "block";
+      $("#vsa a").href = window.location.href;
+      on($("#vsa a"), 'click', function() {
+        if (s.streamSource.isPlaying()) {
+          s.streamSource.stop();
+        }
+      });
+
+      if (s.inIframe) {
+        if (q.autoPlay || q.autoplay) {
+          s.running = true;
+          $("#loading").style.display = "none";
+        } else {
+          if (settings.sound) {
+            // sound is preping and will handle waitForStart
+          } else {
+            waitForStart();
+          }
+        }
+      }
     }
 
     var uniforms = {
@@ -18818,6 +19001,7 @@ define('src/js/main',[
 
       var programInfo = s.programManager.getProgramInfo();
       if (programInfo) {
+        g.wasRendered = true;
 
         uniforms.time = time;
         uniforms.vertexCount = settings.num;
@@ -18910,7 +19094,7 @@ define('src/js/main',[
     }
 
     function queueRender(force) {
-      if (!g.requestId && (force || !g.pause)) {
+      if (!g.requestId && (force || (s.inIframe && !g.wasRendered) || (s.running && !g.pause))) {
         g.requestId = requestAnimationFrame(render);
       }
     }

@@ -345,6 +345,12 @@ span.CodeMirror-selectedtext { background: none; }
   font-size: 14px;
   line-height: 1.2;
 }
+.iframe .tooltip:after,
+.iframe [data-tooltip]:after {
+  padding: 8px;
+  width: 100px;
+  font-size: 10px;
+}
 [data-tooltip]:before,
 [data-tooltip]:after,
 .tooltip:before,
@@ -475,6 +481,7 @@ canvas {
   width: 100%;
   height: 100%;
   padding: 30px;
+  display: none;
 }
 #ui {
   width: 100%;
@@ -501,6 +508,18 @@ canvas {
   -webkit-align-items: center;
 }
 #ui:hover {
+}
+#vsa {
+  width: 100%;
+  display: none;
+}
+#vsa>button {
+    width: 2em;
+    height: 2.35em;
+    padding: 0 !important;
+}
+#vsa>button>img {
+    vertical-align: middle;
 }
 #toolbar {
   width: 100%;
@@ -541,7 +560,17 @@ button {
 button:focus {
     outline: 0
 }
-#toolbar>div, select, input, #toolbar>button, #toolbar>a, #soundInfo>a, #userInfo>div, #userInfo>a {
+#toolbar>div,
+select,
+input,
+#toolbar>button,
+#toolbar>a,
+#soundInfo>a,
+#soundInfo>button,
+#userInfo>div,
+#userInfo>a,
+#vsa>a,
+#vsa>button {
   background-color: rgba(0,0,0,0.7);
   border: 1px solid #444;
   margin: 0.25em;
@@ -557,7 +586,7 @@ button:focus {
   border: 1px solid #000;
   color: #333;
 }
-#toolbar>a {
+#toolbar>a, #vsa>a {
   display: inline-block;
   text-decoration: none;
 }
@@ -615,6 +644,9 @@ button:focus {
 }
 #soundcloud {
   padding: 0.25em !important;
+}
+#soundcloud>img {
+  height: 1.45em;
 }
 #editorWrap {
   width: 100%;
@@ -691,6 +723,45 @@ input[type="color"] {
 }
 .CodeMirror-selected { background: rgba(0,128,255,0.5); }
 .CodeMirror-focused .CodeMirror-selected { background: rgba(128,128,255,0.8); }
+#uicontainer.iframe {
+    padding: 10px;
+}
+.iframe #vsa {
+    display: flex;
+    display: -webkit-flex;
+    flex-flow: row;
+    -webkit-flex-flow: row;
+    flex-wrap: wrap;
+    -webkit-flex-wrap: wrap;
+    justify-content: flex-end;
+    align-content: center;
+    align-items: center;
+    -webkit-justify-content: flex-end;
+    -webkit-align-content: center;
+    -webkit-align-items: center;
+}
+.iframe #toolbar, .iframe #editorWrap {
+    display: none;
+}
+.iframe #ui {
+    justify-content: space-between;
+    -webkit-justify-content: space-between;
+}
+.iframe .currentuser,
+.iframe .nouser {
+    display: none;
+}
+.iframe #toolbar>div,
+.iframe #toolbar>button,
+.iframe #toolbar>a,
+.iframe #soundInfo>a,
+.iframe #soundInfo>button,
+.iframe #userInfo>div,
+.iframe #userInfo>a,
+.iframe #vsa>a,
+.iframe #vsa>button {
+   font-size: xx-small;
+}
 @media (max-width : 600px) {
    #toolbar, #editorWrap, #bottom {
        display: none;

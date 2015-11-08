@@ -53,6 +53,14 @@
   font-size: 14px;
   line-height: 1.2;
 }
+.iframe .tooltip:after,
+.iframe [data-tooltip]:after {
+  padding: 8px;
+  width: 100px;
+  font-size: 10px;
+}
+
+
 
 /* Directions */
 

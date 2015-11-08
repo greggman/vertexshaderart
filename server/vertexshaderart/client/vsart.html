@@ -3,6 +3,11 @@
     <canvas id="c"></canvas>
     <div id="uicontainer">
       <div id="ui">
+        <div id="vsa">
+          <a target="_blank" href="/">vertexshaderart.com</a>
+          <button class="play"></button>
+          <button class="fullscreen tooltip-bottom" data-tooltip="fullscreen"><img src="/static/resources/images/fullscreen.svg"/></button>
+        </div>
         <div id="toolbar">
           <button id="hide"></button>
           <button id="time" class="tooltip-bottom" data-tooltip="reset time">T</button>
@@ -26,7 +31,7 @@
           <input type="number" id="num" value="10000" min="1" max="100000" />
           <input type="color" id="background" value="#4488CC" />
           <input type="text" id="sound" value="sound" />
-          <button id="play"></button>
+          <button class="play"></button>
           <a href="/" id="gallery">gallery</a>
           <button id="help">help</button>
         </div>
@@ -43,8 +48,10 @@
         </div>
       </div>
     </div>
-    <div id="startSound" class="fulldialog" style="display: none;">
-      <h1>click to start</h1>
+    <div id="start" class="fulldialog" style="display: none;">
+      <h1>▶</h1>
+    </div>
+    <div id="loading" class="fulldialog" style="display: none;">
     </div>
     <div id="saving" class="fulldialog" style="display: none;">
       <h1>saving</h1>
