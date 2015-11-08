@@ -11,6 +11,19 @@ just a `vertexId` that counts vertices.
 Because limits are AWESOME! Like 4k demos (or 1k) setting limits
 almost always leads to more creativity.
 
+## Embedding
+
+You can embed a piece on your blog or whatever by putting the url in an iframe. Example
+
+    <iframe width="700" height="400" src="http://www.vertexshaderart.com/art/uqWtxuQpEkfxqWXCK" frameborder="0" allowfullscreen></iframe>
+
+The UI will be removed and there will put a ▶ icon to start it.
+This is because you probably don't want them to run automatically
+since they might be heavy.
+
+If you really do want it to play automatically add `?autoplay=true` to
+the URL.
+
 ## Contributing
 
 Pull requests or suggestions welcome. Please [open an issue](http://github.com/greggman.com/vertexshaderart/issues).
@@ -137,6 +150,11 @@ are passed in by adding a `?` and then `key=value&key=value`.
 *   `pauseOnBlur=false`
 
     See above.
+
+*   `autoplay=true`
+
+    If embedded in an iframe the defaul is not to run since they
+    might be heavy and might have music.
 
 ## Deploying
 

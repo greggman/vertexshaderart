@@ -1,5 +1,39 @@
 # Changelist
 
+### 2015-11-09
+
+*   Added embedded support.
+
+    You can embed a piece on your blog or whatever by putting the url in an iframe. Example
+
+        <iframe width="700" height="400" src="http://www.vertexshaderart.com/art/uqWtxuQpEkfxqWXCK" frameborder="0" allowfullscreen></iframe>
+
+    The UI will be removed and there will put a ▶ icon to start it.
+    This is because you probably don't want them to run automatically
+    since they might be heavy.
+
+    If you really do want it to play automatically add `?autoplay=true` to
+    the URL.
+
+    Cross my fingers this doesn't kill my bandwidth. Maybe I should use
+    a special URL like `/embed`? Or an argument? Or maybe I can just
+    figure it out from the server? That would allow me to serve something
+    more static and remove all the editing code and meteor code.
+
+    Hmmm...
+
+*   Added sound icon
+
+    Someone complained that autoplay is evil. I thought about asking them
+    what they thought about youtube.
+
+    But, decided maybe they had a point. I didn't get rid of autoplay
+    because some pieces require the music to function and I think the UX
+    would be much worse if they were required to click something.
+
+    Instead I added icons on the galleries so you should know before you
+    click on that it will have sound.
+
 ### 2015-11-02
 
 *   Added newest to front page.
