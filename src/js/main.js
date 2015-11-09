@@ -435,7 +435,7 @@ define([
 
       var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
       s.numSoundSamples = Math.min(maxTextureSize, s.analyser.frequencyBinCount);
-      s.numHistorySamples = 60 * 4, // 4 seconds;
+      s.numHistorySamples = 60 * 4; // 4 seconds;
 
       s.soundHistory = new HistoryTexture(gl, {
         width: s.numSoundSamples,
