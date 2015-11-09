@@ -1,5 +1,5 @@
 #!/bin/sh
 export IMAGE_PATH=$(cd ../vsa-uploads; pwd)
-meteor --settings=settings.json
+meteor --settings=settings-dev.json
 
 
