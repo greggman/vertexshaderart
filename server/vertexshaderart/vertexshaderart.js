@@ -1173,13 +1173,13 @@ function updateArt(name, origId, vsData, data) {
     hasSound: hasSound,
     screenshotURL: screenshotURL,
   });
-  if (!data.private) {
+  if (!data.private || art.private) {
     Art.update({_id: origId},
       {$set: {
         revisionId: revisionId,
         modifiedAt: new Date(),
         name: name,
-        private: false,
+        private: data.private,
         settings: JSON.stringify(settings),
         hasSound: hasSound,
         screenshotURL: screenshotURL,
