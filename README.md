@@ -82,9 +82,14 @@ The site is split into 2 parts.
 
 2.  A Meteor based website
 
-    The meteor based website exists at `server/vertexshaderart`. To run it
+    The meteor based website exists at `server/vertexshaderart`. To run it first copy
+    `settings.json` to `settings-dev.json`
 
         cd server/vertexshaderart
+        cp settings.json settings-dev.json
+
+    Then from the `server/vertershaderart` folder run `start.
+
         ./start
 
     This will launch meteor. Once it's running you can open a browser to
@@ -93,7 +98,12 @@ The site is split into 2 parts.
 
     **Note:** The site run this way has the *page size*, the number of thumbnails to show per page,
     set to 3. This is so it's easy to test the pagination code without needing
-    to add hundreds of entries. You can change that in `server/vertexshaderart/settings.json`
+    to add hundreds of entries. You can change that in `server/vertexshaderart/settings-dev.json`
+
+    **NOTE: DO NOT COMMIT `settings-dev.json` TO GIT**
+
+    You can use that too add your ids and password/secrets for google/twitter/github account
+    testing. See [DEPLOY.md](deploy.md).
 
 ### Updating the visualizer into the meteor website.
 
@@ -107,6 +117,10 @@ That will
 
 *   Convert `src/index.html` into meteor templates and save them in
     `server/vertexshaderart/client/vsart.html`
+
+    note: a comment in the form of `<!--template=name-->`
+    will be converted to `{{> name}}`. This lets you insert other templates
+    into the HTML from the visualizer.
 
 *   Concat all the css used by the visualizer and save in
     `server/vertexshaderart/client/vsart.css`
