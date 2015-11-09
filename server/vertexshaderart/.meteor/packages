@@ -32,3 +32,4 @@ service-configuration
 reactive-var
 mrt:accounts-soundcloud
 meteorhacks:ssr
+meteorhacks:kadira
