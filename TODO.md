@@ -23,8 +23,6 @@
 
     Is there some other UX that would work better?
 
-*   remove soundcloud SDK (because it uses flash!)
-
 *   make the deploy scripts pull->build->restart meteor rather than stop->pull->build->start
 
 *   add tooltips for more stuff
@@ -90,6 +88,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   remove soundcloud SDK (because it uses flash!)
 
 *   fix private revisions. The newest revision is not shown?
 
