@@ -4,20 +4,12 @@
 
 *   add "loading" to gallery?
 
-*   embeddable?
-
-    should I make it possible to embed like a youtube video?
-
-    You'd basicaly put `<iframe src="http://vertexshaderart.com/view/?id=xxx"></iframe>` or
-    something. Not sure what the point is. I just thought it would
-    be nice to embed on my blog :P
-
 *   add infinite scroll
 
     *   update URL to reflect position?
 
         I want back to take me where I was.
-        I hade being 20 pages down and coming
+        I hate being 20 pages down and coming
         back and being at page 1 and having
         to find my place
 
@@ -68,15 +60,26 @@
 
 *   make likes active on gallery
 
+*   fix music loop or at least make stop/start work
+
+# Done
+
+*   embeddable?
+
+    should I make it possible to embed like a youtube video?
+
+    You'd basicaly put `<iframe src="http://vertexshaderart.com/view/?id=xxx"></iframe>` or
+    something. Not sure what the point is. I just thought it would
+    be nice to embed on my blog :P
+
 *   try to request less info from accounts
 
     *   github
     *   google
     *   twitter
 
-*   fix music loop or at least make stop/start work
-
-# Done
+    Apparently I can't actually ask for less info. Every service
+    automatically gives me email and name :(
 
 *   add "loading" to user page so it doesn't show no such user
 
