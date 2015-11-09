@@ -1,5 +1,10 @@
 ﻿# To Do
 
+*   look into running 2 instances of meteor in docker?
+
+    Ideally I could create a new container, run the new meteor,
+    kill the old container,
+
 *   remove soundcloud SDK (because it uses flash!)
 
 *   make the deploy scripts pull->build->restart meteor rather than stop->pull->build->start
