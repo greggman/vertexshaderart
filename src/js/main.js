@@ -66,6 +66,7 @@ define([
   var isMobile = window.navigator.userAgent.match(/Android|iPhone|iPad|iPod|Windows Phone/i);
   var $ = document.querySelector.bind(document);
   var gl;
+  var m4 = twgl.m4;
   var s = {
     screenshotCanvas: document.createElement("canvas"),
     restoreKey: "restore",
@@ -201,6 +202,85 @@ define([
     }
   };
 
+  function HistoryTexture(gl, options) {
+    var _width = options.width;
+    var type  = options.type || gl.UNSIGNED_BYTE;
+    var format = options.format || gl.RGBA;
+    var ctor  = twgl.getTypedArrayTypeForGLType(type);
+    var numComponents = twgl.getNumComponentsForFormat(format);
+    var size  = _width * numComponents;
+    var _buffer = new ctor(size);
+    var _texSpec = {
+      src: _buffer,
+      height: 1,
+      min: options.min || gl.LINEAR,
+      mag: options.mag || gl.LINEAR,
+      wrap: gl.CLAMP_TO_EDGE,
+      format: format,
+    }
+    var _tex = twgl.createTexture(gl, _texSpec);
+
+    var _length = options.length;
+    var _historyAttachments = [
+      {
+        format: options.historyFormat || gl.RGBA,
+        type: type,
+        mag: options.mag || gl.LINEAR,
+        min: options.min || gl.LINEAR,
+        wrap: gl.CLAMP_TO_EDGE,
+      },
+    ];
+
+    var _srcFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
+    var _dstFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
+
+    var _historyUniforms = {
+      u_mix: 0,
+      u_mult: 1,
+      u_matrix: m4.identity(),
+      u_texture: undefined,
+    };
+
+    this.buffer = _buffer;
+
+    this.update = function update() {
+      var temp = _srcFBI;
+      _srcFBI = _dstFBI;
+      _dstFBI = temp;
+
+      twgl.setTextureFromArray(gl, _tex, _texSpec.src, _texSpec);
+
+      gl.useProgram(s.historyProgramInfo.program);
+      twgl.bindFramebufferInfo(gl, _dstFBI);
+
+      // copy from historySrc to historyDst one pixel down
+      m4.translation([0, 2 / _length, 0], _historyUniforms.u_matrix);
+      _historyUniforms.u_mix = 1;
+      _historyUniforms.u_texture = _srcFBI.attachments[0];
+
+      twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+
+      // copy audio data into top row of historyDst
+      _historyUniforms.u_mix = format === gl.ALPHA ? 0 : 1;
+      _historyUniforms.u_texture = _tex;
+      m4.translation(
+          [0, -(_length - 0.5) / _length, 0],
+          _historyUniforms.u_matrix)
+      m4.scale(
+          _historyUniforms.u_matrix,
+          [1, 1 / _length, 1],
+          _historyUniforms.u_matrix);
+
+      twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+    };
+
+    this.getTexture = function getTexture() {
+      return _dstFBI.attachments[0];
+    };
+  }
+
   function checkCanUseFloat(gl) {
     if (!gl.getExtension("OES_texture_float")) {
       return false;
@@ -231,7 +311,6 @@ define([
   };
 
   function VS() {
-    var m4 = twgl.m4;
     var _pauseIcon = "❚❚";
     var _playIcon = "▶";
     var editorElem = $("#editor");
@@ -356,85 +435,6 @@ define([
       s.analyser.connect(s.context.destination);
 
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
-
-      function HistoryTexture(gl, options) {
-        var _width = options.width;
-        var type  = options.type || gl.UNSIGNED_BYTE;
-        var format = options.format || gl.RGBA;
-        var ctor  = twgl.getTypedArrayTypeForGLType(type);
-        var numComponents = twgl.getNumComponentsForFormat(format);
-        var size  = _width * numComponents;
-        var _buffer = new ctor(size);
-        var _texSpec = {
-          src: _buffer,
-          height: 1,
-          min: options.min || gl.LINEAR,
-          mag: options.mag || gl.LINEAR,
-          wrap: gl.CLAMP_TO_EDGE,
-          format: format,
-        }
-        var _tex = twgl.createTexture(gl, _texSpec);
-
-        var _length = options.length;
-        var _historyAttachments = [
-          {
-            format: options.historyFormat || gl.RGBA,
-            type: type,
-            mag: options.mag || gl.LINEAR,
-            min: options.min || gl.LINEAR,
-            wrap: gl.CLAMP_TO_EDGE,
-          },
-        ];
-
-        var _srcFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
-        var _dstFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
-
-        var _historyUniforms = {
-          u_mix: 0,
-          u_mult: 1,
-          u_matrix: m4.identity(),
-          u_texture: undefined,
-        };
-
-        this.buffer = _buffer;
-
-        this.update = function update() {
-          var temp = _srcFBI;
-          _srcFBI = _dstFBI;
-          _dstFBI = temp;
-
-          twgl.setTextureFromArray(gl, _tex, _texSpec.src, _texSpec);
-
-          gl.useProgram(s.historyProgramInfo.program);
-          twgl.bindFramebufferInfo(gl, _dstFBI);
-
-          // copy from historySrc to historyDst one pixel down
-          m4.translation([0, 2 / _length, 0], _historyUniforms.u_matrix);
-          _historyUniforms.u_mix = 1;
-          _historyUniforms.u_texture = _srcFBI.attachments[0];
-
-          twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
-          twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
-
-          // copy audio data into top row of historyDst
-          _historyUniforms.u_mix = format === gl.ALPHA ? 0 : 1;
-          _historyUniforms.u_texture = _tex;
-          m4.translation(
-              [0, -(_length - 0.5) / _length, 0],
-              _historyUniforms.u_matrix)
-          m4.scale(
-              _historyUniforms.u_matrix,
-              [1, 1 / _length, 1],
-              _historyUniforms.u_matrix);
-
-          twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
-          twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
-        };
-
-        this.getTexture = function getTexture() {
-          return _dstFBI.attachments[0];
-        };
-      }
 
       var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
       s.numSoundSamples = Math.min(maxTextureSize, s.analyser.frequencyBinCount);
