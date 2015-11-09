@@ -363,11 +363,12 @@ precision mediump float;
 
 uniform sampler2D u_texture;
 uniform float u_mix;
+uniform float u_mult;
 varying vec2 v_texcoord;
 
 void main() {
   vec4 color = texture2D(u_texture, v_texcoord);
-  gl_FragColor = mix(color.aaaa, color.rgba, u_mix);
+  gl_FragColor = mix(color.aaaa, color.rgba, u_mix) * u_mult;
 }
   </script>
   <!- =========================================================== ->

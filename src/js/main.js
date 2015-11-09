@@ -389,6 +389,7 @@ define([
 
         var _historyUniforms = {
           u_mix: 0,
+          u_mult: 1,
           u_matrix: m4.identity(),
           u_texture: undefined,
         };
@@ -1176,12 +1177,13 @@ define([
       s.touchHistory.update();
     }
 
-    function renderHistory(tex, mix) {
+    function renderHistory(tex, mix, mult) {
       gl.disable(gl.DEPTH_TEST);
       gl.disable(gl.BLEND);
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
       m4.identity(historyUniforms.u_matrix);
+      historyUniforms.u_mult = mult;
       historyUniforms.u_mix = mix;
       historyUniforms.u_texture = tex;
       twgl.setUniforms(s.historyProgramInfo, historyUniforms);
@@ -1206,13 +1208,13 @@ define([
       renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
 
       if (q.showHistory) {
-        renderHistory(s.soundHistory.getTexture(), 0);
+        renderHistory(s.soundHistory.getTexture(), 0, 1);
       }
       if (q.showFloatHistory && s.canUseFloat) {
-        renderHistory(s.floatSoundHistory.getTexture(), 0);
+        renderHistory(s.floatSoundHistory.getTexture(), 0, -0.005);
       }
       if (q.showTouchHistory) {
-        renderHistory(s.touchHistory.getTexture(), 1);
+        renderHistory(s.touchHistory.getTexture(), 1, 1);
       }
 
       queueRender();
