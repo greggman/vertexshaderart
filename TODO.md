@@ -5,6 +5,24 @@
     Ideally I could create a new container, run the new meteor,
     kill the old container,
 
+*   show newest revision on use page if logged in?
+
+    Currently it shows the newest public revision if there are any public revisions
+    otherwise it shows the newest private revision.
+
+    What should it do? It feels like I want it to show the newest revision period
+    because that's the last thing you were working on. But, then it will be confusing
+    if the newest revision is private but there's a public revision. Either I show
+    the "it's public" icon on top of your private revision to show you that at least
+    one revision is public but it will be confusing because it's not that revision.
+    OR, I don't show you the "it's public" icon which will also be confusing beacuse
+    it will suggest nothing about that piece is visible.
+
+    Should I add a 3rd icon that means "it's public but not this one?" Not sure what
+    that would be, an eye with a "v" in it for different **v**ersion?
+
+    Is there some other UX that would work better?
+
 *   remove soundcloud SDK (because it uses flash!)
 
 *   make the deploy scripts pull->build->restart meteor rather than stop->pull->build->start
@@ -72,6 +90,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   fix private revisions. The newest revision is not shown?
 
 *   embeddable?
 
