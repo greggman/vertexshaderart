@@ -1,5 +1,9 @@
 ﻿# To Do
 
+*   remove soundcloud SDK (because it uses flash!)
+
+*   make the deploy scripts pull->build->restart meteor rather than stop->pull->build->start
+
 *   add tooltips for more stuff
 
 *   add "loading" to gallery?
