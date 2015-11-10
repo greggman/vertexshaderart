@@ -87,6 +87,7 @@ I'm pretty sure this will work though I haven't tested it on a fresh machine
 
 4.  cd to the `server/deploy` folder and type
 
+        docker-machine start default
         ./push-local.sh
 
     **NOTE: You'll probably see several errors at the beginning.**
