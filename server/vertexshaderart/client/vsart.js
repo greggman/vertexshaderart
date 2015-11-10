@@ -17168,6 +17168,190 @@ define('src/js/fullscreen',[], function() {
 
 
 /*
+ * Copyright 2014, Gregg Tavares.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Gregg Tavares. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * Misc IO functions
+ * @module IO
+ */
+define('src/js/io',[],function() {
+  var log = function() { };
+  //var log = console.log.bind(console);
+
+  /**
+   * @typedef {Object} Request~Options
+   * @memberOf module:IO
+   * @property {number?} timeout. Timeout in ms to abort.
+   *        Default = no-timeout
+   * @property {string?} method default = POST.
+   * @property {string?} inMimeType default = text/plain
+   * @property {Object{key,value}} headers
+   */
+
+  /**
+   * Make an http request request
+   * @memberOf module:IO
+   * @param {string} url url to request.
+   * @param {string?} content to send.
+   * @param {!function(error, string, xml)} callback Function to
+   *        call on success or failure. If successful error will
+   *        be null, object will be result from request.
+   * @param {module:IO~Request~Options?} options
+   */
+  var request = function(url, content, callback, options) {
+    content = content || "";
+    options = options || { };
+    var error = 'send failed to load url "' + url + '"';
+    var request = new XMLHttpRequest();
+    if (request.overrideMimeType) {
+      request.overrideMimeType(options.mimeTime || 'text/plain');
+    }
+    if (options.crossOrigin) {
+      request.withCredentials = true;
+    }
+    var timeout = options.timeout || 0;
+    if (timeout) {  // IE11 doesn't like setting timeout to 0???!?
+      request.timeout = timeout;
+    }
+    log("set timeout to: " + request.timeout);
+    request.open(options.method || 'POST', url, true);
+    var callCallback = function(error, json) {
+      if (callback) {
+        log("calling-callback:" + (error ? " has error" : "success"));
+        callback(error, json);
+        callback = undefined;  // only call it once.
+      }
+    };
+    var handleAbort = function(e) {
+      log("--abort--");
+      callCallback("error (abort) sending json to " + url);
+    }
+    var handleError = function(e) {
+      log("--error--");
+      callCallback("error sending json to " + url);
+    }
+    var handleTimeout = function(e) {
+      log("--timeout--");
+      callCallback("timeout sending json to " + url);
+    };
+    var handleForcedTimeout = function(e) {
+      if (callback) {
+        log("--forced timeout--");
+        request.abort();
+        callCallback("forced timeout sending json to " + url);
+      }
+    }
+    var handleFinish = function() {
+      log("--finish--");
+      // HTTP reports success with a 200 status. The file protocol reports
+      // success with zero. HTTP does not use zero as a status code (they
+      // start at 100).
+      // https://developer.mozilla.org/En/Using_XMLHttpRequest
+      var success = request.status == 200 || request.status == 0;
+      callCallback(success ? null : 'could not load: ' + url, request.responseText);
+    };
+    try {
+      // Safari 7 seems to ignore the timeout.
+      if (timeout) {
+        setTimeout(handleForcedTimeout, timeout + 50);
+      }
+      request.addEventListener('load', handleFinish, false);
+      request.addEventListener('timeout', handleTimeout, false);
+      request.addEventListener('error', handleError, false);
+      if (options.headers) {
+        Object.keys(options.headers).forEach(function(header) {
+          request.setRequestHeader(header, options.headers[header]);
+        });
+      }
+      request.send(content);
+      log("--sent: " + url);
+    } catch (e) {
+      log("--exception--");
+      setTimeout(function() { callCallback('could not load: ' + url, null) }, 0);
+    }
+  };
+
+  /**
+   * sends a JSON 'POST' request, returns JSON repsonse
+   * @memberOf module:IO
+   * @param {string} url url to POST to.
+   * @param {Object=} jsonObject JavaScript object on which to
+   *        call JSON.stringify.
+   * @param {!function(error, object)} callback Function to call
+   *        on success or failure. If successful error will be
+   *        null, object will be json result from request.
+   * @param {module:IO~Request~Options?} options
+   */
+  var sendJSON = function(url, jsonObject, callback, options) {
+    var options = JSON.parse(JSON.stringify(options || {}));
+    options.headers = options.headers || {};
+    options.headers["Content-type"] = "application/json";
+    return request(
+      url,
+      JSON.stringify(jsonObject),
+      function(err, content) {
+        if (err) {
+          return callback(err);
+        }
+        try {
+          var json = JSON.parse(content);
+        } catch (e) {
+          return callback(e);
+        }
+        callback(null, json);
+      },
+      options);
+  };
+
+  var makeMethodFunc = function(method) {
+    return function(url, content, callback, options) {
+      var options = JSON.parse(JSON.stringify(options || {}));
+      options.method = method;
+      return request(url, content, callback, options);
+    };
+  };
+
+  return {
+    get: makeMethodFunc("GET"),
+    post: makeMethodFunc("POST"),
+    "delete": makeMethodFunc("DELETE"),
+    put: makeMethodFunc("PUT"),
+    request: request,
+    sendJSON: sendJSON,
+  };
+});
+
+
+
+/*
  * Copyright 2015, Gregg Tavares.
  * All rights reserved.
  *
@@ -17912,6 +18096,7 @@ define('src/js/main',[
     '3rdparty/twgl-full',
     '3rdparty/notifier',
     './fullscreen',
+    './io',
     './listenermanager',
     './misc',
     './strings',
@@ -17924,6 +18109,7 @@ define('src/js/main',[
      twgl,
      Notifier,
      fullScreen,
+     io,
      ListenerManager,
      misc,
      strings
@@ -17939,6 +18125,7 @@ define('src/js/main',[
   var isMobile = window.navigator.userAgent.match(/Android|iPhone|iPad|iPod|Windows Phone/i);
   var $ = document.querySelector.bind(document);
   var gl;
+  var m4 = twgl.m4;
   var s = {
     screenshotCanvas: document.createElement("canvas"),
     restoreKey: "restore",
@@ -18074,6 +18261,85 @@ define('src/js/main',[
     }
   };
 
+  function HistoryTexture(gl, options) {
+    var _width = options.width;
+    var type  = options.type || gl.UNSIGNED_BYTE;
+    var format = options.format || gl.RGBA;
+    var ctor  = twgl.getTypedArrayTypeForGLType(type);
+    var numComponents = twgl.getNumComponentsForFormat(format);
+    var size  = _width * numComponents;
+    var _buffer = new ctor(size);
+    var _texSpec = {
+      src: _buffer,
+      height: 1,
+      min: options.min || gl.LINEAR,
+      mag: options.mag || gl.LINEAR,
+      wrap: gl.CLAMP_TO_EDGE,
+      format: format,
+    }
+    var _tex = twgl.createTexture(gl, _texSpec);
+
+    var _length = options.length;
+    var _historyAttachments = [
+      {
+        format: options.historyFormat || gl.RGBA,
+        type: type,
+        mag: options.mag || gl.LINEAR,
+        min: options.min || gl.LINEAR,
+        wrap: gl.CLAMP_TO_EDGE,
+      },
+    ];
+
+    var _srcFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
+    var _dstFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
+
+    var _historyUniforms = {
+      u_mix: 0,
+      u_mult: 1,
+      u_matrix: m4.identity(),
+      u_texture: undefined,
+    };
+
+    this.buffer = _buffer;
+
+    this.update = function update() {
+      var temp = _srcFBI;
+      _srcFBI = _dstFBI;
+      _dstFBI = temp;
+
+      twgl.setTextureFromArray(gl, _tex, _texSpec.src, _texSpec);
+
+      gl.useProgram(s.historyProgramInfo.program);
+      twgl.bindFramebufferInfo(gl, _dstFBI);
+
+      // copy from historySrc to historyDst one pixel down
+      m4.translation([0, 2 / _length, 0], _historyUniforms.u_matrix);
+      _historyUniforms.u_mix = 1;
+      _historyUniforms.u_texture = _srcFBI.attachments[0];
+
+      twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+
+      // copy audio data into top row of historyDst
+      _historyUniforms.u_mix = format === gl.ALPHA ? 0 : 1;
+      _historyUniforms.u_texture = _tex;
+      m4.translation(
+          [0, -(_length - 0.5) / _length, 0],
+          _historyUniforms.u_matrix)
+      m4.scale(
+          _historyUniforms.u_matrix,
+          [1, 1 / _length, 1],
+          _historyUniforms.u_matrix);
+
+      twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+    };
+
+    this.getTexture = function getTexture() {
+      return _dstFBI.attachments[0];
+    };
+  }
+
   function checkCanUseFloat(gl) {
     if (!gl.getExtension("OES_texture_float")) {
       return false;
@@ -18104,7 +18370,6 @@ define('src/js/main',[
   };
 
   function VS() {
-    var m4 = twgl.m4;
     var _pauseIcon = "❚❚";
     var _playIcon = "▶";
     var editorElem = $("#editor");
@@ -18230,87 +18495,9 @@ define('src/js/main',[
 
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
 
-      function HistoryTexture(gl, options) {
-        var _width = options.width;
-        var type  = options.type || gl.UNSIGNED_BYTE;
-        var format = options.format || gl.RGBA;
-        var ctor  = twgl.getTypedArrayTypeForGLType(type);
-        var numComponents = twgl.getNumComponentsForFormat(format);
-        var size  = _width * numComponents;
-        var _buffer = new ctor(size);
-        var _texSpec = {
-          src: _buffer,
-          height: 1,
-          min: options.min || gl.LINEAR,
-          mag: options.mag || gl.LINEAR,
-          wrap: gl.CLAMP_TO_EDGE,
-          format: format,
-        }
-        var _tex = twgl.createTexture(gl, _texSpec);
-
-        var _length = options.length;
-        var _historyAttachments = [
-          {
-            format: options.historyFormat || gl.RGBA,
-            type: type,
-            mag: options.mag || gl.LINEAR,
-            min: options.min || gl.LINEAR,
-            wrap: gl.CLAMP_TO_EDGE,
-          },
-        ];
-
-        var _srcFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
-        var _dstFBI = twgl.createFramebufferInfo(gl, _historyAttachments, _width, _length);
-
-        var _historyUniforms = {
-          u_mix: 0,
-          u_matrix: m4.identity(),
-          u_texture: undefined,
-        };
-
-        this.buffer = _buffer;
-
-        this.update = function update() {
-          var temp = _srcFBI;
-          _srcFBI = _dstFBI;
-          _dstFBI = temp;
-
-          twgl.setTextureFromArray(gl, _tex, _texSpec.src, _texSpec);
-
-          gl.useProgram(s.historyProgramInfo.program);
-          twgl.bindFramebufferInfo(gl, _dstFBI);
-
-          // copy from historySrc to historyDst one pixel down
-          m4.translation([0, 2 / _length, 0], _historyUniforms.u_matrix);
-          _historyUniforms.u_mix = 1;
-          _historyUniforms.u_texture = _srcFBI.attachments[0];
-
-          twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
-          twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
-
-          // copy audio data into top row of historyDst
-          _historyUniforms.u_mix = format === gl.ALPHA ? 0 : 1;
-          _historyUniforms.u_texture = _tex;
-          m4.translation(
-              [0, -(_length - 0.5) / _length, 0],
-              _historyUniforms.u_matrix)
-          m4.scale(
-              _historyUniforms.u_matrix,
-              [1, 1 / _length, 1],
-              _historyUniforms.u_matrix);
-
-          twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
-          twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
-        };
-
-        this.getTexture = function getTexture() {
-          return _dstFBI.attachments[0];
-        };
-      }
-
       var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
       s.numSoundSamples = Math.min(maxTextureSize, s.analyser.frequencyBinCount);
-      s.numHistorySamples = 60 * 4, // 4 seconds;
+      s.numHistorySamples = 60 * 4; // 4 seconds;
 
       s.soundHistory = new HistoryTexture(gl, {
         width: s.numSoundSamples,
@@ -18354,7 +18541,49 @@ define('src/js/main',[
         indices: [0, 1, 2, 2, 1, 3],
       });
 
-      s.sc = window.SC;
+      s.sc = new function() {
+        var _clientId;
+        this.initialize = function(options) {
+          _clientId = options.client_id;
+        };
+        this.get = function(url, options, callback) {
+          options = JSON.parse(JSON.stringify(options));
+          var provideResult = function(fn) {
+            options.client_id = _clientId;
+            options.format = "json";
+            options["_status_code_map[302]"] = 200;
+            var scUrl = "http://api.soundcloud.com" + url + misc.objectToSearchString(options);
+
+            var handleResult = function(err, obj) {
+              if (!err) {
+                if (obj.status && obj.status.substr(0, 3) === "302" && obj.location) {
+                  io.sendJSON(obj.location, {}, handleResult, { method: "GET"});
+                  return;
+                }
+              }
+              callback(obj, err);
+            };
+
+            io.sendJSON(scUrl, {}, handleResult, {
+              method: "GET",
+            });
+          };
+
+          if (callback) {
+            provideResult(callback);
+          } else {
+            return {
+              then: function(fn) {
+                provideResult(fn);
+                return {
+                  catch: function() {
+                  },
+                };
+              },
+            };
+          }
+        };
+      };
       if (!s.sc || q.local) {
         s.sc = new function() {
           function noop() {
@@ -18923,6 +19152,12 @@ define('src/js/main',[
       return settings;
     }
 
+    function stopTheMusic() {
+      if (s.streamSource.isPlaying()) {
+        s.streamSource.stop();
+      }
+    }
+
     function setSettings(_settings, options) {
       options = options || {};
       g.saveFn = options.saveFn;
@@ -18949,11 +19184,12 @@ define('src/js/main',[
       queueRender(true);
       $("#uicontainer").style.display = "block";
       $("#vsa a").href = window.location.href;
-      on($("#vsa a"), 'click', function() {
-        if (s.streamSource.isPlaying()) {
-          s.streamSource.stop();
-        }
-      });
+      if (s.inIframe) {
+        Array.prototype.forEach.call(document.querySelectorAll("a"), function(a) {
+          a.target = "_blank";
+          on(a, 'click', stopTheMusic);
+        });
+      }
 
       if (s.inIframe) {
         if (q.autoPlay || q.autoplay) {
@@ -19051,12 +19287,13 @@ define('src/js/main',[
       s.touchHistory.update();
     }
 
-    function renderHistory(tex, mix) {
+    function renderHistory(tex, mix, mult) {
       gl.disable(gl.DEPTH_TEST);
       gl.disable(gl.BLEND);
       gl.useProgram(s.historyProgramInfo.program);
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
       m4.identity(historyUniforms.u_matrix);
+      historyUniforms.u_mult = mult;
       historyUniforms.u_mix = mix;
       historyUniforms.u_texture = tex;
       twgl.setUniforms(s.historyProgramInfo, historyUniforms);
@@ -19081,13 +19318,13 @@ define('src/js/main',[
       renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
 
       if (q.showHistory) {
-        renderHistory(s.soundHistory.getTexture(), 0);
+        renderHistory(s.soundHistory.getTexture(), 0, 1);
       }
       if (q.showFloatHistory && s.canUseFloat) {
-        renderHistory(s.floatSoundHistory.getTexture(), 0);
+        renderHistory(s.floatSoundHistory.getTexture(), 0, -0.005);
       }
       if (q.showTouchHistory) {
-        renderHistory(s.touchHistory.getTexture(), 1);
+        renderHistory(s.touchHistory.getTexture(), 1, 1);
       }
 
       queueRender();
