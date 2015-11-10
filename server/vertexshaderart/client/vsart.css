@@ -687,6 +687,19 @@ input,
   border: 1px solid #666;
   border-radius: 0.5em;
 }
+#start {
+  background-color: rgba(0,0,0,0.0);
+}
+#start:after {
+ box-shadow: inset 0 0 10em rgba(0,0,0,0.9);
+ position: absolute;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ z-index: 12;
+ content: "";
+}
 #helpDialog>pre {
   flex: 0 1 auto;
   max-width: 90%;
