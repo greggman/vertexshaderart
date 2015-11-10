@@ -162,3 +162,13 @@ WebApp.connectHandlers.use(function(req, res, next) {
   next();
 });
 
+Meteor.startup(function() {
+  WebApp.rawConnectHandlers.use(function(req, res, next) {
+    if (req.url.substr(0, 7) !== "/static") {
+      res.setHeader('Cache-Control', 'no-transform');
+    }
+    next();
+  });
+});
+
+
