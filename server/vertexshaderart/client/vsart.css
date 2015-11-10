@@ -687,8 +687,22 @@ input,
   border: 1px solid #666;
   border-radius: 0.5em;
 }
+#screenshot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: url(/static/resources/images/loading.svg) no-repeat center center fixed;
+  background-size: cover;
+}
 #start {
   background-color: rgba(0,0,0,0.0);
+}
+#start img {
+  display: block;
+  width: 10em;
+  height: 10em;
 }
 #start:after {
  box-shadow: inset 0 0 10em rgba(0,0,0,0.9);
