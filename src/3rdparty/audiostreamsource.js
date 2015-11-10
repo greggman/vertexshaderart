@@ -35,12 +35,7 @@
   }
 
   function startPlaying(playFn, emitFn) {
-    if (!isMobile) {
-      playFn();
-      return;
-    }
-
-    emitFn('clickToStart');
+    playFn();
   }
 
   function StreamedAudioSource(options) {
