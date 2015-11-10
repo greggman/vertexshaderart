@@ -1,9 +1,5 @@
 ﻿# To Do
 
-*   fix links when embedded to open new tab
-
-    mark as class link?
-
 *   look into running 2 instances of meteor in docker?
 
     Ideally I could create a new container, run the new meteor,
@@ -92,6 +88,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   fix links when embedded to open new tab
 
 *   remove soundcloud SDK (because it uses flash!)
 
