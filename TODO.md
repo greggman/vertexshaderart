@@ -1,5 +1,22 @@
 ﻿# To Do
 
+*   consider serving the screenshot for embedded
+
+    They can then redirect to the real thing.
+
+    Advantages
+
+    *   they won't run WebGL (heavy)
+
+    *   they won't start downloading from soundcloud (bandwidth)
+
+    *   they'll be lighter to serve. The screenshots are 100-300k but meteor is 1meg
+
+    *   they'll show an image the dev chose.
+
+        For sound based pieces that's a win because
+        currently the are blank since there's no sound
+
 *   look into running 2 instances of meteor in docker?
 
     Ideally I could create a new container, run the new meteor,
@@ -76,6 +93,10 @@
     If it is a bug though it would be good to track down.
     When I try it with the safari remote debugging though
     it seems to work so so far no luck tracking down the issue.
+
+    SO: apparently the issue is Chrome iOS's [Data Saver feature](https://developer.chrome.com/multidevice/data-compression).
+    I think I found [a workaround](https://github.com/sockjs/sockjs-node/pull/189).
+    Hopefully it will get accepted.
 
 *   test email password recovery
 
