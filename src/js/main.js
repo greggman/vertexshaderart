@@ -326,7 +326,8 @@ define([
     var bandLinkNode = misc.createTextNode(bandLinkElem);
     var playElems = Array.prototype.slice.call(document.querySelectorAll(".play"));
     var playNodes = playElems.map(function(playElem) {
-      return misc.createTextNode(playElem, _playIcon);
+      var pn = misc.createTextNode(playElem, _playIcon);
+      return pn;
     });
     var fullScreenElem = $("#vsa .fullscreen");
     var playElem2 = $("#vsa .play");
@@ -576,20 +577,6 @@ define([
         autoPlay: true,
         crossOrigin: "anonymous",
       });
-      s.streamSource.on('error', function(e) {
-        console.error(e);
-        setPlayState();
-        setSoundSuccessState(false, e.toString());
-      });
-      s.streamSource.on('newSource', function(source) {
-        source.connect(s.analyser);
-        if (!s.running) {
-          s.streamSource.stop();
-          return;
-        }
-        setPlayState();
-        setSoundSuccessState(true);
-      });
 
       s.programManager = new ProgramManager(gl);
 
@@ -601,6 +588,21 @@ define([
         lineNumbers: true,
       });
     }
+
+    s.streamSource.on('error', function(e) {
+      console.error(e);
+      setPlayState();
+      setSoundSuccessState(false, e.toString());
+    });
+    s.streamSource.on('newSource', function(source) {
+      source.connect(s.analyser);
+      if (!s.running) {
+        s.streamSource.stop();
+        return;
+      }
+      setPlayState();
+      setSoundSuccessState(true);
+    });
 
     // Replace the canvas in the DOM with ours
     var c = document.getElementById("c");
@@ -1097,6 +1099,7 @@ define([
       $("#uicontainer").style.display = "block";
 
       var autoPlay = (q.autoPlay || q.autoplay);
+      s.running = true;
 
       if ((s.inIframe && !autoPlay) || shittyBrowser) {
         $("#loading").style.display = "none";
