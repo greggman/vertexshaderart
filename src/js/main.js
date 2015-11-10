@@ -585,18 +585,10 @@ define([
         source.connect(s.analyser);
         if (!s.running) {
           s.streamSource.stop();
-          if (s.inIframe) {
-            waitForStart();
-          }
           return;
         }
         setPlayState();
         setSoundSuccessState(true);
-      });
-      s.streamSource.on('clickToStart', function() {
-        if (!g.startMobileSound || !s.running) {
-          waitForStart();
-        }
       });
 
       s.programManager = new ProgramManager(gl);
@@ -611,21 +603,22 @@ define([
     }
 
 
-    function waitForStart() {
-      if (!g.waitForStart) {
-        g.waitForStart = true;
-        $("#loading").style.display = "none";
-        $("#start").style.display = "";
-        on($("#start"), 'click', function() {
-          $("#start").style.display = "none";
-          s.streamSource.play();
-          s.running = true;
-          setPlayState();
-          setSoundSuccessState(true);
-          queueRender();
-        });
-      }
-    }
+//    function waitForStart() {
+//      if (!g.waitForStart) {
+//        g.waitForStart = true;
+//        $("#loading").style.display = "none";
+//        $("#start").style.display = "";
+//        on($("#start"), 'click', function() {
+//          $("#start").style.display = "none";
+//          $("#screenshot").style.display = "none";
+//          s.streamSource.play();
+//          s.running = true;
+//          setPlayState();
+//          setSoundSuccessState(true);
+//          queueRender();
+//        });
+//      }
+//    }
 
 
     // Replace the canvas in the DOM with ours
@@ -1099,7 +1092,50 @@ define([
       }
     }
 
-    function setSettings(_settings, options) {
+    function playSoundToGetMobileAudioStarted() {
+      var source = s.context.createOscillator();
+      var gain = s.context.createGain();
+      source.frequency.value = 1;
+      source.connect(gain);
+      gain.gain.value = 0;
+      gain.connect(s.context.destination);
+      source.start(0);
+      setTimeout(function() {
+        source.disconnect();
+      }, 100);
+    }
+
+    function setSettings(settings, options) {
+      options = options || {};
+      settings = JSON.parse(JSON.stringify(settings));
+
+      if (s.inIframe && options.screenshotURL) {
+        $("#screenshot").style.backgroundImage = 'url(' + options.screenshotURL + ')';
+      }
+
+      $("#uicontainer").style.display = "block";
+
+      var autoPlay = (q.autoPlay || q.autoplay);
+
+      if ((s.inIframe && !autoPlay) || shittyBrowser) {
+        $("#loading").style.display = "none";
+        $("#start").style.display = "";
+        on($("#start"), 'click', function() {
+          if (shittyBrowser) {
+            playSoundToGetMobileAudioStarted();
+          }
+          $("#start").style.display = "none";
+          $("#screenshot").style.display = "none";
+          realSetSettings(settings, options);
+        });
+      } else {
+        $("#start").style.display = "none";
+        $("#screenshot").style.display = "none";
+        realSetSettings(settings, options);
+      }
+    }
+
+    function realSetSettings(_settings, options) {
       options = options || {};
       g.saveFn = options.saveFn;
       g.restoreCleared = false;
@@ -1121,28 +1157,28 @@ define([
       //tryNewProgram(settings.shader);
       markAsSaved();
 
-      s.running = !s.inIframe;
       queueRender(true);
-      $("#uicontainer").style.display = "block";
       $("#vsa a").href = window.location.href;
       if (s.inIframe) {
         Array.prototype.forEach.call(document.querySelectorAll("a"), function(a) {
           a.target = "_blank";
           on(a, 'click', stopTheMusic);
         });
-      }
 
-      if (s.inIframe) {
-        if (q.autoPlay || q.autoplay) {
-          s.running = true;
-          $("#loading").style.display = "none";
-        } else {
-          if (settings.sound) {
-            // sound is preping and will handle waitForStart
-          } else {
-            waitForStart();
-          }
-        }
+        $("#loading").style.display = "none";
+        s.streamSource.play();
+        setPlayState();
+        setSoundSuccessState(true);
+//          queueRender();
+//        if (q.autoPlay || q.autoplay) {
+//          s.running = true;
+//        } else {
+//          if (settings.sound) {
+//            // sound is preping and will handle waitForStart
+//          } else {
+//            waitForStart();
+//          }
+//        }
       }
     }
 
@@ -1449,7 +1485,9 @@ define([
       settings = s.sets.default;
     }
 
-    vs.setSettings(settings);
+    vs.setSettings(settings, {
+      screenshotURL: '/static/resources/images/heart-liked.svg',
+    });
   }
 
   function stop() {
