@@ -1,22 +1,5 @@
 ﻿# To Do
 
-*   consider serving the screenshot for embedded
-
-    They can then redirect to the real thing.
-
-    Advantages
-
-    *   they won't run WebGL (heavy)
-
-    *   they won't start downloading from soundcloud (bandwidth)
-
-    *   they'll be lighter to serve. The screenshots are 100-300k but meteor is 1meg
-
-    *   they'll show an image the dev chose.
-
-        For sound based pieces that's a win because
-        currently the are blank since there's no sound
-
 *   look into running 2 instances of meteor in docker?
 
     Ideally I could create a new container, run the new meteor,
@@ -109,6 +92,30 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   consider serving the screenshot for embedded
+
+    They can then redirect to the real thing.
+
+    Advantages
+
+    *   they won't run WebGL (heavy)
+
+    *   they won't start downloading from soundcloud (bandwidth)
+
+    *   they'll be lighter to serve. The screenshots are 100-300k but meteor is 1meg
+
+    *   they'll show an image the dev chose.
+
+        For sound based pieces that's a win because
+        currently the are blank since there's no sound
+
+    -
+
+    Actually I just serve the thumbnail and the rest but I don't start the visualizer or music
+    until after starting so, it still DLs meteor but it was going to that anyway. It still
+    starts WebGL but it doesn't compile the shader nor does it contact soundcloud until you press
+    start.
 
 *   fix links when embedded to open new tab
 
