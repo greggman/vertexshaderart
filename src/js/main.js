@@ -602,25 +602,6 @@ define([
       });
     }
 
-
-//    function waitForStart() {
-//      if (!g.waitForStart) {
-//        g.waitForStart = true;
-//        $("#loading").style.display = "none";
-//        $("#start").style.display = "";
-//        on($("#start"), 'click', function() {
-//          $("#start").style.display = "none";
-//          $("#screenshot").style.display = "none";
-//          s.streamSource.play();
-//          s.running = true;
-//          setPlayState();
-//          setSoundSuccessState(true);
-//          queueRender();
-//        });
-//      }
-//    }
-
-
     // Replace the canvas in the DOM with ours
     var c = document.getElementById("c");
     c.parentNode.insertBefore(gl.canvas, c);
@@ -1169,16 +1150,6 @@ define([
         s.streamSource.play();
         setPlayState();
         setSoundSuccessState(true);
-//          queueRender();
-//        if (q.autoPlay || q.autoplay) {
-//          s.running = true;
-//        } else {
-//          if (settings.sound) {
-//            // sound is preping and will handle waitForStart
-//          } else {
-//            waitForStart();
-//          }
-//        }
       }
     }
 
