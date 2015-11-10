@@ -1093,6 +1093,12 @@ define([
       return settings;
     }
 
+    function stopTheMusic() {
+      if (s.streamSource.isPlaying()) {
+        s.streamSource.stop();
+      }
+    }
+
     function setSettings(_settings, options) {
       options = options || {};
       g.saveFn = options.saveFn;
@@ -1119,11 +1125,12 @@ define([
       queueRender(true);
       $("#uicontainer").style.display = "block";
       $("#vsa a").href = window.location.href;
-      on($("#vsa a"), 'click', function() {
-        if (s.streamSource.isPlaying()) {
-          s.streamSource.stop();
-        }
-      });
+      if (s.inIframe) {
+        Array.prototype.forEach.call(document.querySelectorAll("a"), function(a) {
+          a.target = "_blank";
+          on(a, 'click', stopTheMusic);
+        });
+      }
 
       if (s.inIframe) {
         if (q.autoPlay || q.autoplay) {
