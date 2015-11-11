@@ -1,5 +1,11 @@
 ﻿# To Do
 
+*   get rid of header
+
+    just let the page scroll.
+
+*   add checks
+
 *   look into running 2 instances of meteor in docker?
 
     Ideally I could create a new container, run the new meteor,
