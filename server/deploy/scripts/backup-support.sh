@@ -7,5 +7,6 @@ DST_DATABASE="backups/backup-$TODAY.tar.gz"
 ssh $DOCKER '/bin/sh -s' < scripts/backup-docker.sh
 scp $SRC/latest-backup.tar.gz $DST_DATABASE
 scp $SRC/latest-images.tar.gz $DST_IMAGES
+echo backed up to $DST_DATABASE and $DST_IMAGES
 
 
