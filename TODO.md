@@ -1,9 +1,5 @@
 ﻿# To Do
 
-*   get rid of header
-
-    just let the page scroll.
-
 *   add checks
 
 *   look into running 2 instances of meteor in docker?
@@ -11,7 +7,7 @@
     Ideally I could create a new container, run the new meteor,
     kill the old container,
 
-*   show newest revision on use page if logged in?
+*   show newest revision on user page if logged in?
 
     Currently it shows the newest public revision if there are any public revisions
     otherwise it shows the newest private revision.
@@ -65,6 +61,18 @@
         Another thing I hate about infinite
         scroll is it's hard to go to end.
 
+*   test email password recovery
+
+*   let user change email
+
+*   add monitoring
+
+*   make likes active on gallery
+
+*   fix music loop or at least make stop/start work
+
+# Done
+
 *   Figure out why mobile fails so often.
 
     When I go to mobile on my iOS9 iPhone 5s the site
@@ -87,17 +95,19 @@
     I think I found [a workaround](https://github.com/sockjs/sockjs-node/pull/189).
     Hopefully it will get accepted.
 
-*   test email password recovery
+    Actually the issue was sockjs. Google's Data Saver is content-aware. Meaning it compresses based on
+    content. For example it will recompress PNGs as WEBP if the browser supports it.
 
-*   let user change email
+    sockjs was sending a number+\n and marking it as application/json. On the receivng side
+    it was expecting the \n but JSON is whitespace insignificant which means Google's Data Saver
+    was removed the whitespace to save bandwidth, exactly what it's supposed to do.
 
-*   add monitoring
+    The fix is for sockjs to either stop marking it as JSON if it want's the \n to be significant
+    or to stop looking for the \n on the receiving side.
 
-*   make likes active on gallery
+*   get rid of header
 
-*   fix music loop or at least make stop/start work
-
-# Done
+    just let the page scroll.
 
 *   consider serving the screenshot for embedded
 
