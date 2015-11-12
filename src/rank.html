@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ranking test</title>
+    </head>
+    <style>
+      body {
+        font-family: monospace;
+        font-size: xx-small;
+      }
+      img {
+          width: 30px;
+          padding-right: 1em;
+          vertical-align: bottom;
+      }
+      #c>div {
+          border: 1px solid black;
+          margin: 1px;
+          vertical-align: middle;
+          background-color: #888;
+      }
+      .line, .color, .ndx, .age, .views, .username, .name, .likes, .date {
+        display: inline-block;
+      }
+      .ndx, .views, .likes {
+        text-align: right;
+      }
+      .ndx, .line {
+        width: 2em;
+      }
+      .color, .views {
+        width: 3em;
+      }
+      .likes {
+        width: 3em;
+      }
+      .username {
+        width: 10em;
+      }
+      input[type=range] {
+        width: 100%;
+      }
+    </style>
+
+    <body>
+        <input id="hour" type="range" min="0" max="500" value="400" />
+        <div id="c"></div>
+    </body>
+
+    </div>
+    <script id="template" type="notjs">
+<img src="http://localhost:3000%(screenshotURL)s" />
+<div class="ndx">#%(line)s</div>
+<div class="ndx">#%(ndx)s</div>
+<div class="color">--</div>
+<div class="age">%(age)s</div>
+<div class="date">%(modifiedAt)s</div>
+<div class="views">%(views)s</div>
+<div class="likes">%(likes)s</div>
+<div class="username">%(username)s</div>
+<div class="name">%(name)s</div>
+      </script>
+    <script src="rank/db.json"></script>
+    <script data-main="js/rank.js" src="3rdparty/require.js"></script>
+</html>
