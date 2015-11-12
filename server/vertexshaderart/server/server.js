@@ -4,6 +4,15 @@ if (!IMAGE_PATH) {
   throw "IMAGE_PATH not set";
 }
 
+//(function() {
+//  var fs = Npm.require('fs');
+//  fs.writeFileSync('/Users/gregg/temp/rank/db.json', "var db = " + JSON.stringify(Art.find({
+//    private: {$ne: true},
+//  }, {
+//    fields: {settings: false},
+//  }).fetch()) + ";");
+//}());
+
 function generateUsername(username) {
   username = username.toLowerCase().trim().replace(" ", "");
   var count = Meteor.users.find({"username": username}).count();
