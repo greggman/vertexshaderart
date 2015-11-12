@@ -22,13 +22,30 @@ function padZeros(v, len) {
   return S_ZEROS.substr(0, len - s.length) + s;
 }
 
+NumberLessThan100 = Match.Where(function(v) {
+  check(v, Number);
+  return v >= 0 && v < 100;
+});
+
+StringLengthLessThan100k = Match.Where(function(v) {
+  check(v, String);
+  return v.length < 100 * 1024;
+});
+
+StringLengthLessThan2k = Match.Where(function(v) {
+  check(v, String);
+  return v.length < 2 * 1024;
+});
+
 if (Meteor.isServer) {
+
 
   Meteor.publish("artForGrid", function(username, sortField, skip, limit) {
     var find = {
       private: {$ne: true},
     };
     if (username && username !== "undefined") {
+      check(username, String);
       find = {
         username: username,
         $or: [
@@ -37,6 +54,9 @@ if (Meteor.isServer) {
         ],
       };
     }
+    check(sortField, String);
+    check(limit, NumberLessThan100);
+    check(skip, Number);
     var sort = {};
     sort[sortField] = -1;
     var options = {
@@ -52,6 +72,8 @@ if (Meteor.isServer) {
     var find = {
       private: {$ne: true},
     };
+    check(sortField, String);
+    check(limit, NumberLessThan100);
     var sort = {};
     sort[sortField] = -1;
     var options = {
@@ -63,6 +85,7 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("art", function(id) {
+    check(id, String);
     return Art.find({
       _id: id,
       $or: [
@@ -75,12 +98,14 @@ if (Meteor.isServer) {
   Meteor.publish("artCount", function(username) {
     var find = {};
     if (username) {
+      check(username, String);
       find.username = username;
     }
     Counts.publish(this, 'artCount', Art.find(find));
   });
 
   Meteor.publish("artRevisionCount", function(artId) {
+    check(artId, String);
     var find = {
       artId: artId,
       $or: [
@@ -92,10 +117,13 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("artLikes", function (artId, userId) {
+    check(artId, String);
+    check(userId, String);
     return ArtLikes.find({artId: artId, userId: userId});
   });
 
   Meteor.publish("usernames", function(username) {
+    check(username, String);
     return Meteor.users.find({username: username}, {
       fields: {
         username: 1,
@@ -105,6 +133,7 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("artrevision", function(id) {
+    check(id, String);
     return ArtRevision.find({
       _id: id,
       $or: [
@@ -115,6 +144,9 @@ if (Meteor.isServer) {
   });
 
   Meteor.publish("artrevisions", function(artId, skip, limit) {
+    check(artId, String);
+    check(limit, NumberLessThan100);
+    check(skip, Number);
     return ArtRevision.find({
       artId: artId,
       $or: [
@@ -1097,6 +1129,14 @@ function addArt(name, origId, vsData, data) {
   var screenshotURL = "";
   var hasSound = settings.sound && settings.sound.length > 0;
 
+  if (origId) {
+    check(origId, String);
+  }
+  check(JSON.stringify(settings), StringLengthLessThan100k);
+  if (data.private) {
+    check(data.private, Boolean);
+  }
+
   if (screenshotDataURL) {
     screenshotURL = saveDataURLToFile(screenshotDataURL);
   }
@@ -1195,6 +1235,7 @@ Meteor.methods({
   addArt: addArt,
   updateArt: updateArt,
   likeArt: function(artId) {
+     check(artId, String);
      var userId = Meteor.userId();
      if (!userId) {
        throw new Meteor.Error("not-loggedin", "can not like something if not logged in");
@@ -1208,6 +1249,10 @@ Meteor.methods({
      Art.update({_id: artId}, {$inc: {likes: like ? -1 : 1}});
   },
   setPrivate: function (revisionId, setToPrivate) {
+    check(revisionId, String);
+    if (setToPrivate) {
+      check(setToPrivate, Boolean);
+    }
     var revision = ArtRevision.findOne(revisionId);
     if (!revision) {
       throw new Meteor.Error("no such revisions");
@@ -1249,13 +1294,14 @@ Meteor.methods({
     }
   },
   changeUsername: function(username) {
-    username = username.trim();
     if (!Meteor.userId()) {
       throw new Meteor.Error("not loggedin", "please login to change your username");
     }
     if (!username) {
       throw new Meteor.Error("bad data", "username is empty or mostly empty");
     }
+    check(username, String);
+    username = username.trim();
     if (isBadUsername(username)) {
       throw new Meteor.Error("bad data", "not a valid name (no #%?/\\: allowed");
     }
@@ -1274,6 +1320,7 @@ Meteor.methods({
     Art.update({owner: Meteor.userId()}, {$set: {username: username}}, {multi: true});
   },
   changeUserinfo: function(info) {
+    check(info, StringLengthLessThan2k);
     if (!Meteor.userId()) {
       throw new Meteor.Error("not loggedin", "please login to change your username");
     }
@@ -1312,6 +1359,7 @@ Meteor.methods({
   //  }
   //},
   incArtViews: function(artId) {
+    check(artId, String);
     Art.update({_id: artId}, {$inc: {views: 1}});
   },
 });
