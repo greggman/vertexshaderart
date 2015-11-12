@@ -621,7 +621,7 @@ if (Meteor.isClient) {
     }
     window.vsart.setSettings(settings, {
       saveFn: save,
-      screenshotURL: data.screenshotURL,
+      screenshotURL: data && data.screenshotURL,
     });
   }
 
