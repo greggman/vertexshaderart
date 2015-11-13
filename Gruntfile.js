@@ -186,7 +186,7 @@ module.exports = function(grunt) {
     }
 
     var content = fs.readFileSync('src/index.html', {encoding: "utf-8"});
-    var bodyRE = /(<body>[\s\S]+<\/body>)/g
+    var bodyRE = /<body>([\s\S]+)<\/body>/g
     var bodyMatch = bodyRE.exec(content);
     if (!bodyMatch) {
       throw "no body";
