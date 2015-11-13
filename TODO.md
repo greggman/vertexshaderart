@@ -1,7 +1,5 @@
 ﻿# To Do
 
-*   add checks
-
 *   look into running 2 instances of meteor in docker?
 
     Ideally I could create a new container, run the new meteor,
@@ -72,6 +70,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   add checks
 
 *   Figure out why mobile fails so often.
 
