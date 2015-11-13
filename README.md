@@ -165,6 +165,14 @@ are passed in by adding a `?` and then `key=value&key=value`.
 
     See above.
 
+*   `pause=true`
+
+    A more extreme version of `pauseOnBlur'. It's effectively the same
+    as `pauseOnBlur=true` and clicking the stop button at the top so
+    that rendering is not running. I use this when I want to test UI
+    layout on battery. I can muck with the CSS etc and not having it
+    rendering the heavy graphics.
+
 *   `autoplay=true`
 
     If embedded in an iframe the defaul is not to run since they
