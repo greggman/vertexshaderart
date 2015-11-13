@@ -4,6 +4,7 @@ S_EMBED = "embed";
 S_PENDING_LIKE = "pendingLike";
 S_ART_OWNER_ID = "artOwnerId";
 S_ART_NAME = "artName";
+S_ART_OWNER_NAME = "artOwnerName";
 
 G_PAGE_SIZE = (Meteor.settings.public.app && Meteor.settings.public.app.pageSize) ? Meteor.settings.public.app.pageSize : 15;
 G_PAGE_RANGE = 2;
@@ -238,6 +239,48 @@ if (Meteor.isClient) {
   }
 }
 
+/**
+ * Replace %(id)s in strings with values in objects(s)
+ *
+ * Given a string like `"Hello %(name)s from $(user.country)s"`
+ * and an object like `{name:"Joe",user:{country:"USA"}}` would
+ * return `"Hello Joe from USA"`.
+ *
+ * @function
+ * @param {string} str string to do replacements in
+ * @param {Object|Object[]} params one or more objects.
+ * @returns {string} string with replaced parts
+ * @memberOf module:Strings
+ */
+var replaceParams = (function() {
+  var replaceParamsRE = /%\(([^\)]+)\)s/g;
+
+  return function(str, params) {
+    if (!params.length) {
+      params = [params];
+    }
+
+    return str.replace(replaceParamsRE, function(match, key) {
+      var keys = key.split('.');
+      for (var ii = 0; ii < params.length; ++ii) {
+        var obj = params[ii];
+        for (var jj = 0; jj < keys.length; ++jj) {
+          var part = keys[jj];
+          obj = obj[part];
+          if (obj === undefined) {
+            break;
+          }
+        }
+        if (obj !== undefined) {
+          return obj;
+        }
+      }
+      console.error("unknown key: " + key);
+      return "%(" + key + ")s";
+    });
+  };
+}());
+
 function objectToSearchString(obj, options) {
   options = options || {};
   return (options.prefix !== undefined ? options.prefix : "?") + Object.keys(obj).filter(function(key) {
@@ -468,6 +511,13 @@ if (Meteor.isClient) {
     },
   });
 
+  function getCaption() {
+    return replaceParams(" [%(name)s] by %(username)s", {
+      name: Session.get(S_ART_NAME),
+      username: Session.get(S_ART_OWNER_NAME),
+    });
+  }
+
   Template.share.events({
     "click .share": function(e) {
       Session.set(S_CURRENTLY_SHARING, !Session.get(S_CURRENTLY_SHARING));
@@ -477,9 +527,9 @@ if (Meteor.isClient) {
       Session.set(S_CURRENTLY_SHARING, false);
       var title = "Share on Facebook";
       var url = "https://www.facebook.com/dialog/feed" + objectToSearchString({
-        app_id: 145634995501895,
+        app_id: 140478046311045,
         display: "popup",
-        caption: "name by user featuring music title by person",
+        caption: getCaption(),
         link: window.location.href,
         redirect_uri: Meteor.absoluteUrl("close"),
       });
@@ -490,7 +540,7 @@ if (Meteor.isClient) {
       Session.set(S_CURRENTLY_SHARING, false);
       var title = "Share on Twitter";
       var url = "https://twitter.com/home" + objectToSearchString({
-        status: window.location.href + " name by user featuring music title by person",
+        status: window.location.href + getCaption(),
       });
       popup(url, title, "");
     },
@@ -500,8 +550,8 @@ if (Meteor.isClient) {
       var title = "Share on Tumblr";
       var url = "https://www.tumblr.com/widgets/share/tool" + objectToSearchString({
         type: "link",
-        title: "name",
-        caption: "name by user featuring music title by person",
+        title: Session.get(S_ART_NAME),
+        caption: getCaption(),
         url: window.location.href,
         "show-via": true,
       });
@@ -728,12 +778,14 @@ if (Meteor.isClient) {
   function SetArt(data) {
     var settings;
     Session.set(S_ART_OWNER_ID, undefined);
+    Session.set(S_ART_OWNER_NAME, "-anon-");
     Session.set(S_ART_NAME, "unnamed");
     if (data && data.settings) {
       try {
         settings = JSON.parse(data.settings);
         Session.set(S_ART_OWNER_ID, data.owner);
         Session.set(S_ART_NAME, data.name);
+        Session.set(S_ART_OWNER_NAME, data.username);
       } catch (e) {
         console.log("could not parse settings");
       }
