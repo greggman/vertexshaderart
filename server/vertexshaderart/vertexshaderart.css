@@ -1,6 +1,24 @@
 /* CSS declarations go here */
-#like, #user {
+#like, #user, .share {
     cursor: pointer;
+}
+
+.share {
+}
+.sharing {
+    position: fixed;
+    z-index: 3;
+}
+.sharing>div {
+    position: absolute;
+    bottom: 2.5em;
+    text-align: left;
+}
+.sharing>div>div {
+    padding: 0.25em;
+}
+.sharing>div>div:hover {
+    background-color: #444;
 }
 
 embed, object {

@@ -1,3 +1,4 @@
+S_CURRENTLY_SHARING = "currentlySharing";
 S_CURRENTLY_LOGGING_IN = "currentlyLoggingIn";
 S_PENDING_LIKE = "pendingLike";
 S_ART_OWNER_ID = "artOwnerId";
@@ -437,6 +438,18 @@ if (Meteor.isClient) {
     },
     "click #user.currentuser": function() {
       window.location.href = "/user/" + Meteor.user().username;
+    },
+  });
+
+  Template.share.events({
+    "click .share": function() {
+      Session.set(S_CURRENTLY_SHARING, !Session.get(S_CURRENTLY_SHARING));
+    },
+  });
+
+  Template.share.helpers({
+    sharing: function() {
+      return Session.get(S_CURRENTLY_SHARING);
     },
   });
 

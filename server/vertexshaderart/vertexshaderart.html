@@ -274,6 +274,22 @@
     </div>
 </template>
 
+<template name="share">
+      <button class="share button icon">
+        <img src="/static/resources/images/share.svg" />
+        {{#if sharing}}
+        <div class="sharing">
+            <div class="button">
+               <div>fb</div>
+               <div>twitter</div>
+               <div>wordpress</div>
+               <div>embed</div>
+            </div>
+        </div>
+        {{/if}}
+      </button>
+</template>
+
 <template name="userprofile">
   <header>
 
