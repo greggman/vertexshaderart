@@ -1,5 +1,6 @@
 S_CURRENTLY_SHARING = "currentlySharing";
 S_CURRENTLY_LOGGING_IN = "currentlyLoggingIn";
+S_EMBED = "embed";
 S_PENDING_LIKE = "pendingLike";
 S_ART_OWNER_ID = "artOwnerId";
 S_ART_NAME = "artName";
@@ -237,6 +238,32 @@ if (Meteor.isClient) {
   }
 }
 
+function objectToSearchString(obj, options) {
+  options = options || {};
+  return (options.prefix !== undefined ? options.prefix : "?") + Object.keys(obj).filter(function(key) {
+    return obj[key] !== undefined;
+  }).map(function(key) {
+    return encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]);
+  }).join(options.separator || "&");
+}
+
+var popup = function(url, title) {
+  var options = objectToSearchString({
+    resizable: true,
+    width: 600,
+    height: 400,
+    scrollbars: true,
+    status: true,
+    location: true,
+  }, {
+    prefix: "",
+    separator: ",",
+  });
+  var newWindow = window.open(url, title, options);
+  if (window.focus) {
+    newWindow.focus();
+  }
+;};
 
 
 if (Meteor.isClient) {
@@ -442,14 +469,70 @@ if (Meteor.isClient) {
   });
 
   Template.share.events({
-    "click .share": function() {
+    "click .share": function(e) {
       Session.set(S_CURRENTLY_SHARING, !Session.get(S_CURRENTLY_SHARING));
+    },
+    "click .sn-facebook": function(e) {
+      e.stopPropagation();
+      Session.set(S_CURRENTLY_SHARING, false);
+      var title = "Share on Facebook";
+      var url = "https://www.facebook.com/dialog/feed" + objectToSearchString({
+        app_id: 145634995501895,
+        display: "popup",
+        caption: "name by user featuring music title by person",
+        link: window.location.href,
+        redirect_uri: Meteor.absoluteUrl("close"),
+      });
+      popup(url, title, "");
+    },
+    "click .sn-twitter": function(e) {
+      e.stopPropagation();
+      Session.set(S_CURRENTLY_SHARING, false);
+      var title = "Share on Twitter";
+      var url = "https://twitter.com/home" + objectToSearchString({
+        status: window.location.href + " name by user featuring music title by person",
+      });
+      popup(url, title, "");
+    },
+    "click .sn-tumblr": function(e) {
+      e.stopPropagation();
+      Session.set(S_CURRENTLY_SHARING, false);
+      var title = "Share on Tumblr";
+      var url = "https://www.tumblr.com/widgets/share/tool" + objectToSearchString({
+        type: "link",
+        title: "name",
+        caption: "name by user featuring music title by person",
+        url: window.location.href,
+        "show-via": true,
+      });
+      popup(url, title, "");
+    },
+    "click .sn-embed": function(e) {
+      e.stopPropagation();
+      Session.set(S_CURRENTLY_SHARING, false);
+      var html = '<iframe width="700" height="400" src="' + window.location.href + '" frameborder="0" allowfullscreen></iframe>';
+      Session.set(S_EMBED, html);
     },
   });
 
   Template.share.helpers({
-    sharing: function() {
+    isSharing: function() {
       return Session.get(S_CURRENTLY_SHARING);
+    },
+  });
+
+  Template.shareform.helpers({
+    embed: function() {
+      return Session.get(S_EMBED);
+    },
+  });
+
+  Template.shareform.events({
+    "click .shareform": function() {
+      Session.set(S_EMBED, "");
+    },
+    "click .shareform>div": function(e) {
+      e.stopPropagation();
     },
   });
 
