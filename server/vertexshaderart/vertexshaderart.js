@@ -833,7 +833,7 @@ Router.route('/new/', function() {
 Router.route('/user/:_username', {
   template: 'userprofile',
   data: function() {
-    var sort = this.params.query.sort;
+    var sort = this.params.query.sort || "newest";
     var sortType = getSortingType(sort);
     var page = 1;
     var username = this.params._username;
@@ -853,7 +853,7 @@ Router.route('/user/:_username/:_page', {
   data: function() {
     var page = parseInt(this.params._page);
     var username = this.params._username;
-    var sort = this.params.query.sort;
+    var sort = this.params.query.sort || "newest";
     var sortType = getSortingType(sort);
     return {
       page: page,
