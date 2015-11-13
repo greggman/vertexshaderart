@@ -355,7 +355,7 @@ define([
       origSettings: { shader: "" },
       pauseOnBlur: window.location.hostname === "localhost",
       saveable: false,
-      paused: false,
+      pause: false,
       touches: [],
     };
     g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
@@ -363,6 +363,10 @@ define([
     var q = misc.parseUrlQuery();
     if (q.pauseOnBlur !== undefined) {
       g.pauseOnBlur = q.pauseOnBlur.toLowerCase() === "true";
+    }
+    if (q.pause) {
+      g.pauseOnBlur = true;
+      g.pause = true;
     }
 
     if (s.inIframe) {
@@ -1282,7 +1286,7 @@ define([
     }
 
     function queueRender(force) {
-      if (!g.requestId && (force || (s.inIframe && !g.wasRendered) || (s.running && !g.pause))) {
+      if (!g.requestId && (force || !g.wasRendered || (s.running && !g.pause))) {
         g.requestId = requestAnimationFrame(render);
       }
     }
