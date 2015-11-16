@@ -32,6 +32,9 @@
 
     <div class="sorting">
       <div class="sorttype">
+          <a class='button hot' href="/">
+              hot
+          </a>
           <a class='button popular {{selected "popular"}}' href="{{url 'popular'}}">
               popular
           </a>
@@ -77,13 +80,31 @@
   </header>
   <div class="container">
      <div class="gallery">
-         {{> artselection sort="newest" limit="8"}}
-         {{> artselection sort="popular" limit="8"}}
+         <div class="sorting">
+           <div class="sorttype">
+             <a class="button" href="/gallery/1?sort=popular">popular</a>
+             <a class="button" href="/gallery/1?sort=newest">newest</a>
+             <a class="button" href="/gallery/1?sort=mostviews">views</a>
+           </div>
+         </div>
+         {{> hotlist}}
          <div class="bottomspace"></div>
      </div>
   </div>
 
   {{> vslogin}}
+</template>
+
+<template name="hotlist">
+   <div class="sortcriteria">
+       <div class="artgrid">
+           {{#if Template.subscriptionsReady}}
+             {{#each art}}
+               {{> artpiece}}
+             {{/each}}
+           {{/if}}
+       </div>
+   </div>
 </template>
 
 <template name="artselection">
@@ -136,6 +157,13 @@
           {{#if hasSound}}
             <div class="hasSound tooltip-bottom" data-tooltip="has sound"><img src="/static/resources/images/speaker.svg" /></div>
           {{/if}}
+          <!--
+          <div style="color: white; text-shadow: black 1px 1px 0px;">
+              <div>h: {{rank.ageHrs}}</div>
+              <div>s: {{rank.score}}</div>
+              <div>d: {{rank.date}}</div>
+          </div>
+          -->
       </div>
     </a>
     <div class="galleryinfo">
@@ -461,38 +489,6 @@
 {{> shareform}}
 
 </template>
-
-<!--
-<template name="artitem">
-  <li class="{{#if checked}}checked{{/if}} {{#if private}}private{{/if}}">
-    <button class="delete">&times;</button>
-
-    <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
-
-    <div style="color: black;">
-        id: {{ _id }}
-    </div>
-
-    {{#if isOwner}}
-      <button class="toggle-private">
-        {{#if private}}
-          Private
-        {{else}}
-          Public
-        {{/if}}
-      </button>
-    {{/if}}
-
-    <span class="text"><strong>{{username}}</strong> - {{text}}</span>
-
-    <img src="{{screenshotDataURL}}" />
-
-    <pre>
-    {{settings}}
-    </pre>
-  </li>
-</template>
--->
 
 <template name="loading">
    <div class="loading">

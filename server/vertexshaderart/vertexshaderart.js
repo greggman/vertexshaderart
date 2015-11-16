@@ -30,6 +30,11 @@ NumberLessThan100 = Match.Where(function(v) {
   return v >= 0 && v < 100;
 });
 
+NumberLessThan200 = Match.Where(function(v) {
+  check(v, Number);
+  return v >= 0 && v < 200;
+});
+
 StringLengthLessThan100k = Match.Where(function(v) {
   check(v, String);
   return v.length < 100 * 1024;
@@ -83,6 +88,18 @@ if (Meteor.isServer) {
       fields: {settings: false},
       sort: sort,
       limit: limit,
+    };
+    return Art.find(find, options);
+  });
+
+  Meteor.publish("hotlist", function(limit) {
+    check(limit, NumberLessThan200);
+    var find = {
+      private: {$ne: true},
+    };
+    var options = {
+      limit: limit,
+      sort: { rank: -1 },
     };
     return Art.find(find, options);
   });
@@ -334,6 +351,24 @@ if (Meteor.isClient) {
     },
   });
 
+  Template.hotlist.onCreated(function() {
+    var instance = this;
+    instance.autorun(function() {
+      instance.subscribe('hotlist', Meteor.settings.public.app.hotlistSize);
+    });
+  });
+
+  Template.hotlist.helpers({
+    art: function() {
+      var instance = Template.instance();
+      var options = {
+        limit: parseInt(Meteor.settings.public.app.hotlistSize),
+        sort: { rank: -1 },
+      };
+      return Art.find({}, options);
+    },
+  });
+
   Template.gallery.helpers({
     hideCompleted: function () {
       return Session.get("hideCompleted");
@@ -423,7 +458,6 @@ if (Meteor.isClient) {
 
   Template.artpiece.helpers({
     hasRevisions: function() {
-
       return Router.current() && Router.current().data && Router.current().data().showRevisions && safeGetTime(this.createdAt) !== safeGetTime(this.modifiedAt);
     },
     screenshotLink: function() {
@@ -1297,6 +1331,7 @@ function addArt(name, origId, vsData, data) {
     modifiedAt: date,
     origId: origId,
     name: name,
+    rank: date.getTime(),
     private: data.private,
     username: username,
     settings: JSON.stringify(settings),
