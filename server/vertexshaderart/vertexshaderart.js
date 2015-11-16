@@ -549,8 +549,9 @@ if (Meteor.isClient) {
       Session.set(S_CURRENTLY_SHARING, false);
       var title = "Share on Tumblr";
       var url = "https://www.tumblr.com/widgets/share/tool" + objectToSearchString({
-        type: "link",
+        posttype: "link",
         title: Session.get(S_ART_NAME),
+        content: window.location.href,
         caption: getCaption(),
         url: window.location.href,
         "show-via": true,
