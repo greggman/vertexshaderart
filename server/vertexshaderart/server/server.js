@@ -4,14 +4,19 @@ if (!IMAGE_PATH) {
   throw "IMAGE_PATH not set";
 }
 
-//(function() {
-//  var fs = Npm.require('fs');
-//  fs.writeFileSync('/Users/gregg/temp/rank/db.json', "var db = " + JSON.stringify(Art.find({
-//    private: {$ne: true},
-//  }, {
-//    fields: {settings: false},
-//  }).fetch()) + ";");
-//}());
+if (!Meteor.settings.public.app.hotlistSize) {
+  throw "Meteor.settings.public.app.hotlistSize not set";
+}
+
+function extractDataForRank() {
+  var fs = Npm.require('fs');
+  fs.writeFileSync('/Users/gregg/src/vertexshaderart/src/rank/db.json', "var db = " + JSON.stringify(Art.find({
+    private: {$ne: true},
+  }, {
+    fields: {settings: false},
+  }).fetch()) + ";");
+};
+//extractDataForRank();
 
 function generateUsername(username) {
   username = username.toLowerCase().trim().replace(" ", "");
@@ -171,6 +176,98 @@ WebApp.connectHandlers.use(function(req, res, next) {
   next();
 });
 
+// Adds a `rank` field to all existing art.
+// The goal is to let new art appear on the "hotlist" for
+// a day or 2 to give them a change to get some likes.
+// then let liked pieces bubble back up to the top.
+//
+// Most rankings (reddit, hacker news) rank based on popularity / ageFn
+// where the older they get the more likes they need to stay near the
+// top. This is great for news but not so great for showing interesting
+// things on site without a lot of traffic.
+//
+// So I worry that if I rank like those sites then the good but
+// old stuff will flow off and the front will be only new but
+// un-interesting. I have no idea how to rate for "interesting"
+// except likes.
+function computeHotlist() {
+  var ageBonusInHours = 24 * 2;
+  var now = Date.now();
+
+  var rank = function rank(art) {
+    var dob = Date.parse(art.modifiedAt);
+    var age = Math.max(now - dob, 0);
+    var hoursOld = age / 1000 / 60 / 60;
+    var agePenalty = Math.max(1, Math.log(hoursOld));
+    var points = 1 + art.likes * 1 + art.views * 0 + Math.max(0, ageBonusInHours - hoursOld);
+    var score = points / agePenalty;
+    return {
+      ageMs: age,
+      ageHrs: hoursOld,
+      score: score,
+      date: art.modifiedAt,
+    };
+  };
+
+  var count = 0;
+  var arts = Art.find({}, { fields: {settings: false}}).forEach(function(art) {
+    ++count;
+    var r = rank(art);
+    Art.update({
+      _id: art._id,
+    }, {
+      $set: {
+        rank: r.score,
+      },
+    });
+  });
+
+  var then = now;
+  var now = Date.now();
+  var elapsedTime = now - then;
+  console.log("computed hotlist from " + count + " entries in " + (elapsedTime * 0.001).toFixed(1) + " seconds");
+}
+
+CronJobs = {
+  'compute hotlist': computeHotlist,
+};
+
+function setupCronJobs() {
+  var cronJobs = Meteor.settings.cronJobs;
+  var errors = 0;
+  var error = function() {
+    ++errors;
+    console.error.apply(console, arguments);
+  };
+  if (!cronJobs) {
+    error("no cronjobs set");
+  } else {
+    Object.keys(cronJobs).forEach(function(jobName) {
+      var job = CronJobs[jobName];
+      if (!job) {
+        error("no cron job: " + jobName);
+        return;
+      }
+      var options = cronJobs[jobName];
+      SyncedCron.add({
+        name: jobName,
+        schedule: function(parser) {
+          var s = parser.text(options.schedule);
+          if (s.error >= 0) {
+            error("could not parse schedule:", options.schedule);
+            throw "Cron not setup";
+          }
+          return s;
+        },
+        job: job,
+      });
+      console.log("Added cron job:", jobName, options.schedule);
+    });
+  }
+  console.log("Staring Cron Processing");
+  SyncedCron.start();
+};
+setupCronJobs();
 
 
 
