@@ -766,7 +766,7 @@ input[type="color"] {
     -webkit-align-content: center;
     -webkit-align-items: center;
 }
-.iframe #toolbar, .iframe #editorWrap {
+.iframe #toolbar, .iframe #editorWrap, .iframe .share {
     display: none;
 }
 .iframe #ui {
