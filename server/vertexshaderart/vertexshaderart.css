@@ -202,13 +202,14 @@ embed, object {
   text-align: left;
   display: inline-block;
   height: 100%;
+  font-size: xx-small;
 }
 .thumbnail {
   border: 1px solid #444;
   border-radius: 10px;
   display: inline-block;
-  width: 300px;
-  height: 168px;
+  width: 200px;
+  height: 110px;
 }
 .gallery .artpiece {
   position: relative;
@@ -216,8 +217,11 @@ embed, object {
   display: inline-block;
   text-decoration: none;
   text-align: left;
-  width: 300px;
+  width: 200px;
   color: #888;
+}
+.gallery .artpiece img.thumbnail:hover {
+  box-shadow: inset 0px 0px 10px 3px #24A, 0px 0px 10px 3px #24A;
 }
 .hearticon {
     fill: red !important;
@@ -230,8 +234,7 @@ embed, object {
     -webkit-justify-content: space-between;
     align-items: center;
     -webkit-align-items: center;
-
-    max-width: 300px;
+    max-width: 200px;
 }
 .galleryinfo img {
     width: 1em;
