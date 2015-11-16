@@ -10,7 +10,10 @@ requirejs([
     return !art.private;
   });
 
-  var fiveDays = 1000 * 60 * 60 * 24;
+  var fiveDaysInMs = 1000 * 60 * 60 * 24 * 5;
+  var fiveDaysInHours = 24 * 5;
+  var ageBonusInHours = 24 * 2;
+  var oneDayInHours = 24;
 
   var now = Date.now();
   var hourElem = $("#hour");
@@ -20,26 +23,27 @@ requirejs([
     return now + (timeAdjust * 60 * 60 * 1000);
   }
 
+  function rank(art) {
+    var dob = Date.parse(art.modifiedAt);
+    var age = getNow() - dob;
+    var hoursOld = age / 1000 / 60 / 60;
+    var agePenalty = Math.max(1, Math.log(hoursOld));
+    var points = 1 + art.likes * 1 + art.views * 0 + Math.max(0, ageBonusInHours - hoursOld);
+    var score = points / agePenalty;
+    return score;
+  }
+
+//  // HN
+//  // Score = (P-1) / (T+2)^G
+//  var gravity = 1.8;
 //  function rank(art) {
 //    var dob = Date.parse(art.modifiedAt);
 //    var age = getNow() - dob;
 //    var hours = age / 1000 / 60 / 60;
-//    var points = art.likes * 100 + art.views * 1;
-//    var score = points; //Math.log(points);
-//    return score / (hours * 60 * 60);
+//    var points = art.likes * 100 + art.views * 0;
+//    var score = points;
+//    return points / Math.pow(hours + 2, gravity);
 //  }
-
-  // HN
-  // Score = (P-1) / (T+2)^G
-  var gravity = 1.8;
-  function rank(art) {
-    var dob = Date.parse(art.modifiedAt);
-    var age = getNow() - dob;
-    var hours = age / 1000 / 60 / 60;
-    var points = art.likes * 100 + art.views * 0;
-    var score = points;
-    return points / Math.pow(hours + 2, gravity);
-  }
 
 // reddit
 //  function rank(art) {
