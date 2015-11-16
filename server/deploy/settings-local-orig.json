@@ -4,7 +4,13 @@
       "id":"UA-XXXXXXXX-X"
     },
     "app": {
-      "pageSize": 15
+      "pageSize": 15,
+      "hotlistSize": 50
+    }
+  },
+  "cronJobs": {
+    "compute hotlist": {
+      "schedule": "every 1 hours"
     }
   },
   "accounts": {
