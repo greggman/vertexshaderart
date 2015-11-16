@@ -15,7 +15,7 @@ requirejs([
   var ageBonusInHours = 24 * 2;
   var oneDayInHours = 24;
 
-  var now = Date.now();
+  var now = 1447660163874; //Date.now(); A date a few mins after the newest entry in test data
   var hourElem = $("#hour");
 
   function getNow() {
