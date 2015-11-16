@@ -227,6 +227,7 @@ function computeHotlist() {
   var elapsedTime = now - then;
   console.log("computed hotlist from " + count + " entries in " + (elapsedTime * 0.001).toFixed(1) + " seconds");
 }
+computeHotlist();
 
 CronJobs = {
   'compute hotlist': computeHotlist,
