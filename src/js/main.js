@@ -217,6 +217,7 @@ define([
       mag: options.mag || gl.LINEAR,
       wrap: gl.CLAMP_TO_EDGE,
       format: format,
+      auto: false,  // don't set tex params or call genmipmap
     }
     var _tex = twgl.createTexture(gl, _texSpec);
 
@@ -471,7 +472,6 @@ define([
         min: gl.NEAREST,
         mag: gl.NEAREST,
       });
-//        auto: false,
 
       var count = new Float32Array(g.maxCount);
       for (var ii = 0; ii < count.length; ++ii) {
