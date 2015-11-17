@@ -415,6 +415,22 @@ header .buttons a, header .buttons div, .button {
 }
 
 
+@media (max-width : 425px) {
+  .thumbnail {
+    width: 300px;
+    height: 168px;
+  }
+  .gallery {
+    font-size: small;
+  }
+  .gallery .artpiece {
+    width: 300px;
+  }
+  .galleryinfo {
+    max-width: 300px;
+  }
+}
+
 @media (max-width : 500px) {
     header>div {
         flex-direction: column-reverse;
