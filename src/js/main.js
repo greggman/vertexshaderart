@@ -599,11 +599,11 @@ define([
       setSoundSuccessState(false, e.toString());
     });
     s.streamSource.on('newSource', function(source) {
-      source.connect(s.analyser);
       if (!s.running) {
         s.streamSource.stop();
         return;
       }
+      source.connect(s.analyser);
       setPlayState();
       setSoundSuccessState(true);
     });
@@ -701,6 +701,10 @@ define([
           }
         } else {
           s.streamSource.play();
+          var source = s.streamSource.getSource();
+          if (source) {
+            source.connect(s.analyser);
+          }
           if (s.inIframe) {
             g.pause = false;
             queueRender();
@@ -1105,11 +1109,11 @@ define([
       var autoPlay = (q.autoPlay || q.autoplay);
       s.running = true;
 
-      if ((s.inIframe && !autoPlay) || shittyBrowser) {
+      if ((s.inIframe && !autoPlay) || isMobile) {
         $("#loading").style.display = "none";
         $("#start").style.display = "";
         on($("#start"), 'click', function() {
-          if (shittyBrowser) {
+          if (isMobile) {
             playSoundToGetMobileAudioStarted();
           }
           $("#start").style.display = "none";
