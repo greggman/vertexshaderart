@@ -1,7 +1,5 @@
 ﻿# To Do
 
-*   fix android
-
 *   test email password recovery
 
 *   let user change email
@@ -9,8 +7,6 @@
 *   change error music message
 
 *   put something to show position of music?
-
-*   update default shaders (remove localtime, add comments)
 
 *   look into running 2 instances of meteor in docker?
 
@@ -78,6 +74,12 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   update default shaders (remove localtime, add comments)
+
+*   fix android
+
+    There's no fixing android, at least for audio as getByteFrequencyData doesn't work
 
 *   add checks
 
