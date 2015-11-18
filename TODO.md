@@ -4,8 +4,6 @@
 
 *   let user change email
 
-*   change error music message
-
 *   put something to show position of music?
 
 *   look into running 2 instances of meteor in docker?
@@ -74,6 +72,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   change error music message
 
 *   update default shaders (remove localtime, add comments)
 
