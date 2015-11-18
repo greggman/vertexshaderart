@@ -451,7 +451,7 @@ var requirejs, require, define;
 
 define("node_modules/almond/almond.js", function(){});
 
-// @license audiosteamsource.js 0.0.1 Copyright (c) 2015, Gregg Tavares All Rights Reserved.
+// @license audiosteamsource.js 0.0.2 Copyright (c) 2015, Gregg Tavares All Rights Reserved.
 // Available via the MIT license.
 // see: http://github.com/greggman/audiostreamsource.js for details
 
@@ -470,8 +470,6 @@ define("node_modules/almond/almond.js", function(){});
   // so my hope is whenever they get around to actually supporting the 3+ year old
   // standard that things will actually work.
   var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
-  var isMobile = window.navigator.userAgent.match(/Android|iPhone|iPad|iPod|Windows Phone/i);
-  var g = {};
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -497,7 +495,7 @@ define("node_modules/almond/almond.js", function(){});
     var context = options.context;
     var autoPlay = options.autoPlay;
     var audio = new Audio();
-    var source = context.createMediaElementSource(audio);
+    var source;
     var canPlayHandled = false;
     var handleAudioError = function handleAudioError(e) {
       emit('error', e);
@@ -505,8 +503,15 @@ define("node_modules/almond/almond.js", function(){});
     var handleCanplay = function handleCanplay() {
       if (!canPlayHandled) {
         canPlayHandled = true;
-        source.disconnect();
-        startPlaying(play, emit);
+        if (source) {
+          source.disconnect();
+        }
+        if (autoPlay) {
+          startPlaying(play, emit);
+        }
+        if (!source) {
+          source = context.createMediaElementSource(audio);
+        }
         emit('newSource', source);
       }
     }
@@ -558,6 +563,10 @@ define("node_modules/almond/almond.js", function(){});
       audio.load();
     }
 
+    function getSource() {
+      return source;
+    }
+
     if (options.src) {
       setSource(options.src);
     }
@@ -580,6 +589,7 @@ define("node_modules/almond/almond.js", function(){});
       audio.pause();
     };
     this.setSource = setSource;
+    this.getSource = getSource;
   }
 
   function NonStreamedAudioSource(options) {
@@ -640,10 +650,15 @@ define("node_modules/almond/almond.js", function(){});
       req.send();
     }
 
+    function getSource() {
+      return source;
+    }
+
     if (options.src) {
       setSource(options.src, options.lofiSrc);
     }
 
+    this.getSource = getSource;
     this.setSource = setSource;
     this.play = play;
     this.stop = stop;
@@ -10307,7 +10322,7 @@ define('3rdparty/glsl',['./codemirror/lib/codemirror'], function(CodeMirror) {
 
 
 /**
- * @license twgl.js 0.0.33 Copyright (c) 2015, Gregg Tavares All Rights Reserved.
+ * @license twgl.js 0.0.34 Copyright (c) 2015, Gregg Tavares All Rights Reserved.
  * Available via the MIT license.
  * see: http://github.com/greggman/twgl.js for details
  */
@@ -10798,7 +10813,13 @@ define('twgl/twgl',[], function () {
    * @module twgl
    */
 
-  var error = window.console && window.console.error && typeof(window.console.error) === "function" ? window.console.error.bind(window.console) : function() { };
+  var error =
+      (    window.console
+        && window.console.error
+        && typeof window.console.error === "function"
+      )
+      ? window.console.error.bind(window.console)
+      : function() { };
   // make sure we don't see a global gl
   var gl = undefined;  // eslint-disable-line
   var defaultAttribPrefix = "";
@@ -18489,6 +18510,7 @@ define('src/js/main',[
       mag: options.mag || gl.LINEAR,
       wrap: gl.CLAMP_TO_EDGE,
       format: format,
+      auto: false,  // don't set tex params or call genmipmap
     }
     var _tex = twgl.createTexture(gl, _texSpec);
 
@@ -18743,7 +18765,6 @@ define('src/js/main',[
         min: gl.NEAREST,
         mag: gl.NEAREST,
       });
-//        auto: false,
 
       var count = new Float32Array(g.maxCount);
       for (var ii = 0; ii < count.length; ++ii) {
@@ -18871,11 +18892,11 @@ define('src/js/main',[
       setSoundSuccessState(false, e.toString());
     });
     s.streamSource.on('newSource', function(source) {
-      source.connect(s.analyser);
       if (!s.running) {
         s.streamSource.stop();
         return;
       }
+      source.connect(s.analyser);
       setPlayState();
       setSoundSuccessState(true);
     });
@@ -18973,6 +18994,10 @@ define('src/js/main',[
           }
         } else {
           s.streamSource.play();
+          var source = s.streamSource.getSource();
+          if (source) {
+            source.connect(s.analyser);
+          }
           if (s.inIframe) {
             g.pause = false;
             queueRender();
@@ -19377,11 +19402,11 @@ define('src/js/main',[
       var autoPlay = (q.autoPlay || q.autoplay);
       s.running = true;
 
-      if ((s.inIframe && !autoPlay) || shittyBrowser) {
+      if ((s.inIframe && !autoPlay) || isMobile) {
         $("#loading").style.display = "none";
         $("#start").style.display = "";
         on($("#start"), 'click', function() {
-          if (shittyBrowser) {
+          if (isMobile) {
             playSoundToGetMobileAudioStarted();
           }
           $("#start").style.display = "none";
