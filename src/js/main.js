@@ -594,9 +594,10 @@ define([
     }
 
     s.streamSource.on('error', function(e) {
+      e = e || "music error";
       console.error(e);
       setPlayState();
-      setSoundSuccessState(false, e.toString());
+      setSoundSuccessState(false, "Error streaming music: " + e.toString());
     });
     s.streamSource.on('newSource', function(source) {
       if (!s.running) {
