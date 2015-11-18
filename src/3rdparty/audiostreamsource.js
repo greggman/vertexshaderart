@@ -1,4 +1,4 @@
-// @license audiosteamsource.js 0.0.1 Copyright (c) 2015, Gregg Tavares All Rights Reserved.
+// @license audiosteamsource.js 0.0.2 Copyright (c) 2015, Gregg Tavares All Rights Reserved.
 // Available via the MIT license.
 // see: http://github.com/greggman/audiostreamsource.js for details
 
@@ -17,8 +17,6 @@
   // so my hope is whenever they get around to actually supporting the 3+ year old
   // standard that things will actually work.
   var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
-  var isMobile = window.navigator.userAgent.match(/Android|iPhone|iPad|iPod|Windows Phone/i);
-  var g = {};
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -44,7 +42,7 @@
     var context = options.context;
     var autoPlay = options.autoPlay;
     var audio = new Audio();
-    var source = context.createMediaElementSource(audio);
+    var source;
     var canPlayHandled = false;
     var handleAudioError = function handleAudioError(e) {
       emit('error', e);
@@ -52,8 +50,15 @@
     var handleCanplay = function handleCanplay() {
       if (!canPlayHandled) {
         canPlayHandled = true;
-        source.disconnect();
-        startPlaying(play, emit);
+        if (source) {
+          source.disconnect();
+        }
+        if (autoPlay) {
+          startPlaying(play, emit);
+        }
+        if (!source) {
+          source = context.createMediaElementSource(audio);
+        }
         emit('newSource', source);
       }
     }
@@ -105,6 +110,10 @@
       audio.load();
     }
 
+    function getSource() {
+      return source;
+    }
+
     if (options.src) {
       setSource(options.src);
     }
@@ -127,6 +136,7 @@
       audio.pause();
     };
     this.setSource = setSource;
+    this.getSource = getSource;
   }
 
   function NonStreamedAudioSource(options) {
@@ -187,10 +197,15 @@
       req.send();
     }
 
+    function getSource() {
+      return source;
+    }
+
     if (options.src) {
       setSource(options.src, options.lofiSrc);
     }
 
+    this.getSource = getSource;
     this.setSource = setSource;
     this.play = play;
     this.stop = stop;
