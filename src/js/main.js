@@ -1347,7 +1347,8 @@ define([
       var x = e.clientX / w;
       var y = e.clientY / h;
 
-      g.mouse = [x * 2 - 1, y * -2 + 1];
+      g.mouse[0] = x *  2 - 1;
+      g.mouse[1] = y * -2 + 1;
       addTouchPosition(0, x, y);
     }
 
