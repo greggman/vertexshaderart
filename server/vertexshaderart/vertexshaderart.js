@@ -5,6 +5,7 @@ S_PENDING_LIKE = "pendingLike";
 S_ART_OWNER_ID = "artOwnerId";
 S_ART_NAME = "artName";
 S_ART_OWNER_NAME = "artOwnerName";
+S_HELP_DIALOG_URL = "helpDialogUrl";
 
 G_PAGE_SIZE = (Meteor.settings.public.app && Meteor.settings.public.app.pageSize) ? Meteor.settings.public.app.pageSize : 15;
 G_PAGE_RANGE = 2;
@@ -474,30 +475,23 @@ if (Meteor.isClient) {
     },
   });
 
-  //Template.artitem.helpers({
-  //  isOwner: function () {
-  //    return this.owner === Meteor.userId();
-  //  }
-  //});
-  //
-  //Template.artitem.events({
-  //  "click .toggle-checked": function () {
-  //    // Set the checked property to the opposite of its current value
-  //    Meteor.call("setChecked", this._id, ! this.checked);
-  //  },
-  //  "click .delete": function () {
-  //    Meteor.call("deleteTask", this._id);
-  //  },
-  //  "click .toggle-private": function () {
-  //    Meteor.call("setPrivate", this._id, ! this.private);
-  //  },
-  //});
+  Template.atForm.events({
+    "click .at-terms-link": function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      Session.set(S_HELP_DIALOG_URL, e.target.href);
+    },
+  });
+
 
   Template.vslogin.helpers({
     currentlyLoggingIn: function() {
       var currentlyLoggingIn = Session.get(S_CURRENTLY_LOGGING_IN) && !Meteor.user();
       return currentlyLoggingIn;
-    }
+    },
+    helpDialog: function() {
+      return Session.get(S_HELP_DIALOG_URL);
+    },
   });
 
   Template.vslogin.events({
@@ -507,6 +501,10 @@ if (Meteor.isClient) {
     },
     "click #vslogin": function(e) {
       e.stopPropagation();
+    },
+    "click #loginhelpdialog": function(e) {
+      e.stopPropagation();
+      Session.set(S_HELP_DIALOG_URL, "");
     },
   });
 
@@ -985,6 +983,10 @@ var mySubmitFunc = function(error, state){
 
 AccountsTemplates.configure({
   onSubmitHook: mySubmitFunc,
+  showForgotPasswordLink: true,
+  enablePasswordChange: true,
+  privacyUrl: Meteor.absoluteUrl('static/resources/privacy.html'),
+  termsUrl: Meteor.absoluteUrl('static/resources/tos.html'),
 });
 
 Router.configure({

@@ -414,7 +414,14 @@
             {{> atForm}}
         </div>
     </div>
-
+    {{#if helpDialog}}
+    <div id="loginhelpdialog" class="fulldialog">
+        <div>
+            <iframe src="{{helpDialog}}"></iframe>
+            <button class="button">got it</button>
+        </div>
+    </div>
+    {{/if}}
   {{/if}}
 </template>
 

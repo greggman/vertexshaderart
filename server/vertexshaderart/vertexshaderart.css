@@ -128,6 +128,24 @@ embed, object {
 #vsloginback {
     z-index: 20;
 }
+#loginhelpdialog {
+    z-index: 21;
+}
+#loginhelpdialog>div {
+    width: 600px;
+    height: 500px;
+
+    display: flex;
+    display: -webkit-flex;
+    flex-flow: column;
+    -webkit-flex-flow: column;
+}
+#loginhelpdialog>div>iframe {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
 
 #savedialog {
     width: 330px;
@@ -390,6 +408,12 @@ header .buttons a, header .buttons div, .button {
 .at-form h3 {
     margin: 0 0 0.5em 0;
 }
+.at-form a,
+.at-form a:hover,
+.at-form a:visited,
+.at-form a:active {
+    color: #48F;
+}
 .at-pwd-form {
     text-align: right;
 }
@@ -487,5 +511,9 @@ header .buttons a, header .buttons div, .button {
     }
     .sorting .pagination .button {
         margin: 1em;
+    }
+    #loginhelpdialog>div {
+        width: 95%;
+        height: 95%;
     }
 }
