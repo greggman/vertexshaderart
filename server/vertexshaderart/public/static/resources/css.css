@@ -1,0 +1,9 @@
+html, body {
+    color: white;
+    background-color: black;
+    font-family: monospace;
+}
+a, a:hover, a:visited, a:active {
+    color: red;
+}
+
