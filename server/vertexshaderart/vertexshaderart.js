@@ -251,8 +251,10 @@ if (Meteor.isClient) {
       case "newest":
         return "modifiedAt";
       case "popular":
-      default:
         return "likes";
+      case "hot":
+      default:
+        return "rank";
     }
   }
 }
@@ -347,24 +349,6 @@ if (Meteor.isClient) {
       var options = {
         sort: sort,
         limit: parseInt(instance.data.limit),
-      };
-      return Art.find({}, options);
-    },
-  });
-
-  Template.hotlist.onCreated(function() {
-    var instance = this;
-    instance.autorun(function() {
-      instance.subscribe('hotlist', Meteor.settings.public.app.hotlistSize);
-    });
-  });
-
-  Template.hotlist.helpers({
-    art: function() {
-      var instance = Template.instance();
-      var options = {
-        limit: parseInt(Meteor.settings.public.app.hotlistSize),
-        sort: { rank: -1 },
       };
       return Art.find({}, options);
     },
@@ -799,7 +783,7 @@ if (Meteor.isClient) {
   Template.sorting.helpers({
     selected: function(sortType) {
       var route = Router.current();
-      var sort = route.data().sort || "popular";
+      var sort = route.data().sort || "hot";
       return sort === sortType ? "selected" : "";
     },
     url: function(sortType) {
@@ -993,8 +977,24 @@ Router.configure({
   trackPageView: true,
 });
 
+//Router.route('/', {
+//  template: 'front',
+//});
 Router.route('/', {
-  template: 'front',
+  name: 'galleryrouteroot',
+  template: 'gallery',
+  data: function() {
+    var sort = this.params.query.sort;
+    var sortType = getSortingType(sort);
+    var page = 1;
+    return {
+      page: page,
+      path: '/gallery',
+      count: 'artCount',
+      sort: sort,
+      sortType: sortType,
+    };
+  },
 });
 Router.route('/gallery/:_page', {
   name: 'galleryroute',

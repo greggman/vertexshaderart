@@ -4,10 +4,6 @@ if (!IMAGE_PATH) {
   throw "IMAGE_PATH not set";
 }
 
-if (!Meteor.settings.public.app.hotlistSize) {
-  throw "Meteor.settings.public.app.hotlistSize not set";
-}
-
 function extractDataForRank() {
   var fs = Npm.require('fs');
   fs.writeFileSync('/Users/gregg/src/vertexshaderart/src/rank/db.json', "var db = " + JSON.stringify(Art.find({
@@ -199,7 +195,7 @@ function computeHotlist() {
     var age = Math.max(now - dob, 0);
     var hoursOld = age / 1000 / 60 / 60;
     var agePenalty = Math.max(1, Math.log(hoursOld));
-    var points = 1 + art.likes * 1 + art.views * 0 + Math.max(0, ageBonusInHours - hoursOld);
+    var points = 1 + (art.owner !== undefined ? 2 : 0) + art.likes * 1 + art.views * 0 + Math.max(0, ageBonusInHours - hoursOld);
     var score = points / agePenalty;
     return {
       ageMs: age,

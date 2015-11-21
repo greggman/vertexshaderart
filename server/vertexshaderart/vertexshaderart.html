@@ -32,7 +32,7 @@
 
     <div class="sorting">
       <div class="sorttype">
-          <a class='button hot' href="/">
+          <a class='button hot {{selected "hot"}}' href="{{url 'hot'}}">
               hot
           </a>
           <a class='button popular {{selected "popular"}}' href="{{url 'popular'}}">
@@ -64,47 +64,6 @@
 
 <template name="logo">
         <div class="logo"><h1><a href="/">vertexshaderart.com</a></h1></div>
-</template>
-
-<template name="front">
-  <header>
-
-    <div>
-        <div class="buttons">
-            {{> userinfosignin}}
-            <a href="/new/">create new</a>
-            <a href="http://github.com/greggman/vertexshaderart">github</a>
-        </div>
-        {{> logo}}
-    </div>
-  </header>
-  <div class="container">
-     <div class="gallery">
-         <div class="sorting">
-           <div class="sorttype">
-             <a class="button" href="/gallery/1?sort=popular">popular</a>
-             <a class="button" href="/gallery/1?sort=newest">newest</a>
-             <a class="button" href="/gallery/1?sort=mostviews">views</a>
-           </div>
-         </div>
-         {{> hotlist}}
-         <div class="bottomspace"></div>
-     </div>
-  </div>
-
-  {{> vslogin}}
-</template>
-
-<template name="hotlist">
-   <div class="sortcriteria">
-       <div class="artgrid">
-           {{#if Template.subscriptionsReady}}
-             {{#each art}}
-               {{> artpiece}}
-             {{/each}}
-           {{/if}}
-       </div>
-   </div>
 </template>
 
 <template name="artselection">
