@@ -82,6 +82,10 @@ define([
     return (elem ? elem.text : window.vsartShaders[id]);
   }
 
+  function randomElement(array) {
+    return array[Math.random() * array.length | 0];
+  }
+
   function ProgramManager(gl) {
     var _handlers = {};
     var _programInfo;
@@ -530,7 +534,42 @@ define([
           }
         };
       };
-      if (!s.sc || q.local) {
+
+      var longName = "This is a really long name that might mess up formatting so let's use it to test that long names don't totally mess up formatting just so we have some idea of how messed up things can get if we don't set any limits";
+      var music = [
+        {
+          title: q.long ? longName : "DOCTOR VOX - Level Up [Argofox]",
+          streamable: true,
+          stream_url: "/static/resources/sounds/DOCTOR VOX - Level Up - lofi.mp3",
+          permalink_url: "http://soundcloud.com/argofox",
+          user: {
+            username: q.long ? longName : "Argofox Creative Commons",
+            permalink_url: "http://soundcloud.com/argofox",
+          },
+        },
+        {
+          title: q.long ? longName : "Cab Calloway/Andrews Sisters Mashup",
+          streamable: true,
+          stream_url: "/static/resources/sounds/doin' the rumba 4 - lofi.mp3",
+          permalink_url: "https://soundcloud.com/ecklecticmick/doin-the-rumba",
+          user: {
+            username: q.long ? longName : "DJ Ecklectic Mick",
+            permalink_url: "https://soundcloud.com/ecklecticmick",
+          },
+        },
+        {
+          title: q.long ? longName : "Oh The Bass! (feat Fab Marq )",
+          streamable: true,
+          stream_url: "/static/resources/sounds/Oh The Bass! - lofi.mp3",
+          permalink_url: "https://soundcloud.com/djloveboat/oh-the-bass-feat-fab-marq",
+          user: {
+            username: q.long ? longName : "djloveboat",
+            permalink_url: "https://soundcloud.com/djloveboat",
+          },
+        },
+      ];
+
+      if (!s.sc || shittyBrowser || isMobile || q.local) {
         s.sc = new function() {
           function noop() {
             console.log("noop");
@@ -540,17 +579,7 @@ define([
 
             var provideResult = function(fn) {
               setTimeout(function() {
-                var longName = "This is a really long name that might mess up formatting so let's use it to test that long names don't totally mess up formatting just so we have some idea of how messed up things can get if we don't set any limits";
-                fn({
-                  title: q.long ? longName : "DOCTOR VOX - Level Up [Argofox]",
-                  streamable: true,
-                  stream_url: "/static/resources/sounds/DOCTOR VOX - Level Up - lofi.mp3",
-                  permalink_url: "http://soundcloud.com/argofox",
-                  user: {
-                    username: q.long ? longName : "Argofox Creative Commons",
-                    permalink_url: "http://soundcloud.com/argofox",
-                  }
-                });
+                fn(randomElement(music));
               }, 1);
             };
 
@@ -1113,6 +1142,10 @@ define([
       if ((s.inIframe && !autoPlay) || isMobile) {
         $("#loading").style.display = "none";
         $("#start").style.display = "";
+        if (settings.sound && (isMobile || shittyBrowser)) {
+          $("#start>div").style.width = "90%";
+          $("#badaudio").style.display = "";
+        }
         on($("#start"), 'click', function() {
           if (isMobile) {
             playSoundToGetMobileAudioStarted();
