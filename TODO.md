@@ -1,6 +1,8 @@
 ﻿# To Do
 
-*   test email password recovery
+*   put in substitute music for mobile
+
+*   add "hot" sorting
 
 *   let user change email
 
@@ -72,6 +74,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   test email password recovery
 
 *   change error music message
 
