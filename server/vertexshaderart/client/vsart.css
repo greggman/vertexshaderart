@@ -698,8 +698,16 @@ input,
 #start {
   background-color: rgba(0,0,0,0.0);
 }
+#start>div {
+  text-align: center;
+}
+#start>div>div {
+  text-align: left;
+  color: red;
+  font-weight: bold;
+}
 #start img {
-  display: block;
+  display: inline-block;
   width: 10em;
   height: 10em;
 }
