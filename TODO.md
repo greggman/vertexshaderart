@@ -2,8 +2,6 @@
 
 *   put in substitute music for mobile
 
-*   add "hot" sorting
-
 *   let user change email
 
 *   put something to show position of music?
@@ -74,6 +72,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   add "hot" sorting
 
 *   test email password recovery
 
