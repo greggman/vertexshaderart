@@ -1,7 +1,5 @@
 ﻿# To Do
 
-*   put in substitute music for mobile
-
 *   let user change email
 
 *   put something to show position of music?
@@ -72,6 +70,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   put in substitute music for mobile
 
 *   add "hot" sorting
 
