@@ -153,12 +153,12 @@
     function play() {
       if (source) {
         source.start(0);
+        playing = true;
       }
-      playing = true;
     }
 
     function stop() {
-      if (source) {
+      if (source && playing) {
         source.stop(0);
       }
       playing = false;
