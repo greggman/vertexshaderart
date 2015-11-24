@@ -218,6 +218,7 @@ input,
   padding: 0.5em;
   border-radius: 0.5em;
   transition: background 0.25s linear, border-color 0.25s linear;
+  line-height: 1;
 }
 #editor:hover {
   border-color: 1px solid #444;
