@@ -1213,7 +1213,7 @@ define([
         pixels = l * soundTime.clientWidth | 0;
       }
       if (pixels != g.soundTimePixelWidth) {
-        soundTime.style.background = "linear-gradient(90deg, rgba(30,30,30,0.9) " + (l * 100).toFixed(2) + "%, rgba(0,0,0,0.9) " + (l * 100). toFixed(2) + "%)";
+        soundTime.style.background = "linear-gradient(90deg, rgba(30,30,30,0.7) " + (l * 100).toFixed(2) + "%, rgba(0,0,0,0.7) " + (l * 100). toFixed(2) + "%)";
       }
     }
 
