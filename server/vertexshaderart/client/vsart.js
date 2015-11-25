@@ -580,6 +580,14 @@ define("node_modules/almond/almond.js", function(){});
       return !audio.paused;
     }
 
+    function getCurrentTime() {
+      return audio.currentTime || 0;
+    }
+
+    function getDuration() {
+      return audio.duration || 0;
+    }
+
     this.isPlaying = isPlaying;
 
     this.play = function() {
@@ -590,6 +598,8 @@ define("node_modules/almond/almond.js", function(){});
     };
     this.setSource = setSource;
     this.getSource = getSource;
+    this.getDuration = getDuration;
+    this.getCurrentTime = getCurrentTime;
   }
 
   function NonStreamedAudioSource(options) {
@@ -601,11 +611,14 @@ define("node_modules/almond/almond.js", function(){});
     var crossOrigin = options.crossOrigin;
     var source;
     var playing = false;
+    var startTime = Date.now();
+    var stopTime = Date.now();
     // shitty browsers (eg, Safari) can't stream into the WebAudio API
 
     function play() {
       if (source) {
         source.start(0);
+        startTime = Date.now();
         playing = true;
       }
     }
@@ -613,12 +626,26 @@ define("node_modules/almond/almond.js", function(){});
     function stop() {
       if (source && playing) {
         source.stop(0);
+        stopTime = Date.now();
       }
       playing = false;
     }
 
     function isPlaying() {
       return playing;
+    }
+
+    function getDuration() {
+      return source ? source.buffer.duration : 0;
+    }
+
+    function getCurrentTime() {
+      if (source && playing) {
+        var elapsedTime = (Date.now() - startTime) * 0.001;
+        return elapsedTime % source.buffer.duration;
+      } else {
+        return 0;
+      }
     }
 
     function setSource(src, lofiSrc) {
@@ -663,6 +690,8 @@ define("node_modules/almond/almond.js", function(){});
     this.play = play;
     this.stop = stop;
     this.isPlaying = isPlaying;
+    this.getDuration = getDuration;
+    this.getCurrentTime = getCurrentTime;
   }
 
   function createAudioStreamSource(options) {
@@ -18617,6 +18646,7 @@ define('src/js/main',[
     var stopIconElem = $("#stop .stop-icon")
     var goIconElem = $("#stop .go-icon");
     var soundElem = $("#sound");
+    var soundTime = $("#soundTime");
     var soundLinkElem = $("#soundLink")
     var soundLinkNode = misc.createTextNode(soundLinkElem);
     var soundcloudElem = $("#soundcloud");
@@ -18665,6 +18695,11 @@ define('src/js/main',[
     if (q.pause) {
       g.pauseOnBlur = true;
       g.pause = true;
+    }
+
+    if (q.mobile) {
+      isMobile = true;
+      s.show = true;
     }
 
     if (s.inIframe) {
@@ -19152,7 +19187,7 @@ define('src/js/main',[
       }
     }
 
-    setShaderSuccessStatus(false);
+    //setShaderSuccessStatus(false);
 
     function setShaderSuccessStatus(success) {
       var same = isSettingsSameAsOriginalSansWhitespace();
@@ -19491,6 +19526,19 @@ define('src/js/main',[
       }
     }
 
+    function updateSoundTime() {
+      var pixels = 0;
+      var duration = s.streamSource.getDuration();
+      if (duration) {
+        var currentTime = s.streamSource.getCurrentTime();
+        var l = currentTime / duration;
+        pixels = l * soundTime.clientWidth | 0;
+      }
+      if (pixels != g.soundTimePixelWidth) {
+        soundTime.style.background = "linear-gradient(90deg, rgba(30,30,30,0.7) " + (l * 100).toFixed(2) + "%, rgba(0,0,0,0.7) " + (l * 100). toFixed(2) + "%)";
+      }
+    }
+
     var uniforms = {
       time: 0,
       vertexCount: 0,
@@ -19612,6 +19660,8 @@ define('src/js/main',[
       if (q.showTouchHistory) {
         renderHistory(s.touchHistory.getTexture(), 1, 1);
       }
+
+      updateSoundTime();
 
       queueRender();
     }
