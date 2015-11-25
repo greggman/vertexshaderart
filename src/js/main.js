@@ -324,6 +324,7 @@ define([
     var stopIconElem = $("#stop .stop-icon")
     var goIconElem = $("#stop .go-icon");
     var soundElem = $("#sound");
+    var soundTime = $("#soundTime");
     var soundLinkElem = $("#soundLink")
     var soundLinkNode = misc.createTextNode(soundLinkElem);
     var soundcloudElem = $("#soundcloud");
@@ -372,6 +373,11 @@ define([
     if (q.pause) {
       g.pauseOnBlur = true;
       g.pause = true;
+    }
+
+    if (q.mobile) {
+      isMobile = true;
+      s.show = true;
     }
 
     if (s.inIframe) {
@@ -859,7 +865,7 @@ define([
       }
     }
 
-    setShaderSuccessStatus(false);
+    //setShaderSuccessStatus(false);
 
     function setShaderSuccessStatus(success) {
       var same = isSettingsSameAsOriginalSansWhitespace();
@@ -1198,6 +1204,19 @@ define([
       }
     }
 
+    function updateSoundTime() {
+      var pixels = 0;
+      var duration = s.streamSource.getDuration();
+      if (duration) {
+        var currentTime = s.streamSource.getCurrentTime();
+        var l = currentTime / duration;
+        pixels = l * soundTime.clientWidth | 0;
+      }
+      if (pixels != g.soundTimePixelWidth) {
+        soundTime.style.background = "linear-gradient(90deg, rgba(30,30,30,0.9) " + (l * 100).toFixed(2) + "%, rgba(0,0,0,0.9) " + (l * 100). toFixed(2) + "%)";
+      }
+    }
+
     var uniforms = {
       time: 0,
       vertexCount: 0,
@@ -1319,6 +1338,8 @@ define([
       if (q.showTouchHistory) {
         renderHistory(s.touchHistory.getTexture(), 1, 1);
       }
+
+      updateSoundTime();
 
       queueRender();
     }

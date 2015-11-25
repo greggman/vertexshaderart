@@ -116,6 +116,7 @@ input,
 #toolbar>button,
 #toolbar>a,
 #soundInfo>a,
+#soundInfo div,
 #soundInfo>button,
 #userInfo>div,
 #userInfo>a,
@@ -186,11 +187,12 @@ input,
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-#soundInfo>a {
+#soundInfo a {
   vertical-align: bottom;
   display: inline-block;
   text-decoration: none;
   white-space: nowrap;
+  color: white;
 }
 #soundcloud {
   padding: 0.25em !important;
