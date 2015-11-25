@@ -127,6 +127,14 @@
       return !audio.paused;
     }
 
+    function getCurrentTime() {
+      return audio.currentTime || 0;
+    }
+
+    function getDuration() {
+      return audio.duration || 0;
+    }
+
     this.isPlaying = isPlaying;
 
     this.play = function() {
@@ -137,6 +145,8 @@
     };
     this.setSource = setSource;
     this.getSource = getSource;
+    this.getDuration = getDuration;
+    this.getCurrentTime = getCurrentTime;
   }
 
   function NonStreamedAudioSource(options) {
@@ -148,11 +158,14 @@
     var crossOrigin = options.crossOrigin;
     var source;
     var playing = false;
+    var startTime = Date.now();
+    var stopTime = Date.now();
     // shitty browsers (eg, Safari) can't stream into the WebAudio API
 
     function play() {
       if (source) {
         source.start(0);
+        startTime = Date.now();
         playing = true;
       }
     }
@@ -160,12 +173,26 @@
     function stop() {
       if (source && playing) {
         source.stop(0);
+        stopTime = Date.now();
       }
       playing = false;
     }
 
     function isPlaying() {
       return playing;
+    }
+
+    function getDuration() {
+      return source ? source.buffer.duration : 0;
+    }
+
+    function getCurrentTime() {
+      if (source && playing) {
+        var elapsedTime = (Date.now() - startTime) * 0.001;
+        return elapsedTime % source.buffer.duration;
+      } else {
+        return 0;
+      }
     }
 
     function setSource(src, lofiSrc) {
@@ -210,6 +237,8 @@
     this.play = play;
     this.stop = stop;
     this.isPlaying = isPlaying;
+    this.getDuration = getDuration;
+    this.getCurrentTime = getCurrentTime;
   }
 
   function createAudioStreamSource(options) {
