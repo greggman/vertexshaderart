@@ -793,11 +793,33 @@ input[type="color"] {
 .iframe #toolbar>a,
 .iframe #soundInfo>a,
 .iframe #soundInfo>button,
+.iframe #soundInfo>div,
 .iframe #userInfo>div,
 .iframe #userInfo>a,
 .iframe #vsa>a,
 .iframe #vsa>button {
    font-size: xx-small;
+}
+@media (max-width : 1024px) {
+    #toolbar>div,
+    #toolbar>button,
+    #toolbar>a,
+    #soundInfo>a,
+    #soundInfo>button,
+    #soundInfo>div,
+    #userInfo>div,
+    #userInfo>a,
+    #vsa>a,
+    #vsa>button,
+    #ui select,
+    #ui input {
+       font-size: xx-small;
+    }
+}
+@media (max-width : 840px) {
+    #ui #numRange {
+        display: none;
+    }
 }
 @media (max-width : 500px) {
    #toolbar, #editorWrap, #bottom {
