@@ -330,6 +330,7 @@ define([
     var soundcloudElem = $("#soundcloud");
     var bandLinkElem = $("#bandLink");
     var bandLinkNode = misc.createTextNode(bandLinkElem);
+    var soundTimeElem = $("#soundTime");
     var playElems = Array.prototype.slice.call(document.querySelectorAll(".play"));
     var playNodes = playElems.map(function(playElem) {
       var pn = misc.createTextNode(playElem, _playIcon);
@@ -773,6 +774,7 @@ define([
       setLinkOrHide(soundLinkElem, options.permalink_url);
       setLinkOrHide(bandLinkElem, options.user.permalink_url);
       setLinkOrHide(soundcloudElem, options.permalink_url);
+      setLinkOrHide(soundTimeElem, options.permalink_url);
       soundLinkNode.nodeValue = options.title || "";
       bandLinkNode.nodeValue = options.user.username || "";
       if (s.cm) {
