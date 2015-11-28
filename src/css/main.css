@@ -353,6 +353,8 @@ input[type="color"] {
 .iframe #soundInfo>div,
 .iframe #userInfo>div,
 .iframe #userInfo>a,
+.iframe #userInfo>button,
+.iframe .sharing .button,
 .iframe #vsa>a,
 .iframe #vsa>button {
    font-size: xx-small;
@@ -368,11 +370,13 @@ input[type="color"] {
     #soundInfo>div,
     #userInfo>div,
     #userInfo>a,
+    #userInfo>button,
+    .sharing .button,
     #vsa>a,
     #vsa>button,
     #ui select,
     #ui input {
-       font-size: xx-small;
+       font-size: xx-small !important;
     }
 
 }
