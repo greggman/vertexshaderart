@@ -1,7 +1,5 @@
 ﻿# To Do
 
-*   fix share icon when small
-
 *   add mic support (Can I do line-in?)
 
 *   add playlist support
@@ -11,6 +9,8 @@
 *   fix points on mobile (can sim?)
 
 *   fix background on mobile (Can sim?)
+
+*   add private/public/unlisted
 
 *   add panes
 
@@ -90,6 +90,8 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   fix share icon when small
 
 *   put in substitute music for mobile
 
