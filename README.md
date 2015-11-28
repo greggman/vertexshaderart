@@ -11,6 +11,43 @@ just a `vertexId` that counts vertices.
 Because limits are AWESOME! Like 4k demos (or 1k) setting limits
 almost always leads to more creativity.
 
+## Tips
+
+A few tips when making art
+
+*   Consider making things as resolution independent as possible.
+
+    *   `gl_PointSize`
+
+        You might have a 2000x1000 desktop but someone might be viewing on a phone. If you set `gl_PointSize = 50.0`
+        that might be perfect on your desktop but too big for a phone.
+
+        You could do something like this at the bottom of your shader
+
+            #define RESOLUTION_OF_MY_DISPLAY 2000.0
+            gl_PointSize *= resolution.x / RESOLUTION_OF_MY_DISPLAY;
+
+    *   `CSS` vs `Native`
+
+        vertexshaderart.com will automatically set the `gl.lineWidth` to `window.devicePixelRatio` if you pick `CSS`.
+        Similarly it will multiply `gl_PointSize` by devicePixelRatio if set to `CSS`.
+        It's up to you whether or not your art would be better it multiplied by devicePixelRatio.
+
+        For example if you want the thinnest possible lines you'd pick `Native`. If on the other hand you want the lines
+        to be the same thickness on a 4000x2000 HD-DPI display vs a 2000x1000 non HD-DPI display then pick `CSS`. Similarly
+        if you want points to be the same size on HD-DPI and non HD-DPI pick `CSS`.
+
+*   Use `vertexCount` were appropriate
+
+    You can certainly set a specific count and design your art around that but, if you'd like to it can be nice
+    to try to make it self adjust.
+
+    Example:
+
+        #define POINTS_PER_CUBE 24.
+        float cubeVertexId = mod(vertexId, POINTS_PER_CUBE);  // counts vertices in a cube
+        float cubeId = floor(vertexCount / POINTS_PER_CUBE);  // counts cubes
+
 ## Embedding
 
 You can embed a piece on your blog or whatever by putting the url in an iframe. Example
