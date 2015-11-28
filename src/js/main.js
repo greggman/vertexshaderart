@@ -1138,7 +1138,7 @@ define([
       options = options || {};
       settings = JSON.parse(JSON.stringify(settings));
 
-      if (s.inIframe && options.screenshotURL) {
+      if ((s.inIframe || isMobile) && options.screenshotURL) {
         $("#screenshot").style.backgroundImage = 'url(' + options.screenshotURL + ')';
       }
 
