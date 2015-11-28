@@ -1,5 +1,25 @@
 ﻿# To Do
 
+*   fix share icon when small
+
+*   add mic support (Can I do line-in?)
+
+*   add playlist support
+
+*   add random mode
+
+*   fix points on mobile (can sim?)
+
+*   fix background on mobile (Can sim?)
+
+*   add panes
+
+    *   allow comments for each revision
+
+    *   allow user comments (use disqus?)
+
+    *   put editor in pane?
+
 *   let user change email
 
 *   put something to show position of music?
@@ -291,5 +311,3 @@
 *   make toolbar wrap
 
 *   check safari
-
-
