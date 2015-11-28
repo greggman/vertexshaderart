@@ -19348,7 +19348,7 @@ define('src/js/main',[
       if (lastBraceNdx >= 0) {
         var before = vsrc.substr(0, lastBraceNdx);
         var after = vsrc.substr(lastBraceNdx);
-        vsrc = before + ";gl_PointSize *= _dontUseDirectly_pointSize;" + after;
+        vsrc = before + ";gl_PointSize = max(0., gl_PointSize*_dontUseDirectly_pointSize);" + after;
       }
       setShaderSuccessStatus(false);
       s.programManager.compile(vsrc, g.fSource, text);
