@@ -1138,16 +1138,16 @@ define([
       options = options || {};
       settings = JSON.parse(JSON.stringify(settings));
 
-      if ((s.inIframe || isMobile) && options.screenshotURL) {
-        $("#screenshot").style.backgroundImage = 'url(' + options.screenshotURL + ')';
-      }
-
       $("#uicontainer").style.display = "block";
 
       var autoPlay = (q.autoPlay || q.autoplay);
       s.running = true;
 
       if ((s.inIframe && !autoPlay) || isMobile) {
+        if (options.screenshotURL) {
+          $("#screenshot").style.backgroundImage = 'url(' + options.screenshotURL + ')';
+        }
+
         $("#loading").style.display = "none";
         $("#start").style.display = "";
         if (settings.sound && (isMobile || shittyBrowser)) {
