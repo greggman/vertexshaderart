@@ -6,6 +6,7 @@ S_ART_OWNER_ID = "artOwnerId";
 S_ART_NAME = "artName";
 S_ART_OWNER_NAME = "artOwnerName";
 S_HELP_DIALOG_URL = "helpDialogUrl";
+S_SAVE_VISIBILITY = "savevis";
 
 G_PAGE_SIZE = (Meteor.settings.public.app && Meteor.settings.public.app.pageSize) ? Meteor.settings.public.app.pageSize : 15;
 G_PAGE_RANGE = 2;
@@ -52,13 +53,17 @@ if (Meteor.isServer) {
   Meteor.publish("artForGrid", function(username, sortField, skip, limit) {
     var find = {
       private: {$ne: true},
+      unlisted: {$ne: true},
     };
     if (username && username !== "undefined") {
       check(username, String);
       find = {
         username: username,
         $or: [
-          { private: {$ne: true} },
+          {
+            private: {$ne: true},
+            unlisted: {$ne: true},
+          },
           { owner: this.userId },
         ],
       };
@@ -80,6 +85,7 @@ if (Meteor.isServer) {
   Meteor.publish("artSelection", function(sortField, limit) {
     var find = {
       private: {$ne: true},
+      unlisted: {$ne: true},
     };
     check(sortField, String);
     check(limit, NumberLessThan100);
@@ -97,6 +103,7 @@ if (Meteor.isServer) {
     check(limit, NumberLessThan200);
     var find = {
       private: {$ne: true},
+      unlisted: {$ne: true},
     };
     var options = {
       limit: limit,
@@ -110,7 +117,9 @@ if (Meteor.isServer) {
     return Art.find({
       _id: id,
       $or: [
-        { private: {$ne: true} },
+        {
+          private: {$ne: true},
+        },
         { owner: this.userId },
       ],
     });
@@ -130,7 +139,10 @@ if (Meteor.isServer) {
     var find = {
       artId: artId,
       $or: [
-        { private: {$ne: true} },
+        {
+          private: {$ne: true},
+          unlisted: {$ne: true},
+        },
         { owner: this.userId },
       ],
     };
@@ -158,7 +170,9 @@ if (Meteor.isServer) {
     return ArtRevision.find({
       _id: id,
       $or: [
-        { private: {$ne: true} },
+        {
+          private: {$ne: true},
+        },
         { owner: this.userId },
       ],
     });
@@ -171,7 +185,10 @@ if (Meteor.isServer) {
     return ArtRevision.find({
       artId: artId,
       $or: [
-        { private: {$ne: true} },
+        {
+          private: {$ne: true},
+          unlisted: {$ne: true},
+        },
         { owner: this.userId },
       ],
     }, {
@@ -431,11 +448,11 @@ if (Meteor.isClient) {
     },
   });
 
-  Template.revision.events({
-    "click .artpiece .private": function(e) {
-      Meteor.call("setPrivate", this._id, !this.private);
-    },
-  });
+//  Template.revision.events({
+//    "click .artpiece .private": function(e) {
+//      Meteor.call("setPrivate", this._id, !this.private);
+//    },
+//  });
 
   function safeGetTime(date) {
     return date ? date.getTime() : 0;
@@ -600,6 +617,14 @@ if (Meteor.isClient) {
     },
     "click .shareform>div": function(e) {
       e.stopPropagation();
+    },
+  });
+
+  Template.privacypopup.events({
+    "click li": function(e) {
+      e.stopPropagation();
+      Dropdowns.hideAll();
+      Meteor.call("setPrivate", this._id, e.currentTarget.dataset.option);
     },
   });
 
@@ -859,6 +884,10 @@ if (Meteor.isClient) {
     saving: function() {
       return Session.get("saving");
     },
+    visibility: function() {
+      return Session.get(S_SAVE_VISIBILITY) || "public";
+
+    },
     artname: function() {
       return Session.get(S_ART_NAME);
     },
@@ -884,6 +913,11 @@ if (Meteor.isClient) {
     "click #savedialog": function(e) {
       e.stopPropagation();
     },
+    "click #visibility li": function(e) {
+      e.stopPropagation();
+      Dropdowns.hideAll();
+      Session.set(S_SAVE_VISIBILITY, e.currentTarget.dataset.option);
+    },
     "click #saveit, click #savenew": function() {
       var route = Router.current();
       var origId;
@@ -893,7 +927,7 @@ if (Meteor.isClient) {
       window.vsart.markAsSaving();
       Session.set("saving", false);
       var data = {
-        private: $("#savedialog #private").is(':checked'),
+        privacy: Session.get(S_SAVE_VISIBILITY) || "public",
       };
       Meteor.call("addArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
         window.vsart.markAsSaved();
@@ -913,7 +947,7 @@ if (Meteor.isClient) {
       }
       window.vsart.markAsSaving();
       var data = {
-        private: $("#savedialog #private").is(':checked'),
+        privacy: Session.get(S_SAVE_VISIBILITY) || "public",
       };
       Session.set("saving", false);
       Meteor.call("updateArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
@@ -1308,19 +1342,20 @@ function addArt(name, origId, vsData, data) {
   //    }
   name = name || "unnamed";
   var owner = Meteor.userId();
-  var username = Meteor.userId() ? Meteor.user().username : "-anon-";
+  var username = owner ? Meteor.user().username : "-anon-";
   var settings = vsData.settings || {};
   var screenshotDataURL = vsData.screenshot.dataURL || "";
   var screenshotURL = "";
   var hasSound = settings.sound && settings.sound.length > 0;
+  if (!owner) {
+    data.privacy = "public";
+  }
+  var privacy = validateAndGetPrivacy(data.privacy);
 
   if (origId) {
     check(origId, String);
   }
   check(JSON.stringify(settings), StringLengthLessThan100k);
-  if (data.private) {
-    check(data.private, Boolean);
-  }
 
   if (screenshotDataURL) {
     screenshotURL = saveDataURLToFile(screenshotDataURL);
@@ -1334,7 +1369,8 @@ function addArt(name, origId, vsData, data) {
     origId: origId,
     name: name,
     rank: date.getTime(),
-    private: data.private,
+    private: privacy.private,
+    unlisted: privacy.unlisted,
     username: username,
     settings: JSON.stringify(settings),
     screenshotURL: screenshotURL,
@@ -1348,7 +1384,8 @@ function addArt(name, origId, vsData, data) {
     origId: origId,
     artId: artId,
     name: name,
-    private: data.private,
+    private: privacy.private,
+    unlisted: privacy.unlisted,
     username: username,
     settings: JSON.stringify(settings),
     hasSound: hasSound,
@@ -1375,7 +1412,7 @@ function updateArt(name, origId, vsData, data) {
   if (art.owner !== owner) {
     throw new Meteor.Error("not-owner", "must be onwer to update art");
   }
-
+  var privacy = validateAndGetPrivacy(data.privacy);
   var username = Meteor.user().username;
   var settings = vsData.settings || {};
   var screenshotDataURL = vsData.screenshot.dataURL || "";
@@ -1394,19 +1431,21 @@ function updateArt(name, origId, vsData, data) {
     artId: art._id,
     prevRevisionId: art.revisionId,
     name: name,
-    private: data.private,
+    private: privacy.private,
+    unlisted: privacy.unlisted,
     username: username,
     settings: JSON.stringify(settings),
     hasSound: hasSound,
     screenshotURL: screenshotURL,
   });
-  if (!data.private || art.private) {
+  if (privacy.listed || art.private || art.unlisted) {
     Art.update({_id: origId},
       {$set: {
         revisionId: revisionId,
         modifiedAt: new Date(),
         name: name,
-        private: data.private,
+        private: privacy.private,
+        unlisted: privacy.unlisted,
         settings: JSON.stringify(settings),
         hasSound: hasSound,
         screenshotURL: screenshotURL,
@@ -1414,6 +1453,21 @@ function updateArt(name, origId, vsData, data) {
     });
   }
   return revisionId;
+}
+
+function validateAndGetPrivacy(privacy) {
+  check(privacy, String);
+  privacy = privacy.toLowerCase();
+  check(privacy, Match.OneOf("private", "public", "unlisted"));
+
+  var _private  = privacy === "private";
+  var _unlisted = privacy === "unlisted";
+
+  return {
+    private: _private,
+    unlisted: _unlisted,
+    listed: !_private && !_unlisted,
+  };
 }
 
 
@@ -1434,11 +1488,9 @@ Meteor.methods({
      }
      Art.update({_id: artId}, {$inc: {likes: like ? -1 : 1}});
   },
-  setPrivate: function (revisionId, setToPrivate) {
+  setPrivate: function (revisionId, _privacy) {
     check(revisionId, String);
-    if (setToPrivate) {
-      check(setToPrivate, Boolean);
-    }
+    var privacy = validateAndGetPrivacy(_privacy);
     var revision = ArtRevision.findOne(revisionId);
     if (!revision) {
       throw new Meteor.Error("no such revisions");
@@ -1448,10 +1500,16 @@ Meteor.methods({
       throw new Meteor.Error("not-authorized");
     }
 
-    ArtRevision.update(revisionId, { $set: { private: setToPrivate } });
+    ArtRevision.update(revisionId, {
+      $set: {
+        private: privacy.private,
+        unlisted: privacy.unlisted,
+      },
+    });
     var newestPublicRevision = ArtRevision.findOne({
       artId: revision.artId,
       private: {$ne: true},
+      unlisted: {$ne: true},
     }, {
       sort: {createdAt: -1},
     });
@@ -1468,12 +1526,14 @@ Meteor.methods({
             settings: newestPublicRevision.settings,
             screenshotURL: newestPublicRevision.screenshotURL,
             private: false,
+            unlisted: false,
           },
         });
       } else {
         Art.update({_id: revision.artId},
           {$set: {
-            private: true,
+            private: privacy.private,
+            unlisted: privacy.unlisted,
           },
         });
       }
@@ -1519,23 +1579,6 @@ Meteor.methods({
       },
     });
   },
-  //deleteArt: function (artId) {
-  //  var art = Art.findOne(artId);
-  //  if (art.private && art.owner !== Meteor.userId()) {
-  //    // If the task is private, make sure only the owner can delete it
-  //    throw new Meteor.Error("not-authorized");
-  //  }
-  //  Art.remove(artId);
-  //},
-  //setChecked: function (artId, setChecked) {
-  //  var art = Art.findOne(artId);
-  //  if (art.private && art.owner !== Meteor.userId()) {
-  //    // If the task is private, make sure only the owner can check it off
-  //    throw new Meteor.Error("not-authorized");
-  //  }
-  //
-  //  Art.update(artId, { $set: { checked: setChecked} });
-  //},
   //testSSR: function() {
   //  if (Meteor.isServer) {
   //    var html = SSR.render("artSSR", {

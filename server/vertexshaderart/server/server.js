@@ -8,6 +8,7 @@ function extractDataForRank() {
   var fs = Npm.require('fs');
   fs.writeFileSync('/Users/gregg/src/vertexshaderart/src/rank/db.json', "var db = " + JSON.stringify(Art.find({
     private: {$ne: true},
+    unlisted: {$ne: true},
   }, {
     fields: {settings: false},
   }).fetch()) + ";");

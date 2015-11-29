@@ -101,6 +101,32 @@
 
 </template>
 
+<template name="privacypopup">
+   <ul class="dropdownmenu">
+       <li data-option="public"  ><a href="#"><img src="/static/resources/images/public.svg">public</a></li>
+       <li data-option="unlisted"><a href="#"><img src="/static/resources/images/unlisted.svg">unlisted</a></li>
+       <li data-option="private" ><a href="#"><img src="/static/resources/images/private.svg">private</a></li>
+   </ul>
+</template>
+
+<template name="privacy">
+
+    {{#if isSettingPrivacy}}
+       <div class="privacy">
+           <div class="privacyback">
+
+           </div>
+           <div class="button">
+               <div><img src="/static/resources/images/public.svg">public</div>
+               <div><img src="/static/resources/images/unlisted.svg">unlisted</div>
+               <div><img src="/static/resources/images/private.svg">private</div>
+           </div>
+       </div>
+
+    {{/if}}
+
+</template>
+
 <template name="artpiece">
 
 <div class="artpiece">
@@ -108,7 +134,11 @@
       <img class="thumbnail" src="{{screenshotLink.url}}" />
       <div class="artstate">
           {{#if private}}
-            <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/eye-closed.svg" /></a>
+            <a href="/art/{{_id}}/revisions" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/private.svg" /></a>
+          {{else}}
+            {{#if unlisted}}
+              <a href="/art/{{_id}}/revisions" class="private tooltip-bottom" data-tooltip="unlisted"><img src="/static/resources/images/unlisted.svg" /></a>
+            {{/if}}
           {{/if}}
           {{#if hasRevisions}}
             <a href="/art/{{_id}}/revisions" class="revisions tooltip-bottom" data-tooltip="revisions">R</a>
@@ -150,11 +180,24 @@
           </div>
           <div class="artstate">
               {{#if isOwner}}
-                {{#if private}}
-                  <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/eye-closed.svg" /></a>
-                {{else}}
-                  <a href="" class="private tooltip-bottom" data-tooltip="public" ><img src="/static/resources/images/eye-white.svg" /></a>
-                {{/if}}
+                {{#dropdownTrigger name=(_id)}}
+                  {{#if private}}
+                    <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/private.svg" /></a>
+                  {{else}}
+                    {{#if unlisted}}
+                      <a href="" class="private tooltip-bottom" data-tooltip="unlisted" ><img src="/static/resources/images/unlisted.svg" /></a>
+                    {{else}}
+                      <a href="" class="private tooltip-bottom" data-tooltip="public" ><img src="/static/resources/images/public.svg" /></a>
+                    {{/if}}
+                  {{/if}}
+                {{/dropdownTrigger}}
+
+
+                {{#dropdown name=(_id) align="left"}}
+                  {{> privacypopup}}
+                {{/dropdown}}
+
+
               {{/if}}
               {{#if hasSound}}
                 <div class="hasSound tooltip-bottom" data-tooltip="has sound"><img src="/static/resources/images/speaker.svg" /></div>
@@ -263,6 +306,7 @@
 </template>
 
 <template name="share">
+    {{#unless private}}
       <button class="share button icon">
         <img src="/static/resources/images/share.svg" />
         {{#if isSharing}}
@@ -279,6 +323,7 @@
           </div>
         {{/if}}
       </button>
+    {{/unless}}
 </template>
 
 <template name="shareform">
@@ -406,19 +451,32 @@
                     {{#if currentUser}}
                        {{currentUser.username}}
                     {{else}}
-                       -anon- <button class="signin button">sign in</button> to set.
+                       -anon-
                     {{/if}}
                  </div>
              </div>
-             <div class="saveline">
-                 <div class="label">
-                     private:
-                 </div>
-                 <div class="checkbox">
-                    <input type="checkbox" value="None" id="private" name="check" />
-                    <label for="private"></label>
-                </div>
-             </div>
+             {{#if currentUser}}
+               <div class="saveline">
+                   <div class="label">
+                       visibility:
+                   </div>
+                   {{#dropdownTrigger name="savevis"}}
+                      <div class="dropdowntrigger"><img src="/static/resources/images/{{visibility}}.svg"/>{{visibility}}</div>
+                   {{/dropdownTrigger}}
+                   {{#dropdown name="savevis"}}
+                      <ul class="dropdownmenu" id="visibility">
+                         <li data-option="public"  ><a href="#"><img src="/static/resources/images/public.svg">public</a></li>
+                         <li data-option="unlisted"><a href="#"><img src="/static/resources/images/unlisted.svg">unlisted</a></li>
+                         <li data-option="private" ><a href="#"><img src="/static/resources/images/private.svg">private</a></li>
+                     </ul>
+                   {{/dropdown}}
+               </div>
+             {{else}}
+               <div class="saveline">
+                  <div class="label"></div>
+                  <div class="data"><button class="signin button">sign in</button> to set.</div>
+               </div>
+             {{/if}}
          </div>
          <div class="buttons">
              <button class="button" id="cancel">
