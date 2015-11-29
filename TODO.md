@@ -6,11 +6,24 @@
 
 *   add random mode
 
-*   fix points on mobile (can sim?)
-
-*   fix background on mobile (Can sim?)
-
 *   add private/public/unlisted
+
+    should I just make "private" = "unlisted"?
+
+    **pros:** easier UX
+
+    **cons:** devs might feel more scared?
+
+    You could argue unlisted *should* be fine but maybe
+    devs would be less likely to work on something listed
+    as "unlisted" rather than *private*.
+
+    It's not like it's hard to implement both, just tedious.
+    For example right now there's the eye icon you can just
+    click to toggle. I guess it would have to change to
+    click and it's a popup with the 3 options.
+
+    Not a big deal
 
 *   add panes
 
@@ -21,8 +34,6 @@
     *   put editor in pane?
 
 *   let user change email
-
-*   put something to show position of music?
 
 *   look into running 2 instances of meteor in docker?
 
@@ -90,6 +101,16 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   put something to show position of music?
+
+*   fix points on mobile (can sim?)
+
+    So the issue seems to be negative values in `gl_PointSize` so I
+    added clamping. That fixed a few. Unfortunately users really
+    need to set size based on resolution.
+
+*   fix background on mobile (Can sim?)
 
 *   fix share icon when small
 
