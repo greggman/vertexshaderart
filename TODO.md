@@ -6,25 +6,6 @@
 
 *   add random mode
 
-*   add private/public/unlisted
-
-    should I just make "private" = "unlisted"?
-
-    **pros:** easier UX
-
-    **cons:** devs might feel more scared?
-
-    You could argue unlisted *should* be fine but maybe
-    devs would be less likely to work on something listed
-    as "unlisted" rather than *private*.
-
-    It's not like it's hard to implement both, just tedious.
-    For example right now there's the eye icon you can just
-    click to toggle. I guess it would have to change to
-    click and it's a popup with the 3 options.
-
-    Not a big deal
-
 *   add panes
 
     *   allow comments for each revision
@@ -101,6 +82,27 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   add private/public/unlisted
+
+    should I just make "private" = "unlisted"?
+
+    **pros:** easier UX
+
+    **cons:** devs might feel more scared?
+
+    You could argue unlisted *should* be fine but maybe
+    devs would be less likely to work on something listed
+    as "unlisted" rather than *private*.
+
+    It's not like it's hard to implement both, just tedious.
+    For example right now there's the eye icon you can just
+    click to toggle. I guess it would have to change to
+    click and it's a popup with the 3 options.
+
+    Not a big deal
+
+    Hope I didn't break anything
 
 *   put something to show position of music?
 
