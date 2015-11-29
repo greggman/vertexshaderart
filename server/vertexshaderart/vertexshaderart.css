@@ -51,6 +51,7 @@
 }
 .dropdowntrigger:after {
     content: " \25BC";
+    color: #444;
 }
 
 .share {
