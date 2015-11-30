@@ -18421,9 +18421,17 @@ define('src/js/main',[
     show: !isMobile,
     inIframe: window.self !== window.top,
     running: true, // true vs.stop has not been called (this is inside the website)
-    trackNdx: 0,
+    trackNdx: 0,   // next track to play
+    currentTrackNdx: 0,  // track currently playing
     playlist: [],
+    // if true music will repeat whatever playlist is currently running
+    // instead of replacing it with the one from settings
     lockMusic: false,
+    // set to false to just once, not interrupt music
+    // This is used because then the route changes like from "/new/" to "/art/id"
+    // meteor will re-render the scene with the new route.
+    // but for us it's not really a new route.
+    interruptMusic: true,
   };
   s.screenshotCanvas.width = 600;
   s.screenshotCanvas.height = 336;
@@ -18932,7 +18940,6 @@ define('src/js/main',[
       if (!s.sc || shittyBrowser || isMobile || q.local) {
         s.sc = new function() {
           function noop() {
-            console.log("noop");
           };
           this.initialize = noop;
           this.get = function(url, options, callback) {
@@ -19170,7 +19177,8 @@ define('src/js/main',[
     }
 
     function setSoundUrl(url, byUser) {
-      if (!byUser && s.lockMusic) {
+      if (!byUser && (s.lockMusic || s.interruptMusic === false)) {
+        s.interruptMusic = true;
         var track = s.playlist[s.currentTrackNdx];
         if (track) {
           setSoundLink(track);
@@ -19591,6 +19599,13 @@ define('src/js/main',[
       }
     }
 
+    function setOptions(options) {
+      options = options || {};
+      if (options.interruptMusic === false) {
+        s.interruptMusic = false;
+      }
+    }
+
     function updateSoundTime() {
       var pixels = 0;
       var duration = s.streamSource.getDuration();
@@ -19867,7 +19882,7 @@ define('src/js/main',[
     this.stop = function() {
       s.running = false;
       stopRender();
-      if (!s.lockMusic && s.streamSource.isPlaying()) {
+      if (s.interruptMusic !== false && !s.lockMusic && s.streamSource.isPlaying()) {
         s.streamSource.stop();
       }
       s.programManager.clear();
@@ -19879,6 +19894,7 @@ define('src/js/main',[
     }
 
     this.takeScreenshot = takeScreenshot;
+    this.setOptions = setOptions;
     this.setSettings = setSettings;
     this.getSettings = function() {
       return JSON.parse(JSON.stringify(settings));
@@ -19960,6 +19976,11 @@ define('src/js/main',[
     return vs.isSaveable();
   }
 
+  function setOptions(options) {
+    init();
+    vs.setOptions(options);
+  }
+
   var missingSettings = {
     num: 256,
     mode: "POINTS",
@@ -19988,6 +20009,7 @@ define('src/js/main',[
     isSaveable: isSaveable,
     getSettings: getSettings,
     setSettings: setSettings,
+    setOptions: setOptions,
     takeScreenshot: takeScreenshot,
     missingSettings: missingSettings,
     markAsSaved: markAsSaved,
