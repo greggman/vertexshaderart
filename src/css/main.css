@@ -387,6 +387,42 @@ input[type="color"] {
     }
 }
 
+@media (max-width : 840px) {
+    #ui #numRange {
+        display: none;
+    }
+}
+
+@media (max-width : 690px) {
+    #ui #help {
+        display: none;
+    }
+}
+
+@media (max-width : 650px) {
+    #ui #gallery {
+        display: none;
+    }
+}
+
+@media (max-width : 600px) {
+    #ui #time, #ui #stop {
+        display: none;
+    }
+}
+
+@media (max-width : 555px) {
+    #ui #new {
+        display: none;
+    }
+}
+
+@media (max-width : 540px) {
+    #ui #sound {
+        width: 9em;
+    }
+}
+
 @media (max-width : 500px) {
    #toolbar, #editorWrap, #bottom {
        display: none;
