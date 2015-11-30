@@ -823,6 +823,10 @@ define([
 
     function setSoundUrl(url, byUser) {
       if (!byUser && s.lockMusic) {
+        var track = s.playlist[s.currentTrackNdx];
+        if (track) {
+          setSoundLink(track);
+        }
         return;
       }
       s.setSoundUrlByUser = byUser;
