@@ -394,6 +394,9 @@ input[type="color"] {
 }
 
 @media (max-width : 690px) {
+    #uicontainer {
+      padding: 10px;
+    }
     #ui #help {
         display: none;
     }
