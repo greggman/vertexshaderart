@@ -103,6 +103,7 @@ canvas {
   cursor: pointer;
 }
 
+
 button {
     cursor: pointer;
 }
@@ -360,7 +361,7 @@ input[type="color"] {
    font-size: xx-small;
 }
 
-@media (max-width : 1024px) {
+@media (max-width : 1060px) {
 
     #toolbar>div,
     #toolbar>button,
@@ -393,7 +394,7 @@ input[type="color"] {
     }
 }
 
-@media (max-width : 690px) {
+@media (max-width : 716px) {
     #uicontainer {
       padding: 10px;
     }
