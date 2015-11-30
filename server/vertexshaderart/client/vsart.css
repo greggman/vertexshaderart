@@ -802,7 +802,7 @@ input[type="color"] {
 .iframe #vsa>button {
    font-size: xx-small;
 }
-@media (max-width : 1024px) {
+@media (max-width : 1060px) {
     #toolbar>div,
     #toolbar>button,
     #toolbar>a,
@@ -830,7 +830,7 @@ input[type="color"] {
         display: none;
     }
 }
-@media (max-width : 690px) {
+@media (max-width : 716px) {
     #uicontainer {
       padding: 10px;
     }

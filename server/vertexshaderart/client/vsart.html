@@ -33,6 +33,7 @@
           <input type="color" id="background" value="#4488CC" />
           <input type="text" id="sound" value="sound" />
           <button class="play"></button>
+          <button class="icon playlock tooltip-bottom" data-tooltip="lock music"><img src="/static/resources/images/unlock.svg"/></button>
           <a href="/" id="gallery">gallery</a>
           <button id="help">help</button>
         </div>
@@ -78,6 +79,7 @@ UI
            : On HD-DPI display CSS will generate thicker lines
 [sound]    : A soundcloud URL for music/playlist. Blank = off
            : The URL must have permission to embedded/stream
+[lock]     : Prevent music changing when switching art
 [yourname] : Shows your creations (or sign in).
 [name]     : Shows all revisions of current art
 [username] : Shows all user's creations

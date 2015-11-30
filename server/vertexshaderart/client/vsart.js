@@ -18423,6 +18423,7 @@ define('src/js/main',[
     running: true, // true vs.stop has not been called (this is inside the website)
     trackNdx: 0,
     playlist: [],
+    lockMusic: false,
   };
   s.screenshotCanvas.width = 600;
   s.screenshotCanvas.height = 336;
@@ -18681,6 +18682,8 @@ define('src/js/main',[
     var bandLinkElem = $("#bandLink");
     var bandLinkNode = misc.createTextNode(bandLinkElem);
     var soundTimeElem = $("#soundTime");
+    var lockElem = $("#toolbar .playlock");
+    var lockElemImg = $("#toolbar .playlock img");
     var playElems = Array.prototype.slice.call(document.querySelectorAll(".play"));
     var playNodes = playElems.map(function(playElem) {
       var pn = misc.createTextNode(playElem, _playIcon);
@@ -19113,6 +19116,16 @@ define('src/js/main',[
       });
     }
 
+    function setLockState() {
+      lockElem.dataset.tooltip = s.lockMusic ? "unlock music" : "lock music";
+      lockElemImg.src = "/static/resources/images/" + (s.lockMusic ? "lock.svg" : "unlock.svg");
+    }
+
+    on(lockElem, 'click', function() {
+        s.lockMusic = !s.lockMusic;
+        setLockState();
+    });
+
     function showOrHide(elem, show) {
       elem.style.display = show ? "inline-block" : "none";
     }
@@ -19157,6 +19170,9 @@ define('src/js/main',[
     }
 
     function setSoundUrl(url, byUser) {
+      if (!byUser && s.lockMusic) {
+        return;
+      }
       s.setSoundUrlByUser = byUser;
       if (!url) {
         s.streamSource.stop();
@@ -19550,6 +19566,7 @@ define('src/js/main',[
       s.cm.doc.setValue(settings.shader);
       updateStop();
       setPlayState();
+      setLockState();
 
       // not needed because s.cm.doc.setValue will trigger change event
       //tryNewProgram(settings.shader);
@@ -19846,7 +19863,7 @@ define('src/js/main',[
     this.stop = function() {
       s.running = false;
       stopRender();
-      if (s.streamSource.isPlaying()) {
+      if (!s.lockMusic && s.streamSource.isPlaying()) {
         s.streamSource.stop();
       }
       s.programManager.clear();
