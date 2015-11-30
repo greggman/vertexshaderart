@@ -539,9 +539,6 @@ if (Meteor.isClient) {
     "click #user.nouser": function() {
       Session.set(S_CURRENTLY_LOGGING_IN, true);
     },
-    "click #user.currentuser": function() {
-      window.location.href = "/user/" + Meteor.user().username;
-    },
   });
 
   function getCaption() {

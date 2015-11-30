@@ -276,9 +276,7 @@
 
 <template name="userinfosignin">
       {{#if currentUser}}
-      <div id="user" class="currentuser">
-          [{{currentUser.username}}]
-      </div>
+            <a id="user" class="currentuser" href="/user/{{currentUser.username}}">[{{currentUser.username}}]</a>
       {{else}}
         <div id="user" class="nouser">
             sign in
