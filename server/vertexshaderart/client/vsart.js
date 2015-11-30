@@ -469,7 +469,8 @@ define("node_modules/almond/almond.js", function(){});
   // Right now Safari doesn't expose AudioContext (it's still webkitAudioContext)
   // so my hope is whenever they get around to actually supporting the 3+ year old
   // standard that things will actually work.
-  var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
+  //var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
+  var shittyBrowser = /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -490,6 +491,7 @@ define("node_modules/almond/almond.js", function(){});
   }
 
   function StreamedAudioSource(options) {
+    console.log("using streaming audio");
     var emit = addEventEmitter(this);
     var self = this;
     var context = options.context;
@@ -515,8 +517,12 @@ define("node_modules/almond/almond.js", function(){});
         emit('newSource', source);
       }
     }
+    var handleEnded = function handleEnded() {
+      emit('ended');
+    };
     audio.addEventListener('error', handleAudioError);
     audio.addEventListener('canplay', handleCanplay);
+    audio.addEventListener('ended', handleEnded);
 
     function showEvent(e) {
       console.log("got event:", e.type);
@@ -603,6 +609,7 @@ define("node_modules/almond/almond.js", function(){});
   }
 
   function NonStreamedAudioSource(options) {
+    console.log("using NON-streaming audio");
     var emit = addEventEmitter(this);
     var self = this;
     var context = options.context;
@@ -613,11 +620,26 @@ define("node_modules/almond/almond.js", function(){});
     var playing = false;
     var startTime = Date.now();
     var stopTime = Date.now();
+    var dataBuffer;
+    var started;
     // shitty browsers (eg, Safari) can't stream into the WebAudio API
 
+    function createBufferSource() {
+      source = context.createBufferSource();
+      source.buffer = dataBuffer;
+      source.loop = loop;
+      started = false;
+    }
+
     function play() {
-      if (source) {
+      if (dataBuffer) {
+        if (started) {
+          createBufferSource();
+          emit('newSource', source);
+        }
+        started = true;
         source.start(0);
+        source.onended = handleEnded;
         startTime = Date.now();
         playing = true;
       }
@@ -625,6 +647,7 @@ define("node_modules/almond/almond.js", function(){});
 
     function stop() {
       if (source && playing) {
+        source.onended = undefined;
         source.stop(0);
         stopTime = Date.now();
       }
@@ -648,6 +671,10 @@ define("node_modules/almond/almond.js", function(){});
       }
     }
 
+    function handleEnded() {
+      emit('ended');
+    };
+
     function setSource(src, lofiSrc) {
       if (source) {
         stop();
@@ -665,9 +692,8 @@ define("node_modules/almond/almond.js", function(){});
       });
       req.addEventListener('load', function() {
         context.decodeAudioData(req.response, function (decodedBuffer) {
-          source = context.createBufferSource();
-          source.buffer = decodedBuffer;
-          source.loop = loop;
+          dataBuffer = decodedBuffer;
+          createBufferSource();
           if (autoPlay) {
             startPlaying(play, emit);
           }
@@ -18395,6 +18421,8 @@ define('src/js/main',[
     show: !isMobile,
     inIframe: window.self !== window.top,
     running: true, // true vs.stop has not been called (this is inside the website)
+    trackNdx: 0,
+    playlist: [],
   };
   s.screenshotCanvas.width = 600;
   s.screenshotCanvas.height = 336;
@@ -18935,7 +18963,6 @@ define('src/js/main',[
 
       s.streamSource = audioStreamSource.create({
         context: s.context,
-        loop: true,
         autoPlay: true,
         crossOrigin: "anonymous",
       });
@@ -18955,7 +18982,11 @@ define('src/js/main',[
       e = e || "music error";
       console.error(e);
       setPlayState();
-      setSoundSuccessState(false, "Error streaming music: " + e.toString());
+      var tracks = s.playlist.splice(s.currentTrackNdx, 1);
+      s.trackNdx = s.currentTrackNdx;
+      var msg = tracks ? tracks[0].title : "";
+      setSoundSuccessState(false, "Error streaming music: " + msg + " : " + e.toString());
+      playNextTrack();
     });
     s.streamSource.on('newSource', function(source) {
       if (!s.running) {
@@ -18965,6 +18996,9 @@ define('src/js/main',[
       source.connect(s.analyser);
       setPlayState();
       setSoundSuccessState(true);
+    });
+    s.streamSource.on('ended', function() {
+      playNextTrack();
     });
 
     // Replace the canvas in the DOM with ours
@@ -19105,7 +19139,25 @@ define('src/js/main',[
     }
     setSoundLink();
 
-    function setSoundUrl(url) {
+    function isStreamable(track) {
+      return track.streamable && track.stream_url;
+    }
+
+    function playNextTrack() {
+      if (!s.playlist.length) {
+        return;
+      }
+
+      s.currentTrackNdx = s.trackNdx % s.playlist.length;
+      s.trackNdx = (s.trackNdx + 1) % s.playlist.length;
+      var track = s.playlist[s.currentTrackNdx];
+      var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
+      setSoundSource(src);
+      setSoundLink(track);
+    }
+
+    function setSoundUrl(url, byUser) {
+      s.setSoundUrlByUser = byUser;
       if (!url) {
         s.streamSource.stop();
         setPlayState();
@@ -19118,37 +19170,27 @@ define('src/js/main',[
           setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
           return;
         }
-        if (result.streamable && result.stream_url) {
-          var src = result.stream_url + '?client_id=' + g.soundCloudClientId;
-          setSoundSource(src);
-          setSoundLink(result);
-        } else {
-          console.error("not streamable:", url);
+        var tracks = result.kind === "playlist" ? result.tracks : [result];
+        s.trackNdx = 0;
+        s.playlist = [];
+        if (Array.isArray(tracks)) {
+          s.playlist = tracks.filter(isStreamable);
+        }
+
+        if (!s.playlist.length) {
+          console.error("no streamable tracks");
           setSoundSuccessState(false, "not streamable according to soundcloud");
+        } else {
+          playNextTrack();
         }
       });
-//      s.sc.get("/resolve", { url: url })
-//      .then(function(result) {
-//        if (result.streamable && result.stream_url) {
-//          var src = result.stream_url + '?client_id=' + g.soundCloudClientId;
-//          setSoundSource(src);
-//          setSoundLink(result);
-//        } else {
-//          console.error("not streamable:", url);
-//          setSoundSuccessState(false, "not streamable according to soundcloud");
-//        }
-//      })
-//      .catch(function(e) {
-//        console.error("bad url:", url, e);
-//        setSoundSuccessState(false, "not a valid soundcloud url?");
-//      });
     }
 
     on(soundElem, 'change', function(e) {
       var url = e.target.value.trim();
       if (url != settings.sound) {
         settings.sound = url;
-        setSoundUrl(url);
+        setSoundUrl(url, true);
       }
     });
 
