@@ -1,5 +1,12 @@
 ﻿# To Do
 
+*   See if we can not restart music on URL change
+
+    someitmes meteor re-renders the template. For example after saving
+    new art or a new route. Maybe I can wrap Router.go with some
+    flags in vsart to say "don't stop the music" on destruction
+    and "don't start new music if URL is same"
+
 *   check music response and playback on Android
 
 *   check slider on iPad
