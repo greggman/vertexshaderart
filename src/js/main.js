@@ -73,6 +73,8 @@ define([
     show: !isMobile,
     inIframe: window.self !== window.top,
     running: true, // true vs.stop has not been called (this is inside the website)
+    trackNdx: 0,
+    playlist: [],
   };
   s.screenshotCanvas.width = 600;
   s.screenshotCanvas.height = 336;
@@ -613,7 +615,6 @@ define([
 
       s.streamSource = audioStreamSource.create({
         context: s.context,
-        loop: true,
         autoPlay: true,
         crossOrigin: "anonymous",
       });
@@ -633,7 +634,11 @@ define([
       e = e || "music error";
       console.error(e);
       setPlayState();
-      setSoundSuccessState(false, "Error streaming music: " + e.toString());
+      var tracks = s.playlist.splice(s.currentTrackNdx, 1);
+      s.trackNdx = s.currentTrackNdx;
+      var msg = tracks ? tracks[0].title : "";
+      setSoundSuccessState(false, "Error streaming music: " + msg + " : " + e.toString());
+      playNextTrack();
     });
     s.streamSource.on('newSource', function(source) {
       if (!s.running) {
@@ -643,6 +648,9 @@ define([
       source.connect(s.analyser);
       setPlayState();
       setSoundSuccessState(true);
+    });
+    s.streamSource.on('ended', function() {
+      playNextTrack();
     });
 
     // Replace the canvas in the DOM with ours
@@ -783,7 +791,25 @@ define([
     }
     setSoundLink();
 
-    function setSoundUrl(url) {
+    function isStreamable(track) {
+      return track.streamable && track.stream_url;
+    }
+
+    function playNextTrack() {
+      if (!s.playlist.length) {
+        return;
+      }
+
+      s.currentTrackNdx = s.trackNdx % s.playlist.length;
+      s.trackNdx = (s.trackNdx + 1) % s.playlist.length;
+      var track = s.playlist[s.currentTrackNdx];
+      var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
+      setSoundSource(src);
+      setSoundLink(track);
+    }
+
+    function setSoundUrl(url, byUser) {
+      s.setSoundUrlByUser = byUser;
       if (!url) {
         s.streamSource.stop();
         setPlayState();
@@ -796,37 +822,27 @@ define([
           setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
           return;
         }
-        if (result.streamable && result.stream_url) {
-          var src = result.stream_url + '?client_id=' + g.soundCloudClientId;
-          setSoundSource(src);
-          setSoundLink(result);
-        } else {
-          console.error("not streamable:", url);
+        var tracks = result.kind === "playlist" ? result.tracks : [result];
+        s.trackNdx = 0;
+        s.playlist = [];
+        if (Array.isArray(tracks)) {
+          s.playlist = tracks.filter(isStreamable);
+        }
+
+        if (!s.playlist.length) {
+          console.error("no streamable tracks");
           setSoundSuccessState(false, "not streamable according to soundcloud");
+        } else {
+          playNextTrack();
         }
       });
-//      s.sc.get("/resolve", { url: url })
-//      .then(function(result) {
-//        if (result.streamable && result.stream_url) {
-//          var src = result.stream_url + '?client_id=' + g.soundCloudClientId;
-//          setSoundSource(src);
-//          setSoundLink(result);
-//        } else {
-//          console.error("not streamable:", url);
-//          setSoundSuccessState(false, "not streamable according to soundcloud");
-//        }
-//      })
-//      .catch(function(e) {
-//        console.error("bad url:", url, e);
-//        setSoundSuccessState(false, "not a valid soundcloud url?");
-//      });
     }
 
     on(soundElem, 'change', function(e) {
       var url = e.target.value.trim();
       if (url != settings.sound) {
         settings.sound = url;
-        setSoundUrl(url);
+        setSoundUrl(url, true);
       }
     });
 

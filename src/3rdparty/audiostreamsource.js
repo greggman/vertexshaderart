@@ -16,7 +16,8 @@
   // Right now Safari doesn't expose AudioContext (it's still webkitAudioContext)
   // so my hope is whenever they get around to actually supporting the 3+ year old
   // standard that things will actually work.
-  var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
+  //var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
+  var shittyBrowser = /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -37,6 +38,7 @@
   }
 
   function StreamedAudioSource(options) {
+    console.log("using streaming audio");
     var emit = addEventEmitter(this);
     var self = this;
     var context = options.context;
@@ -62,8 +64,12 @@
         emit('newSource', source);
       }
     }
+    var handleEnded = function handleEnded() {
+      emit('ended');
+    };
     audio.addEventListener('error', handleAudioError);
     audio.addEventListener('canplay', handleCanplay);
+    audio.addEventListener('ended', handleEnded);
 
     function showEvent(e) {
       console.log("got event:", e.type);
@@ -150,6 +156,7 @@
   }
 
   function NonStreamedAudioSource(options) {
+    console.log("using NON-streaming audio");
     var emit = addEventEmitter(this);
     var self = this;
     var context = options.context;
@@ -160,11 +167,26 @@
     var playing = false;
     var startTime = Date.now();
     var stopTime = Date.now();
+    var dataBuffer;
+    var started;
     // shitty browsers (eg, Safari) can't stream into the WebAudio API
 
+    function createBufferSource() {
+      source = context.createBufferSource();
+      source.buffer = dataBuffer;
+      source.loop = loop;
+      started = false;
+    }
+
     function play() {
-      if (source) {
+      if (dataBuffer) {
+        if (started) {
+          createBufferSource();
+          emit('newSource', source);
+        }
+        started = true;
         source.start(0);
+        source.onended = handleEnded;
         startTime = Date.now();
         playing = true;
       }
@@ -172,6 +194,7 @@
 
     function stop() {
       if (source && playing) {
+        source.onended = undefined;
         source.stop(0);
         stopTime = Date.now();
       }
@@ -195,6 +218,10 @@
       }
     }
 
+    function handleEnded() {
+      emit('ended');
+    };
+
     function setSource(src, lofiSrc) {
       if (source) {
         stop();
@@ -212,9 +239,8 @@
       });
       req.addEventListener('load', function() {
         context.decodeAudioData(req.response, function (decodedBuffer) {
-          source = context.createBufferSource();
-          source.buffer = decodedBuffer;
-          source.loop = loop;
+          dataBuffer = decodedBuffer;
+          createBufferSource();
           if (autoPlay) {
             startPlaying(play, emit);
           }
