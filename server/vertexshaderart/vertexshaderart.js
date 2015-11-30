@@ -844,6 +844,13 @@ if (Meteor.isClient) {
     });
   }
 
+  function goWithoutInterruptingMusic(url) {
+    window.vsart.setOptions({
+      interruptMusic: false,
+    });
+    Router.go(url);
+  }
+
   Template.artpage.onRendered(function() {
     SetArt(this.data);
   });
@@ -933,7 +940,7 @@ if (Meteor.isClient) {
           return;
         }
         var url = "/art/" + result;
-        Router.go(url);
+        goWithoutInterruptingMusic(url)
       });
     },
     "click #updateit": function() {
@@ -957,7 +964,7 @@ if (Meteor.isClient) {
         // Were we editing a revisions?
         if (route.params._revisionId) {
           var url = "/art/" + origId + "/revision/" + result;
-          Router.go(url);
+          goWithoutInterruptingMusic(url);
         }
       });
     },
