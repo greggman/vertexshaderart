@@ -1,5 +1,9 @@
 ﻿# To Do
 
+*   check music response and playback on Android
+
+*   check slider on iPad
+
 *   add mic support (Can I do line-in?)
 
 *   add playlist support
