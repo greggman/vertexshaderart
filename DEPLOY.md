@@ -221,6 +221,20 @@ and apply for one.
 *   On the Settings tab, enable "Allow this application to be used to Sign in with Twitter" and click "Update settings".
 *   Switch to the "Keys and Access Tokens" tab.
 
+##### Facebook
+
+*   Visit https://developers.facebook.com/apps
+*   Click "Add a New App".
+*   Select "Website" and type a name for your app.
+*   Click "Create New Facebook App ID".
+*   Select a category in the dropdown and click "Create App ID".
+*   Under "Tell us about your website", set Site URL to: http://<ipaddressofdroplet-or-domain/ and click "Next".
+*   Click "Skip to Developer Dashboard".
+*   Go to the "Settings" tab and add an email address under "Contact Email". Click "Save Changes".
+*   Go to the "Status & Review" tab and select Yes for "Do you want to make this app and all its live features available to the general public?". Click "Confirm".
+*   Go back to the Dashboard tab.
+*   Get App Id and App Secret
+
 ##### Live vs Local
 
 If I understand correctly the callback for each URL needs to be accessable from the browser
