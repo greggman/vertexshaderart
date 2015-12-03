@@ -184,12 +184,34 @@ These are set in `server/deploy/settings-live.json` and `server/deploy/settings-
 
 **IMPORTANT!! DO NOT CHECK THESE CHANGES INTO GIT!!!**
 
-For me I copied the entire folder, `server/deploy`, to some other folder outside of my workarea
-and I run them from over there. That way I can not accidentally check in my
-secrets into git.
-
 To get a key and and secret for each service you need to login to each service
-and apply for one.
+and apply for one then fill out the `settings-live.json` file. Example
+
+    "accounts": {
+      "github": {
+        "clientId": "xxxxxxxxxxxxxxxxxxxx",
+        "secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "google": {
+        "clientId": "xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+        "secret": "xxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "soundcloud": {
+        "clientId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "twitter": {
+        "consumerKey": "xxxxxxxxxxxxxxxxxxxxxxxxx",
+        "secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "facebook": {
+        "appId": "xxxxxxxxxxxxxxx",
+        "secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+
+**NOTE** that the keys are different for each service. For example facebook uses `appId` where as twitter
+uses `consumerKey` etc..
 
 ##### Github
 

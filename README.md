@@ -125,22 +125,13 @@ The site is split into 2 parts.
         cd server/vertexshaderart
         cp settings.json settings-dev.json
 
-    Then from the `server/vertershaderart` folder run `start.
+    Then from the `server/vertershaderart` folder run `start`.
 
         ./start
 
     This will launch meteor. Once it's running you can open a browser to
     [`http://localhost:3000`](http://localhost:3000) and you should see effectively
-    the same site as http://www.vertexshaderart.com
-
-    **Note:** The site run this way has the *page size*, the number of thumbnails to show per page,
-    set to 3. This is so it's easy to test the pagination code without needing
-    to add hundreds of entries. You can change that in `server/vertexshaderart/settings-dev.json`
-
-    **NOTE: DO NOT COMMIT `settings-dev.json` TO GIT**
-
-    You can use that too add your ids and password/secrets for google/twitter/github account
-    testing. See [DEPLOY.md](deploy.md).
+    the same site as http://www.vertexshaderart.com though you'll have no data or users.
 
 ### Updating the visualizer into the meteor website.
 

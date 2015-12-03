@@ -1,5 +1,7 @@
 ﻿# To Do
 
+*   fix time on docker host
+
 *   check music response and playback on Android
 
 *   check slider on iPad
