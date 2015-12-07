@@ -578,7 +578,15 @@
          {{/each}}
 
          <div class="comment">
-           <div class="avatar"><img src="{{currentUserAvatar}}" /></div>
+           {{#if currentUser}}
+             <div class="avatar">
+               <img src="{{currentUserAvatar}}" />
+             </div>
+           {{else}}
+             <div>
+
+             </div>
+           {{/if}}
            <div class="content">
              <div class="commentdata">
                {{#if currentUser}}
