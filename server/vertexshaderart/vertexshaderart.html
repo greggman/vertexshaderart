@@ -276,12 +276,16 @@
 
 <template name="userinfosignin">
       {{#if currentUser}}
-            <a id="user" class="currentuser" href="/user/{{currentUser.username}}">[{{currentUser.username}}]</a>
+            <a class="user currentuser" href="/user/{{currentUser.username}}">[{{currentUser.username}}]</a>
       {{else}}
-        <div id="user" class="nouser">
+        {{> signin}}
+      {{/if}}
+</template>
+
+<template name="signin">
+        <div class="user nouser">
             sign in
         </div>
-      {{/if}}
 </template>
 
 <template name="userinfo">
@@ -358,6 +362,12 @@
          <h2>Profile:</h2>
          <div class="profile">
              <div class="infoline">
+                 <div class="label"></div>
+                 <div class="info avatar">
+                     <img src="{{avatar}}" />
+                 </div>
+             </div>
+             <div class="infoline">
                  <div class="label">username:</div>
                  <div class="info">
                      <input class="usernameedit" type="text" value="{{username}}" style="display: none;" />
@@ -392,6 +402,24 @@
 
   {{> vslogin}}
 
+</template>
+
+<template name="markedfield">
+  <div class="markedfield">
+    {{#if userIsCurrentUser}}
+      <div class="markededitwrap" style="display: none;">
+          <textarea class="markededit textarea" value="{{text}}"></textarea>
+          <button class="outlinedbutton submit">done</button>
+      </div>
+      {{#if text}}
+        <div class="markeddisp">{{{textprocessed}}}</div>
+      {{else}}
+        <div class="markeddisp editable">..click.to.edit..(markdown)</div>
+      {{/if}}
+    {{else}}
+      <div class="markeddisp">{{{textprocessed}}}</div>
+    {{/if}}
+  </div>
 </template>
 
 <template name="admin">
@@ -445,13 +473,19 @@
                  <div class="label">
                      author:
                  </div>
-                 <div class="data" id="author">
+                 <div class="data author">
                     {{#if currentUser}}
                        {{currentUser.username}}
                     {{else}}
                        -anon-
                     {{/if}}
                  </div>
+             </div>
+             <div class="saveline">
+                 <div class="label">
+                     notes:
+                 </div>
+                 <textarea class="data notes textarea" value="{{notes}}"></textarea>
              </div>
              {{#if currentUser}}
                <div class="saveline">
@@ -515,5 +549,68 @@
 <template name="loading">
    <div class="loading">
    </div>
+</template>
+
+<template name="meta">
+   <div class="meta">
+     <div class="revisionnotes">
+       <div class="title">
+         revisions: <button class="outlinedbutton">prev</button> <button class="outlinedbutton">next</button>
+       </div>
+       <div class="title">
+         notes:
+  <!-- reusing comment template so less css -->
+  <div class="comment">
+    <div class="avatar"><img src="{{avatar}}" /></div>
+    <div class="content">
+      {{> markedfield settings=settings}}
+    </div>
+  </div>
+       </div>
+     </div>
+     <div class="comments">
+       <div class="title">
+         comments:
+       </div>
+       <div>
+         {{#each comments}}
+           {{> comment}}
+         {{/each}}
+
+         <div class="comment">
+           <div class="avatar"><img src="{{currentUserAvatar}}" /></div>
+           <div class="content">
+             <div class="commentdata">
+               {{#if currentUser}}
+                  <textarea class="newcomment textarea"></textarea>
+                  <button class="post outlinedbutton submit">post</button>
+               {{else}}
+                  {{> signin}}<div>to comment</div>
+               {{/if}}
+             </div>
+           </div>
+         </div>
+       </div>
+       <div>
+
+       </div>
+     </div>
+   </div>
+</template>
+
+<template name="comment">
+  <div class="comment">
+    <div class="avatar"><img src="{{avatar}}" /></div>
+    <div class="content">
+      <div class="commentmeta">
+        <div class="username">{{username}},</div>
+        <div class="date">{{date}}</div>
+        {{#if commentIsForCurrentUser}}
+        <button class="delete outlinedbutton">x</button>
+        {{/if}}
+      </div>
+      {{> markedfield settings=settings}}
+    </div>
+  </div>
 </template>
 

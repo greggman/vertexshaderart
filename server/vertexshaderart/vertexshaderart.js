@@ -42,6 +42,11 @@ StringLengthLessThan100k = Match.Where(function(v) {
   return v.length < 100 * 1024;
 });
 
+StringIsCommentString = Match.Where(function(v) {
+  check(v, String);
+  return v.length < 20 * 1024;
+});
+
 StringLengthLessThan2k = Match.Where(function(v) {
   check(v, String);
   return v.length < 2 * 1024;
@@ -197,6 +202,24 @@ if (Meteor.isServer) {
       limit: limit,
       sort: {createdAt: -1},
     });
+  });
+
+  Meteor.publish("comments", function(artId, skip, limit) {
+    check(artId, String);
+    var options = {
+      sort: {createdAt: -1},
+    };
+    if (skip) {
+      check(skip, Number);
+      options.skip = skip;
+    }
+    if (limit) {
+      check(limit, NumberLessThan100);
+      options.limit = limit;
+    }
+    return Comments.find({
+      artId: artId,
+    }, options);
   });
 
   var urlRE = /(.*?\:)\/\/(.*)$/;
@@ -535,8 +558,8 @@ if (Meteor.isClient) {
       Meteor.call("likeArt", route.params._id);
     },
   });
-  Template.userinfosignin.events({
-    "click #user.nouser": function() {
+  Template.signin.events({
+    "click .nouser": function() {
       Session.set(S_CURRENTLY_LOGGING_IN, true);
     },
   });
@@ -666,6 +689,16 @@ if (Meteor.isClient) {
         return marked(user.profile.info);
       }
     },
+    avatar: function() {
+      var route = Router.current();
+      var username = route.data().username;
+      var user = Meteor.users.findOne({username: username});
+      var url = "";
+      if (user && user.profile) {
+        url = user.profile.avatarUrl;
+      }
+      return getAvatarUrl(url);
+    },
   });
 
   Template.userprofile.events({
@@ -730,6 +763,175 @@ if (Meteor.isClient) {
        if (Meteor.userId()) {
          Meteor.logout();
        }
+    },
+  });
+
+  Template.markedfield.helpers({
+    userIsCurrentUser: function() {
+      return this.settings.userIsCurrentUser();
+    },
+    textprocessed: function() {
+      return marked(this.settings.getText() || "");
+    },
+    text: function() {
+      return this.settings.getText();
+    },
+  });
+
+  Template.markedfield.events({
+    "blur .markededit": function(e, template) {
+      template.$(".markeddisp").show();
+      template.$(".markededitwrap").hide();
+      this.settings.setText(e.target.value.trim());
+    },
+    "click .markeddisp": function(e, template) {
+      if (this.settings.canEdit()) {
+        e.preventDefault();
+        template.$(".markeddisp").hide();
+        template.$(".markededitwrap").show();
+        template.$(".markededit").focus();
+      }
+    },
+    "keydown .markededit": function(e, template) {
+      if (this.settings.finishOnEnter && e.keyCode === 13 && !e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+        e.preventDefault();
+        this.settings.setText(e.target.value.trim());
+      }
+    },
+  });
+
+  Template.meta.onCreated(function() {
+    var instance = this;
+    instance.autorun(function() {
+      var route = Router.current();
+      instance.subscribe('comments', route.params._id);
+    });
+  });
+
+  Template.meta.events({
+    'click .post': function(e, template) {
+      var route = Router.current();
+      var ta = template.find('.newcomment');
+      var comment = ta.value.trim();
+      if (comment.length > 0) {
+        ta.disabled = true;
+        var data = {
+          artId: route.params._id,
+          comment: comment,
+        };
+        Meteor.call('addComment', data, function() {
+          ta.disabled = false;
+          ta.value = "";
+        });
+      }
+    },
+  });
+
+  function getCurrentUserAvatar() {
+    var avatarUrl = (Meteor.userId() && Meteor.user().profile) ? Meteor.user().profile.avatarUrl : "";
+    return getAvatarUrl(avatarUrl);
+  }
+
+  function getAvatarUrl(url) {
+    return url || "/static/resources/images/missing-avatar.png";
+  }
+
+  Template.meta.helpers({
+    settings: function() {
+      var route = Router.current();
+      var dataContext = this;
+      return {
+        finishOnEnter: false,
+        userIsCurrentUser: function() {
+          var route = Router.current();
+          return Meteor.userId() && route.data() && Meteor.userId() === route.data().owner;
+        },
+        canEdit: function() {
+          var route = Router.current();
+          return Meteor.userId() && route.data() && Meteor.userId() === route.data().owner;
+        },
+        getText: function() {
+          var route = Router.current();
+          return route.data().notes || "";
+        },
+        setText: function(newText) {
+          if (newText.length > 0 && newText !== this.comment) {
+            var route = Router.current();
+            var data = {
+              revisionId: dataContext.revisionId || dataContext._id,
+              notes: newText,
+            };
+            Meteor.call('updateNote', data);
+          }
+        },
+      };
+    },
+    currentUserAvatar: function() {
+      return getCurrentUserAvatar();
+    },
+    avatar: function() {
+      return getAvatarUrl(this.avatarUrl);
+    },
+    comments: function() {
+      var route = Router.current();
+      return Comments.find({artId: route.params._id}, {sort: {createdAt: 1}});
+    },
+  });
+
+  Template.comment.events({
+    "click .delete": function(e, template) {
+      var result = confirm("delete for reals?");
+      if (result) {
+        Meteor.call('deleteComment', template.data._id);
+      }
+    },
+  });
+
+  Template.comment.helpers({
+    settings: function() {
+      var owner   = this.owner;
+      var _id     = this._id;
+      var comment = this.comment;
+      return {
+        finishOnEnter: false,
+        userIsCurrentUser: function() {
+          return Meteor.userId() && owner;
+        },
+        canEdit: function() {
+          return Meteor.userId() && owner;
+        },
+        getText: function() {
+          return comment;
+        },
+        setText: function(newText) {
+          if (newText && newText !== comment) {
+            var data = {
+              _id: _id,
+              comment: newText,
+            };
+            Meteor.call('updateComment', data);
+          }
+        },
+      };
+    },
+    commentIsForCurrentUser: function() {
+      return this.owner === Meteor.userId();
+    },
+    avatar: function() {
+      return getAvatarUrl(this.avatarUrl);
+    },
+    comment: function() {
+      return marked(this.comment || "");
+    },
+    date: function() {
+      var d = this.modifiedAt;
+      if (!d) {
+        return "-";
+      }
+      var day = d.getDate();
+      var month = d.getMonth() + 1; //Months are zero based
+      var year = d.getFullYear();
+      return year + "-" + month + "-" + day;
     },
   });
 
@@ -922,7 +1124,7 @@ if (Meteor.isClient) {
       Dropdowns.hideAll();
       Session.set(S_SAVE_VISIBILITY, e.currentTarget.dataset.option);
     },
-    "click #saveit, click #savenew": function() {
+    "click #saveit, click #savenew": function(e, template) {
       var route = Router.current();
       var origId;
       if (route && route.params) {
@@ -932,6 +1134,7 @@ if (Meteor.isClient) {
       Session.set("saving", false);
       var data = {
         privacy: Session.get(S_SAVE_VISIBILITY) || "public",
+        notes: template.find(".notes").value,
       };
       Meteor.call("addArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
         window.vsart.markAsSaved();
@@ -943,7 +1146,7 @@ if (Meteor.isClient) {
         goWithoutInterruptingMusic(url)
       });
     },
-    "click #updateit": function() {
+    "click #updateit": function(e, template) {
       var route = Router.current();
       var origId;
       if (route && route.params) {
@@ -952,6 +1155,7 @@ if (Meteor.isClient) {
       window.vsart.markAsSaving();
       var data = {
         privacy: Session.get(S_SAVE_VISIBILITY) || "public",
+        notes: template.find(".notes").value,
       };
       Session.set("saving", false);
       Meteor.call("updateArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
@@ -1347,10 +1551,12 @@ function addArt(name, origId, vsData, data) {
   name = name || "unnamed";
   var owner = Meteor.userId();
   var username = owner ? Meteor.user().username : "-anon-";
+  var avatarUrl = owner ? Meteor.user().profile.avatarUrl : "";
   var settings = vsData.settings || {};
   var screenshotDataURL = vsData.screenshot.dataURL || "";
   var screenshotURL = "";
   var hasSound = settings.sound && settings.sound.length > 0;
+  var notes = data.notes || "";
   if (!owner) {
     data.privacy = "public";
   }
@@ -1360,6 +1566,7 @@ function addArt(name, origId, vsData, data) {
     check(origId, String);
   }
   check(JSON.stringify(settings), StringLengthLessThan100k);
+  check(notes, StringIsCommentString);
 
   if (screenshotDataURL) {
     screenshotURL = saveDataURLToFile(screenshotDataURL);
@@ -1372,10 +1579,12 @@ function addArt(name, origId, vsData, data) {
     modifiedAt: date,
     origId: origId,
     name: name,
+    notes: notes,
     rank: date.getTime(),
     private: privacy.private,
     unlisted: privacy.unlisted,
     username: username,
+    avatarUrl: avatarUrl,
     settings: JSON.stringify(settings),
     screenshotURL: screenshotURL,
     hasSound: hasSound,
@@ -1388,9 +1597,11 @@ function addArt(name, origId, vsData, data) {
     origId: origId,
     artId: artId,
     name: name,
+    notes: notes,
     private: privacy.private,
     unlisted: privacy.unlisted,
     username: username,
+    avatarUrl: Meteor.user().profile.avatarUrl,
     settings: JSON.stringify(settings),
     hasSound: hasSound,
     screenshotURL: screenshotURL,
@@ -1422,6 +1633,8 @@ function updateArt(name, origId, vsData, data) {
   var screenshotDataURL = vsData.screenshot.dataURL || "";
   var screenshotURL = "";
   var hasSound = settings.sound && settings.sound.length > 0;
+  var notes = data.notes || "";
+  check(notes, StringIsCommentString);
 
   if (screenshotDataURL) {
     screenshotURL = saveDataURLToFile(screenshotDataURL);
@@ -1435,12 +1648,14 @@ function updateArt(name, origId, vsData, data) {
     artId: art._id,
     prevRevisionId: art.revisionId,
     name: name,
+    notes: notes,
     private: privacy.private,
     unlisted: privacy.unlisted,
     username: username,
     settings: JSON.stringify(settings),
     hasSound: hasSound,
     screenshotURL: screenshotURL,
+    avatarUrl: Meteor.user().profile.avatarUrl,
   });
   if (privacy.listed || art.private || art.unlisted) {
     Art.update({_id: origId},
@@ -1448,6 +1663,7 @@ function updateArt(name, origId, vsData, data) {
         revisionId: revisionId,
         modifiedAt: new Date(),
         name: name,
+        notes: notes,
         private: privacy.private,
         unlisted: privacy.unlisted,
         settings: JSON.stringify(settings),
@@ -1478,6 +1694,38 @@ function validateAndGetPrivacy(privacy) {
 Meteor.methods({
   addArt: addArt,
   updateArt: updateArt,
+  updateNote: function(data) {
+    check(data.revisionId, String);
+    check(data.notes, StringIsCommentString);
+    var userId = Meteor.userId();
+    if (!userId) {
+      throw new Meteor.Error("not-loggedin", "can not update notes if not logged in");
+    }
+    var revision = ArtRevision.findOne({_id: data.revisionId});
+    if (!revision) {
+      throw new Meteor.Error("not-exists", "can not update notes of non-existant revision");
+    }
+    var art = Art.findOne({_id: revision.artId});
+    if (!art) {
+      throw new Meteor.Error("not-exists", "can not update notes of non-existant art (shold never get this error}");
+    }
+    if (revision.owner !== Meteor.userId()) {
+      throw new Meteor.Error("not-owner", "must be onwer to update notes");
+    }
+
+    ArtRevision.update({_id: data.revisionId}, {
+      $set: {
+        notes: data.notes,
+      },
+    });
+    if (art.revisionId == data.revisionId) {
+      Art.update({_id: reversion.artId},
+        {$set: {
+          notes: data.notes,
+        },
+      });
+    }
+  },
   likeArt: function(artId) {
      check(artId, String);
      var userId = Meteor.userId();
@@ -1579,9 +1827,64 @@ Meteor.methods({
     }
     Meteor.users.update({_id: Meteor.userId()}, {
       $set: {
-        profile: { info: info, },
+        "profile.info": info,
       },
     });
+  },
+  addComment: function(data) {
+    var owner = Meteor.userId();
+    if (!owner) {
+      throw new Meteor.Error("not-loggedin", "use must be logged in to comment");
+    }
+    check(data.artId, String);
+    check(data.comment, StringIsCommentString);
+    var arts = Art.find({_id: data.artId}).fetch();
+    if (!arts || arts.length != 1) {
+      throw new Meteor.Error("not-exists", "can not common non-existant art");
+    }
+    var date = new Date();
+    Comments.insert({
+      owner: owner,
+      artId: data.artId,
+      comment: data.comment,
+      createdAt: date,
+      modifiedAt: date,
+      username: Meteor.user().username,
+      avatarUrl: Meteor.user().profile.avatarUrl,
+    });
+  },
+  updateComment: function(data) {
+    var owner = Meteor.userId();
+    if (!owner) {
+      throw new Meteor.Error("not-loggedin", "use must be logged in to comment");
+    }
+    check(data._id, String);
+    check(data.comment, StringIsCommentString);
+    var comment = Comments.findOne({_id: data._id});
+    if (!comment) {
+      throw new Meteor.Error("not-exists", "comment does not exist");
+    }
+    if (comment.owner !== Meteor.userId()) {
+      throw new Meteor.Error("not-authroized", "can not edit someone else's comments");
+    }
+    var date = new Date();
+    Comments.update({_id: data._id}, {
+      $set: {
+        comment: data.comment,
+        modifiedAt: date,
+      },
+    });
+  },
+  deleteComment: function(id) {
+    check(id, String);
+    var comment = Comments.findOne({_id: id});
+    if (!comment) {
+      throw new Meteor.Error("not-exists", "comment does not exist");
+    }
+    if (comment.owner !== Meteor.userId()) {
+      throw new Meteor.Error("not-authroized", "can not delete someone else's comments");
+    }
+    Comments.remove({_id: id});
   },
   //testSSR: function() {
   //  if (Meteor.isServer) {
