@@ -866,6 +866,10 @@ if (Meteor.isClient) {
         },
       };
     },
+    showNotes: function() {
+      // Don't show if anon and no notes
+      return route.data() && route.data().owner && route.data().notes;
+    },
     currentUserAvatar: function() {
       return getCurrentUserAvatar();
     },
@@ -1132,9 +1136,11 @@ if (Meteor.isClient) {
       }
       window.vsart.markAsSaving();
       Session.set("saving", false);
+      var notesElem = template.find(".notes");
+      var notes = notesElem ? notesElem.value : "";
       var data = {
         privacy: Session.get(S_SAVE_VISIBILITY) || "public",
-        notes: template.find(".notes").value,
+        notes: notes,
       };
       Meteor.call("addArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
         window.vsart.markAsSaved();
@@ -1153,9 +1159,11 @@ if (Meteor.isClient) {
         origId = route.params._id;
       }
       window.vsart.markAsSaving();
+      var notesElem = template.find(".notes");
+      var notes = notesElem ? notesElem.value : "";
       var data = {
         privacy: Session.get(S_SAVE_VISIBILITY) || "public",
-        notes: template.find(".notes").value,
+        notes: notes,
       };
       Session.set("saving", false);
       Meteor.call("updateArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
@@ -1174,9 +1182,6 @@ if (Meteor.isClient) {
     },
     "click #cancel": function() {
       Session.set("saving", false);
-    },
-    "click .signin": function() {
-      Session.set(S_CURRENTLY_LOGGING_IN, true);
     },
   });
 

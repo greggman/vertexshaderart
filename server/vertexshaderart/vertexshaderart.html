@@ -283,9 +283,9 @@
 </template>
 
 <template name="signin">
-        <div class="user nouser outlinedbutton">
+        <button class="user nouser outlinedbutton">
             sign in
-        </div>
+        </button>
 </template>
 
 <template name="userinfo">
@@ -481,13 +481,14 @@
                     {{/if}}
                  </div>
              </div>
-             <div class="saveline">
-                 <div class="label">
-                     notes:
-                 </div>
-                 <textarea class="data notes textarea" value="{{notes}}"></textarea>
-             </div>
+
              {{#if currentUser}}
+               <div class="saveline">
+                   <div class="label">
+                       notes:
+                   </div>
+                   <textarea class="data notes textarea" value="{{notes}}"></textarea>
+               </div>
                <div class="saveline">
                    <div class="label">
                        visibility:
@@ -506,7 +507,7 @@
              {{else}}
                <div class="saveline">
                   <div class="label"></div>
-                  <div class="data"><button class="signin button">sign in</button> to set.</div>
+                  <div class="data">{{> signin}} to set.</div>
                </div>
              {{/if}}
          </div>
@@ -553,21 +554,23 @@
 
 <template name="meta">
    <div class="meta">
+       {{#if showNotes}}
      <div class="revisionnotes">
        <div class="title">
          revisions: <button class="outlinedbutton">prev</button> <button class="outlinedbutton">next</button>
        </div>
        <div class="title">
          notes:
-  <!-- reusing comment template so less css -->
-  <div class="comment">
-    <div class="avatar"><img src="{{avatar}}" /></div>
-    <div class="content">
-      {{> markedfield settings=settings}}
-    </div>
-  </div>
+          <!-- reusing comment template so less css -->
+          <div class="comment">
+            <div class="avatar"><img src="{{avatar}}" /></div>
+            <div class="content">
+              {{> markedfield settings=settings}}
+            </div>
+          </div>
        </div>
      </div>
+       {{/if}}
      <div class="comments">
        <div class="title">
          comments:

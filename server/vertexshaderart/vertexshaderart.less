@@ -12,7 +12,6 @@
     font-family: monospace;
     font-size: medium;
 }
-
 .markededit,
 .textarea {
     width: 100%;
@@ -355,7 +354,10 @@ header .buttons {
     align-items: center;
     justify-content: flex-start;
 }
-header .buttons a, header .buttons div, .button {
+header .buttons a,
+header .buttons div,
+.button,
+header .user.nouser.outlinedbutton {
     background-color: rgba(0,0,0,0.7);
     border: 1px solid #444;
     margin: 0.25em;
@@ -371,6 +373,10 @@ header .buttons a, header .buttons div, .button {
 .button {
     font-size: medium;
 }
+header .user.nouser.outlinedbutton {
+    font-size: large;
+    font-weight: bold;
+}
 .padding {
     padding: 2em;
 }
@@ -384,8 +390,6 @@ header .buttons a, header .buttons div, .button {
     display: flex;
     padding: 1em;
     width: 100%;
-}
-.comment .nouser {
 }
 .comment .username {
    display: inline-block;
