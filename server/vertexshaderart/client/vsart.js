@@ -19326,20 +19326,41 @@ define('src/js/main',[
       return Math.min(max, Math.max(min, v));
     }
 
-    var hideElem = $("#hide");
-    var hideNode = misc.createTextNode(hideElem, "hide");
-    function showCode(show) {
-      s.show = show;
-      hideNode.nodeValue = s.show ? "hide" : "show";
-      editorElem.style.display = s.show ? "block" : "none";
-      if (s.cm) {
-        s.cm.refresh();
-      }
-    }
-    on(hideElem, 'click', function() {
-      showCode(!s.show);
+    on($("#ui-off"), 'click', function() {
+        s.show = true;
+        $("#editor").style.display = "none";
+        $("#commentarea").style.display = "none";
     });
-    showCode(s.show);
+    on($("#ui-one"), 'click', function() {
+        s.show = true;
+        $("#editor").style.display = "block";
+        $("#commentarea").style.display = "none";
+        $("#editorWrap").style.flex = "1 0 100%";
+        $("#commentWrap").style.flex = "1 0 0";
+        $("#editorWrap").style.flex = "1 0 100%";
+        $("#commentWrap").style.flex = "1 0 0";
+        s.cm.refresh();
+    });
+    on($("#ui-2h"), 'click', function() {
+        s.show = true;
+        $("#centerSize").style.flexFlow = "column";
+        $("#centerSize").style.webkitFlexFlow = "column";
+        $("#editor").style.display = "block";
+        $("#commentarea").style.display = "block";
+        $("#editorWrap").style.flex = "1 0 50%";
+        $("#commentWrap").style.flex = "1 0 50%";
+        s.cm.refresh();
+    });
+    on($("#ui-2v"), 'click', function() {
+        s.show = true;
+        $("#centerSize").style.flexFlow = "row";
+        $("#centerSize").style.webkitFlexFlow = "row";
+        $("#editor").style.display = "block";
+        $("#commentarea").style.display = "block";
+        $("#editorWrap").style.flex = "1 0 50%";
+        $("#commentWrap").style.flex = "1 0 50%";
+        s.cm.refresh();
+    });
 
     var colorElem = $("#background");
     on(colorElem, 'change', function(e) {

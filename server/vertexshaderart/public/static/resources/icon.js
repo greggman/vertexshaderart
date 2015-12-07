@@ -16,7 +16,7 @@ requirejs([
   var scale = Math.max(c.width / 64, c.height / 64);
 
   var ctx = c.getContext("2d");
-  ctx.fillStyle = "#000";
+  ctx.fillStyle = q.backgroundColor || "#000";
   ctx.fillRect(0, 0, c.width, c.height);
   ctx.translate(c.width / 2, c.height / 2);
   ctx.scale(scale, scale);

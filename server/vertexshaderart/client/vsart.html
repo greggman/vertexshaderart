@@ -10,7 +10,13 @@
           <button class="fullscreen tooltip-bottom" data-tooltip="fullscreen"><img src="/static/resources/images/fullscreen.svg"/></button>
         </div>
         <div id="toolbar">
-          <button id="hide"></button>
+          <button id="uimode">UI</button>
+            <ul class="dropdownmenu">
+              <li><a id="ui-off" href="#"><img src="/static/resources/images/ui-off.svg"/></a></li>
+              <li><a id="ui-one" href="#"><img src="/static/resources/images/ui-one.svg"/></a></li>
+              <li><a id="ui-2v"  href="#"><img src="/static/resources/images/ui-2v.svg"/></a></li>
+              <li><a id="ui-2h"  href="#"><img src="/static/resources/images/ui-2h.svg"/></a></li>
+            </ul>
           <button id="time" class="tooltip-bottom" data-tooltip="reset time">T</button>
           <button id="stop" class="icon tooltip-bottom" data-tooltip="stop render"><img class="stop-icon" src="/static/resources/images/stop.svg" /><img class="go-icon" src="/static/resources/images/go.svg" style="display:none;"/></button>
           <button id="new" class="tooltip-bottom" data-tooltip="new">+</button>
@@ -37,8 +43,19 @@
           <a href="/" id="gallery">gallery</a>
           <button id="help">help</button>
         </div>
-        <div id="editorWrap">
-          <div id="editor"></div>
+        <div id="centerWrap">
+          <div id="centerArea">
+            <div id="centerSize">
+              <div id="editorWrap">
+                <div id="editor"></div>
+              </div>
+              <div id="commentWrap">
+                <div id="commentarea">
+                  {{> meta}}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div id="bottom">
           {{> userinfo}}
@@ -136,7 +153,7 @@ DEPTH_TEST is enabled.
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="HandheldFriendly" content="True">
 <meta name="MobileOptimized" content="320">
-<meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, minimal-ui">
+<meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, minimal-ui, user-scalable=no">
 <meta property="og:title" content="vertexshaderart.com" />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="http://vertexshaderart.com/static/resources/images/vertexshaderart.png" />

@@ -473,6 +473,59 @@ canvas {
   width: 100%;
   height: 100%;
 }
+.dropdownmenu {
+    list-style: none;
+    background-color: rgba(0,0,0,0.9);
+    margin: 0;
+    padding: 0;
+    font-size: medium;
+    width: 10em;
+    border: 1px solid #444;
+    border-radius: 0.5em;
+    position: absolute;
+    left: 0;
+    z-index: 5;
+}
+.dropdownmenu li {
+    width: 100%;
+}
+.dropdownmenu a {
+    padding: 0.25em;
+    display: inline-block;
+    width: 100%;
+    vertical-align: middle;
+    color: white !important;
+    text-decoration: none;
+}
+.dropdownmenu a:hover {
+    background-color: #444;
+}
+.dropdownmenu img {
+    display: inline-block;
+    width: 2em;
+    vertical-align: middle;
+    padding-right: 0.5em;
+}
+.dropdowntrigger {
+    border: 1px solid #444;
+    border-radius: 0.5em;
+    padding: 0.5em;
+    margin-left: 0.25em;
+    font-size: small;
+}
+.dropdowntrigger img {
+    display: inline-block;
+    width: 2em;
+    vertical-align: middle;
+    padding-right: 0.5em;
+}
+.dropdowntrigger:after {
+    content: " \25BC";
+    color: #444;
+}
+#toolbar .dropdownmenu {
+    width: 2em;
+}
 #uicontainer {
   position: absolute;
   left: 0;
@@ -485,7 +538,7 @@ canvas {
 #ui {
   width: 100%;
   height: 100%;
-  text-shadow: rgba( 0, 0, 0, 1 ) 0px 1px 2px;
+  text-shadow: rgba( 0, 0, 0, 1 ) 1px 1px 1px;
   background-color: rgba(0,0,0,0);
   border-radius: 0.5em;
 }
@@ -528,10 +581,10 @@ canvas {
   -webkit-flex-flow: row;
   flex-wrap: wrap;
   -webkit-flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-between;
   align-content: center;
   align-items: center;
-  -webkit-justify-content: center;
+  -webkit-justify-content: space-between;
   -webkit-align-content: center;
   -webkit-align-items: center;
 }
@@ -649,11 +702,57 @@ input,
 #soundcloud>img {
   height: 1.45em;
 }
-#editorWrap {
+#centerWrap {
   width: 100%;
   flex: 1 0 auto;
   position: relative;
   height: 0;
+}
+#centerArea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+#centerSize {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  display: -webkit-flex;
+  flex-flow: row;
+  -webkit-flex-flow: row;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  -webkit-align-content: center;
+  -webkit-align-items: center;
+}
+#commentWrap {
+  flex: 1 0 50%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+#commentarea {
+  background-color: rgba(0,0,0,0);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border: 1px solid rgba(0,0,0,0);
+  margin: 0.25em;
+  padding: 0.5em;
+  border-radius: 0.5em;
+  line-height: 1;
+}
+#editorWrap {
+  flex: 1 0 50%;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 #editor {
   background-color: rgba(0,0,0,0);
@@ -669,7 +768,8 @@ input,
   transition: background 0.25s linear, border-color 0.25s linear;
   line-height: 1;
 }
-#editor:hover {
+#centerSize:hover #editor,
+#centerSize:hover #commentarea {
   border-color: 1px solid #444;
   background-color: rgba(0,0,0,0.7);
 }
@@ -777,7 +877,10 @@ input[type="color"] {
     -webkit-align-content: center;
     -webkit-align-items: center;
 }
-.iframe #toolbar, .iframe #editorWrap, .iframe .share {
+.iframe #toolbar,
+.iframe #editorWrap,
+.iframe #commentWrap,
+.iframe .share {
     display: none;
 }
 .iframe #ui {
@@ -859,7 +962,7 @@ input[type="color"] {
     }
 }
 @media (max-width : 500px) {
-   #toolbar, #editorWrap, #bottom {
+   #toolbar, #editorWrap, #commentWrap, #bottom {
        display: none;
    }
 }
