@@ -15,6 +15,30 @@ function extractDataForRank() {
 };
 //extractDataForRank();
 
+function addAvatarUrls() {
+  Meteor.users.find({}).forEach(function(user) {
+    if (!user.profile) {
+      Meteor.users.update({_id: user._id}, {
+        $set: {
+          profile: {},
+        },
+      });
+    }
+  });
+
+  Meteor.users.find({}).forEach(function(user) {
+    if (!user.profile.avatarUrl) {
+      var url = getAvatarUrl(user);
+      Meteor.users.update({_id: user._id}, {
+        $set: {
+          "profile.avatarUrl": url,
+        },
+      });
+    }
+  });
+}
+addAvatarUrls();
+
 function generateUsername(username) {
   username = username.toLowerCase().trim().replace(" ", "");
   var count = Meteor.users.find({"username": username}).count();
@@ -25,9 +49,59 @@ function generateUsername(username) {
   }
 }
 
+function getEmailOrHash(user) {
+  var emailOrHash;
+  if (user && user.emails) {
+    var emails = _.pluck(user.emails, 'address');
+    emailOrHash = emails[0] || '00000000000000000000000000000000';
+  }  else {
+    emailOrHash = '00000000000000000000000000000000';
+  }
+  return emailOrHash;
+};
+
+function getGravatarUrl(user, defaultUrl) {
+  var options = {
+    default: defaultUrl,
+    size: 200,
+    secure: true,
+  };
+
+  var emailOrHash = getEmailOrHash(user);
+  return Gravatar.imageUrl(emailOrHash, options);
+}
+
+function getAvatarUrl(user) {
+  var service = _.pairs(user.services)[0];
+  var serviceName = service[0];
+  var url;
+  if (serviceName === 'twitter') {
+    url = user.services.twitter.profile_image_url_https.replace('_normal.', '_200x200.');
+  } else if (serviceName === 'facebook') {
+    url = 'https://graph.facebook.com/' + user.services.facebook.id + '/picture?type=large';
+  } else if (serviceName === 'google') {
+    url = user.services.google.picture;
+  } else if (serviceName === 'github') {
+    url = 'https://avatars.githubusercontent.com/' + user.services.github.username + '?s=200';
+  } else if (serviceName === 'instagram') {
+    url = user.services.instagram.profile_picture;
+  } else if (serviceName === 'linkedin') {
+    url = user.services.linkedin.pictureUrl;
+  } else if (serviceName === 'soundcloud') {
+    url = user.services.soundcloud.avatar_url;
+  } else if (serviceName === 'password') {
+    var defaultUrl = Meteor.absoluteUrl() + "static/resources/images/missing-avatar.png";
+    url = getGravatarUrl(user, defaultUrl);
+  }
+  return url;
+}
+
 Accounts.onCreateUser(function (options, user) {
     if (options && options.profile) {
         user.profile = options.profile;
+    }
+    if (!user.profile) {
+      user.profile = {};
     }
 
     var serviceData = {};
@@ -37,17 +111,21 @@ Accounts.onCreateUser(function (options, user) {
         var serviceName = service[0];
         serviceData = service[1] || {};
 
-        if (serviceName == "facebook") {
-            user.emails = [
-                {"address": serviceData.email, "verified": true},
-            ];
-            user.profile = {"first_name": serviceData.first_name, "last_name": serviceData.last_name, };
-        } else if (serviceName == "google") {
-            user.emails = [
-                {"address": serviceData.email, "verified": true},
-            ];
-            user.profile = {"first_name": serviceData.given_name, "last_name": serviceData.family_name, };
+        if (serviceData.email) {
+            if (serviceName == "facebook") {
+                user.emails = [
+                    {"address": serviceData.email, "verified": true},
+                ];
+                user.profile = {"first_name": serviceData.first_name, "last_name": serviceData.last_name, };
+            } else if (serviceName == "google") {
+                user.emails = [
+                    {"address": serviceData.email, "verified": true},
+                ];
+                user.profile = {"first_name": serviceData.given_name, "last_name": serviceData.family_name, };
+            }
         }
+
+        user.profile.avatarUrl = getAvatarUrl(user);
     }
 
     user.username = generateUsername(user.username || serviceData.username || serviceData.first_name || serviceData.given_name || "unnamed");
