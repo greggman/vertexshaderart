@@ -1,57 +1,36 @@
 ﻿/* CSS declarations go here */
-#like, #user, .share {
+#like, .user, .share {
     cursor: pointer;
 }
-
-.dropdownmenu {
-    list-style: none;
-    background-color: rgba(0,0,0,0.7);
-    margin: 0;
-    padding: 0;
-    font-size: medium;
-    width: 10em;
+.outlinedbutton {
     border: 1px solid #444;
-    border-radius: 0.5em;
-    position: absolute;
-    left: 0;
-    z-index: 3;
-}
-.dropdownmenu li {
-    width: 100%;
-}
-.dropdownmenu a {
-    padding: 0.25em;
-    display: inline-block;
-    width: 100%;
-    vertical-align: middle;
-    color: white !important;
-    text-decoration: none;
-}
-.dropdownmenu a:hover {
-    background-color: #444;
-}
-.dropdownmenu img {
-    display: inline-block;
-    width: 2em;
-    vertical-align: middle;
-    padding-right: 0.5em;
-}
-.dropdowntrigger {
-    border: 1px solid #444;
-    border-radius: 0.5em;
+    margin: 0.25em;
     padding: 0.5em;
-    margin-left: 0.25em;
-    font-size: small;
+    border-radius: 0.5em;
+    background-color: rgba(0,0,0,0.7);
+    color: white;
+    font-family: monospace;
+    font-size: medium;
 }
-.dropdowntrigger img {
-    display: inline-block;
-    width: 2em;
-    vertical-align: middle;
-    padding-right: 0.5em;
+
+.markededit,
+.textarea {
+    width: 100%;
+    height: 6em;
+    padding: 0.5em;
+    font-family: monospace;
+    font-size: medium;
+    color: white;
+    background-color: inherit;
+    border-radius: 0.5em !important;
+    border: 1px solid #444;
+    text-shadow: rgba( 0, 0, 0, 1 ) 1px 1px 1px;
 }
-.dropdowntrigger:after {
-    content: " \25BC";
+.markedfield .editable {
     color: #444;
+}
+.markedfield .submit {
+    margin-left: 0;
 }
 
 .share {
@@ -107,11 +86,8 @@ embed, object {
 }
 .infoContainer .infoline {
     display: flex;
-    display: -webkit-flex;
     justify-content: flex-start;
-    -webkit-justify-content: flex-start;
     align-items: flex-start;
-    -webkit-align-items: flex-start;
     width: 100%;
 }
 .infoContainer .label {
@@ -130,6 +106,9 @@ embed, object {
 .infoContainer .info {
     flex: 1 1 auto;
     padding: 1em;
+}
+.profile .avatar {
+    margin-left: 1em;
 }
 .infoContainer input[type=text] {
     margin-top: -1em;
@@ -157,9 +136,7 @@ embed, object {
 .sortcriteria .title {
     font-size: x-large;
     display: flex;
-    display: -webkit-flex;
     justify-content: flex-start;
-    -webkit-justify-content: flex-start;
     margin-bottom: 0.25em;
     width: 10em;
 }
@@ -187,9 +164,7 @@ embed, object {
     height: 500px;
 
     display: flex;
-    display: -webkit-flex;
     flex-flow: column;
-    -webkit-flex-flow: column;
 }
 #loginhelpdialog>div>iframe {
     flex: 1 1 auto;
@@ -244,13 +219,17 @@ embed, object {
 .saveline {
     width: 100%;
     display: flex;
-    display: -webkit-flex;
     justify-content: flex-start;
-    -webkit-justify-content: flex-start;
-    align-items: center;
-    -webkit-align-items: center;
+    align-items: flex-start;
 }
-.saveline #author, .saveline #private {
+.saveline textarea {
+    margin: 0.25em !important;
+    margin-bottom: 0.5em !important;
+}
+.saveline .author {
+    margin: 0.5em;
+}
+.saveline .author, .saveline #private {
     margin-left: 0.75em;
 }
 
@@ -298,11 +277,8 @@ embed, object {
 .galleryinfo {
     line-height: 1em;
     display: flex;
-    display: -webkit-flex;
     justify-content: space-between;
-    -webkit-justify-content: space-between;
     align-items: center;
-    -webkit-align-items: center;
     max-width: 200px;
 }
 .galleryinfo img {
@@ -319,11 +295,8 @@ embed, object {
     left: 0.5em;
     top: 0.5em;
     display: flex;
-    display: -webkit-flex;
     justify-content: flex-start;
-    -webkit-justify-content: flex-start;
     align-items: center;
-    -webkit-align-items: center;
 }
 .artpiece .artstate .private, .artpiece .artstate .revisions, .artstate .hasSound {
     width: 2em;
@@ -370,11 +343,8 @@ header h1 {
 }
 header>div {
     display: flex;
-    display: -webkit-flex;
     align-items: center;
-    -webkit-align-items: center;
     justify-content: space-between;
-    -webkit-justify-content: space-between;
 }
 header .logo a {
     text-decoration: none;
@@ -383,9 +353,7 @@ header .logo a {
 header .buttons {
     display: flex;
     align-items: center;
-    -webkit-align-items: center;
     justify-content: flex-start;
-    -webkit-justify-content: flex-start;
 }
 header .buttons a, header .buttons div, .button {
     background-color: rgba(0,0,0,0.7);
@@ -406,13 +374,76 @@ header .buttons a, header .buttons div, .button {
 .padding {
     padding: 2em;
 }
+
+#commentarea .meta {
+  overflow: scroll;
+  width: 100%;
+  height: 100%;
+}
+.comment {
+    display: flex;
+    padding: 1em;
+    width: 100%;
+}
+.comment .nouser {
+}
+.comment .username {
+   display: inline-block;
+   font-weight: bold;
+}
+.comment .date {
+   display: inline-block;
+}
+.comment .content {
+   width: 100%;
+}
+.avatar img {
+    width: 64px;
+    height: 64px;
+}
+.comment .submit {
+    margin-left: 0;
+}
+.profile .avatar,
+.comment .avatar {
+    flex: 0 0 66px;
+    display: block;
+    border-radius: 0.5em;
+    border: 1px solid black;
+    width: 66px;
+    height: 66px;
+    margin-right: 1em;
+    padding: 0;
+    overflow: hidden;
+}
+.comment .newcomment {
+    width: 100%;
+}
+.comment .commentmeta {
+}
+.comment .commentdata {
+  line-height: 1;
+  overflow-wrap: break-word;
+}
+.comment .commentdata>div {
+  display: inline-block;
+}
+.comment .newcomment {
+  display: block;
+  width: 100%;
+  background-color: inherit;
+  text-shadow: rgba( 0, 0, 0, 1 ) 1px 1px 1px;
+  padding: 0.5em;
+  font-family: monospace;
+  font-size: medium;
+  color: white;
+  min-height: 6em;
+}
+
 .sorting, .sorting .sorttype, .sorting .pagination {
     display: flex;
-    display: -webkit-flex;
     align-items: center;
-    -webkit-align-items: center;
     justify-content: flex-start;
-    -webkit-justify-content: flex-start;
 }
 .sorting a {
     min-width: 3em;
@@ -443,9 +474,7 @@ header .buttons a, header .buttons div, .button {
 }
 .at-input {
     display: flex;
-    display: -webkit-flex;
     align-items: center;
-    -webkit-align-items: center;
 }
 .at-input label {
     padding-right: 0.5em;
@@ -509,7 +538,6 @@ header .buttons a, header .buttons div, .button {
 @media (max-width : 500px) {
     header>div {
         flex-direction: column-reverse;
-        -webkit-flex-direction: column-reverse;
     }
     header h1 {
         font-size: xx-large;
@@ -537,7 +565,6 @@ header .buttons a, header .buttons div, .button {
     .gallery .sortcriteria .title {
         width: 100%;
         justify-content: center;
-        -webkit-justify-content: center;
     }
     .gallery .sortcriteria .title .right {
         margin-left: 2em;
@@ -547,14 +574,11 @@ header .buttons a, header .buttons div, .button {
     }
     .sorting {
         flex-direction: column;
-        -webkit-flex-direction: column;
         justify-content: center;
-        -webkit-justify-content: center;
         padding-bottom: 1em;
     }
     .sorting .sorttype {
         justify-content: space-around;
-        -webkit-justify-content: space-around;
         width: 100%;
     }
     .sorting .button {
