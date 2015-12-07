@@ -1,5 +1,7 @@
 ﻿# To Do
 
+*   fix, save -anon- does go to new URL
+
 *   fix time on docker host
 
 *   make it not re-start music if the same URL.
