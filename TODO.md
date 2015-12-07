@@ -2,13 +2,17 @@
 
 *   fix time on docker host
 
-*   check music response and playback on Android
+*   make it not re-start music if the same URL.
 
 *   check slider on iPad
 
 *   add mic support (Can I do line-in?)
 
 *   add random mode
+
+*   allow user to save with just changed comment if it's their
+    own art. If only the comment has changed save over old
+    revision?
 
 *   add panes
 
