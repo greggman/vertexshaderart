@@ -978,12 +978,12 @@ define([
       return Math.min(max, Math.max(min, v));
     }
 
-    on($("#ui-off"), 'click', function() {
-        s.show = true;
+    var uiModes = {
+      '#ui-off': function() {
         $("#editor").style.display = "none";
         $("#commentarea").style.display = "none";
-    });
-    on($("#ui-one"), 'click', function() {
+      },
+      '#ui-one': function() {
         s.show = true;
         $("#editor").style.display = "block";
         $("#commentarea").style.display = "none";
@@ -992,8 +992,8 @@ define([
         $("#editorWrap").style.flex = "1 0 100%";
         $("#commentWrap").style.flex = "1 0 0";
         s.cm.refresh();
-    });
-    on($("#ui-2h"), 'click', function() {
+      },
+      '#ui-2h': function() {
         s.show = true;
         $("#centerSize").style.flexFlow = "column";
         $("#centerSize").style.webkitFlexFlow = "column";
@@ -1002,8 +1002,8 @@ define([
         $("#editorWrap").style.flex = "1 0 50%";
         $("#commentWrap").style.flex = "1 0 50%";
         s.cm.refresh();
-    });
-    on($("#ui-2v"), 'click', function() {
+      },
+      '#ui-2v': function() {
         s.show = true;
         $("#centerSize").style.flexFlow = "row";
         $("#centerSize").style.webkitFlexFlow = "row";
@@ -1012,6 +1012,19 @@ define([
         $("#editorWrap").style.flex = "1 0 50%";
         $("#commentWrap").style.flex = "1 0 50%";
         s.cm.refresh();
+      },
+    };
+
+    function setUIMode(mode) {
+      mode = mode || '#ui-2v';
+      uiModes[mode]();
+    }
+
+    Object.keys(uiModes).forEach(function(mode) {
+      on($(mode), 'click', function() {
+        s.uiMode = mode;
+        setUIMode(mode);
+      });
     });
 
     var colorElem = $("#background");
@@ -1225,11 +1238,13 @@ define([
           }
           $("#start").style.display = "none";
           $("#screenshot").style.display = "none";
+          setUIMode(s.uiMode);
           realSetSettings(settings, options);
         });
       } else {
         $("#start").style.display = "none";
         $("#screenshot").style.display = "none";
+        setUIMode(s.uiMode);
         realSetSettings(settings, options);
       }
     }
@@ -1552,7 +1567,52 @@ define([
     on(touchTarget, 'touchcancel', recordTouchCancel);
     on(touchTarget, 'touchmove', recordTouchMove);
 
+    function makeUIVisible() {
+      if (s.uiHidden) {
+        s.uiHidden = false;
+        setUIMode(s.uiMode);
+      }
+    }
+
+    function checkHideUI() {
+      var elapsedTime = (Date.now() - g.lastInputTimestamp) * 0.001;
+      if (!g.lastInputTimestamp || elapsedTime > 15) {
+        if (!s.uiHidden) {
+          s.uiHidden = true;
+          setUIMode('#ui-off');
+        }
+      }
+      setHideUITimeout();
+    }
+
+    function clearHideUITimeout() {
+      if (g.hideUITimeoutId) {
+        clearTimeout(g.hideUITimeoutId);
+        g.hideUITimeoutId = undefined;
+      }
+    }
+
+    function setHideUITimeout(seconds) {
+      clearHideUITimeout();
+      // Don't set if user has manually set mode
+      if (!s.uiMode) {
+        g.hideUITimeoutId = setTimeout(checkHideUI, seconds * 1000);
+      }
+    }
+
+    function recordInputAndMakeUIVisible() {
+      g.lastInputTimestamp = Date.now();
+      makeUIVisible();
+    }
+
+    setHideUITimeout(5);
+
+    on(window, 'mousedown', recordInputAndMakeUIVisible);
+    on(window, 'keypress', recordInputAndMakeUIVisible);
+    on(window, 'wheel', recordInputAndMakeUIVisible)
+
     this.stop = function() {
+      clearHideUITimeout();
       s.running = false;
       stopRender();
       if (s.interruptMusic !== false && !s.lockMusic && s.streamSource.isPlaying()) {
