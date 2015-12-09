@@ -273,8 +273,14 @@ function computeHotlist() {
     var dob = Date.parse(art.modifiedAt);
     var age = Math.max(now - dob, 0);
     var hoursOld = age / 1000 / 60 / 60;
-    var agePenalty = Math.max(1, Math.log(hoursOld));
-    var points = 1 + (art.owner !== undefined ? 2 : 0) + art.likes * 1 + art.views * 0 + Math.max(0, ageBonusInHours - hoursOld);
+    // anon ages faster
+    var ageMult = art.owner !== undefined ? 1 : 2;
+    var agePenalty = Math.max(1, Math.log(hoursOld)) * ageMult;
+    var bonusPoints = art.owner !== undefined ? 3 : 1;
+    var viewPoints = art.views * 0;
+    var likePoints = art.likes * 1;
+    var ageBonusPoints = Math.max(0, ageBonusInHours - hoursOld);
+    var points = bonusPoints + likePoints + viewPoints + ageBonusPoints;
     var score = points / agePenalty;
     return {
       ageMs: age,
