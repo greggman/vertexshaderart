@@ -32,21 +32,35 @@ define([], function() {
   "use strict";
 
   function ListenerManager() {
-    var listeners = [];
+    var listeners = {};
+    var nextId = 1;
 
+    // Returns an id for the listener. This is easier IMO than
+    // the normal remove listener which requires the same arguments as addListener
     this.on = function(elem, event, listener, useCapture) {
       var args = Array.prototype.slice.call(arguments, 1);
       elem.addEventListener.apply(elem, args);
-      listeners.push({
+      var id = nextId++;
+      listeners[id] = {
         elem: elem,
         args: args,
-      });
+      };
+      return id;
+    };
+
+    this.remove = function(id) {
+      var listener = listeners[id];
+      if (listener) {
+        delete listener[id];
+        listener.elem.removeEventListener.apply(listener.elem, listener.args);
+      }
     };
 
     this.removeAll = function() {
       var old = listeners;
-      listeners = [];
-      old.forEach(function(listener) {
+      listeners = {};
+      Object.keys(old).forEach(function(id) {
+        var listener = old[id];
         listener.elem.removeEventListener.apply(listener.elem, listener.args);
       });
     };
