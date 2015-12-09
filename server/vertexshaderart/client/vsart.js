@@ -10376,6 +10376,538 @@ define('3rdparty/glsl',['./codemirror/lib/codemirror'], function(CodeMirror) {
 });
 
 
+/*
+ * Copyright 2015, Gregg Tavares.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Gregg Tavares. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*!
+ * Some equations are adapted from Thomas Fuchs' [Scripty2](https://github.com/madrobby/scripty2/blob/master/src/effects/transitions/penner.js).
+ *
+ * Based on Easing Equations (c) 2003 [Robert Penner](http://www.robertpenner.com/), all rights reserved. This work is [subject to terms](http://www.robertpenner.com/easing_terms_of_use.html).
+ */
+
+/*!
+ *  TERMS OF USE - EASING EQUATIONS
+ *  Open source under the BSD License.
+ *  Easing Equations (c) 2003 Robert Penner, all rights reserved.
+ */
+
+
+define('3rdparty/tweeny',[], function() {
+
+  function easeInQuad(pos) {
+    return Math.pow(pos, 2);
+  }
+
+  function easeOutQuad(pos) {
+    return -(Math.pow((pos - 1), 2) - 1);
+  }
+
+  function easeInOutQuad(pos) {
+    if ((pos /= 0.5) < 1) {
+      return 0.5 * Math.pow(pos,2);
+    }
+    return -0.5 * ((pos -= 2) * pos - 2);
+  }
+
+  function easeInCubic(pos) {
+    return Math.pow(pos, 3);
+  }
+
+  function easeOutCubic(pos) {
+    return (Math.pow((pos - 1), 3) + 1);
+  }
+
+  function easeInOutCubic(pos) {
+    if ((pos /= 0.5) < 1) {
+      return 0.5 * Math.pow(pos, 3);
+    }
+    return 0.5 * (Math.pow((pos - 2), 3) + 2);
+  }
+
+  function easeInQuart(pos) {
+    return Math.pow(pos, 4);
+  }
+
+  function easeOutQuart(pos) {
+    return -(Math.pow((pos - 1), 4) - 1);
+  }
+
+  function easeInOutQuart(pos) {
+    if ((pos /= 0.5) < 1) {
+      return 0.5 * Math.pow(pos, 4);
+    }
+    return -0.5 * ((pos -= 2) * Math.pow(pos, 3) - 2);
+  }
+
+  function easeInQuint(pos) {
+    return Math.pow(pos, 5);
+  }
+
+  function easeOutQuint(pos) {
+    return (Math.pow((pos - 1), 5) + 1);
+  }
+
+  function easeInOutQuint(pos) {
+    if ((pos /= 0.5) < 1) {
+      return 0.5 * Math.pow(pos, 5);
+    }
+    return 0.5 * (Math.pow((pos - 2), 5) + 2);
+  }
+
+  function easeInSine(pos) {
+    return -Math.cos(pos * (Math.PI / 2)) + 1;
+  }
+
+  function easeOutSine(pos) {
+    return Math.sin(pos * (Math.PI / 2));
+  }
+
+  function easeInOutSine(pos) {
+    return (-0.5 * (Math.cos(Math.PI * pos) - 1));
+  }
+
+  function easeInExpo(pos) {
+    return (pos === 0) ? 0 : Math.pow(2, 10 * (pos - 1));
+  }
+
+  function easeOutExpo(pos) {
+    return (pos === 1) ? 1 : -Math.pow(2, -10 * pos) + 1;
+  }
+
+  function easeInOutExpo(pos) {
+    if (pos === 0) {
+      return 0;
+    }
+    if (pos === 1) {
+      return 1;
+    }
+    if ((pos /= 0.5) < 1) {
+      return 0.5 * Math.pow(2, 10 * (pos - 1));
+    }
+    return 0.5 * (-Math.pow(2, -10 * --pos) + 2);
+  }
+
+  function easeInCirc(pos) {
+    return -(Math.sqrt(1 - (pos * pos)) - 1);
+  }
+
+  function easeOutCirc(pos) {
+    return Math.sqrt(1 - Math.pow((pos - 1), 2));
+  }
+
+  function easeInOutCirc(pos) {
+    if ((pos /= 0.5) < 1) {
+      return -0.5 * (Math.sqrt(1 - pos * pos) - 1);
+    }
+    return 0.5 * (Math.sqrt(1 - (pos -= 2) * pos) + 1);
+  }
+
+  function easeOutBounce(pos) {
+    if ((pos) < (1 / 2.75)) {
+      return (7.5625 * pos * pos);
+    } else if (pos < (2 / 2.75)) {
+      return (7.5625 * (pos -= (1.5 / 2.75)) * pos + 0.75);
+    } else if (pos < (2.5 / 2.75)) {
+      return (7.5625 * (pos -= (2.25 / 2.75)) * pos + 0.9375);
+    } else {
+      return (7.5625 * (pos -= (2.625 / 2.75)) * pos + 0.984375);
+    }
+  }
+
+  function easeInBack(pos) {
+    var s = 1.70158;
+    return (pos) * pos * ((s + 1) * pos - s);
+  }
+
+  function easeOutBack(pos) {
+    var s = 1.70158;
+    return (pos = pos - 1) * pos * ((s + 1) * pos + s) + 1;
+  }
+
+  function easeInOutBack(pos) {
+    var s = 1.70158;
+    if ((pos /= 0.5) < 1) {
+      return 0.5 * (pos * pos * (((s *= (1.525)) + 1) * pos - s));
+    }
+    return 0.5 * ((pos -= 2) * pos * (((s *= (1.525)) + 1) * pos + s) + 2);
+  }
+
+  function elastic(pos) {
+    return -1 * Math.pow(4,-8 * pos) * Math.sin((pos * 6 - 1) * (2 * Math.PI) / 2) + 1;
+  }
+
+  function swingFromTo(pos) {
+    var s = 1.70158;
+    return ((pos /= 0.5) < 1) ? 0.5 * (pos * pos * (((s *= (1.525)) + 1) * pos - s)) :
+                                0.5 * ((pos -= 2) * pos * (((s *= (1.525)) + 1) * pos + s) + 2);
+  }
+
+  function swingFrom(pos) {
+    var s = 1.70158;
+    return pos * pos * ((s + 1) * pos - s);
+  }
+
+  function swingTo(pos) {
+    var s = 1.70158;
+    return (pos -= 1) * pos * ((s + 1) * pos + s) + 1;
+  }
+
+  function bounce(pos) {
+    if (pos < (1 / 2.75)) {
+      return (7.5625 * pos * pos);
+    } else if (pos < (2 / 2.75)) {
+      return (7.5625 * (pos -= (1.5 / 2.75)) * pos + 0.75);
+    } else if (pos < (2.5 / 2.75)) {
+      return (7.5625 * (pos -= (2.25 / 2.75)) * pos + 0.9375);
+    } else {
+      return (7.5625 * (pos -= (2.625 / 2.75)) * pos + 0.984375);
+    }
+  }
+
+  function bouncePast(pos) {
+    if (pos < (1 / 2.75)) {
+      return (7.5625 * pos * pos);
+    } else if (pos < (2 / 2.75)) {
+      return 2 - (7.5625 * (pos -= (1.5 / 2.75)) * pos + 0.75);
+    } else if (pos < (2.5 / 2.75)) {
+      return 2 - (7.5625 * (pos -= (2.25 / 2.75)) * pos + 0.9375);
+    } else {
+      return 2 - (7.5625 * (pos -= (2.625 / 2.75)) * pos + 0.984375);
+    }
+  }
+
+  function easeFromTo(pos) {
+    if ((pos /= 0.5) < 1) {
+      return 0.5 * Math.pow(pos, 4);
+    }
+    return -0.5 * ((pos -= 2) * Math.pow(pos, 3) - 2);
+  }
+
+  function easeFrom(pos) {
+    return Math.pow(pos, 4);
+  }
+
+  function easeTo(pos) {
+    return Math.pow(pos, 0.25);
+  }
+
+  function linear(pos) {
+    return pos;
+  }
+
+  // goes from 0->1->0 again
+  function boomerang(pos) {
+    return Math.sin(pos * Math.PI);
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  // goes from 0->1->0 again
+  function boomerangSmooth(pos) {
+    pos = Math.sin(lerp(-Math.PI * 0.5, Math.PI * 0.5, pos)) * 0.5 + 0.5;
+    return Math.sin(pos * Math.PI);
+  }
+
+  // goes from 0->1->0 again
+  function bounceBack(pos) {
+    var level = 1 + (pos * 4 | 0) % 4;
+    return Math.sin(pos * Math.PI * 4) / (level * level);
+  }
+
+  var easeFunctions = {
+    easeInQuad: easeInQuad,
+    easeOutQuad: easeOutQuad,
+    easeInOutQuad: easeInOutQuad,
+    easeInCubic: easeInCubic,
+    easeOutCubic: easeOutCubic,
+    easeInOutCubic: easeInOutCubic,
+    easeInQuart: easeInQuart,
+    easeOutQuart: easeOutQuart,
+    easeInOutQuart: easeInOutQuart,
+    easeInQuint: easeInQuint,
+    easeOutQuint: easeOutQuint,
+    easeInOutQuint: easeInOutQuint,
+    easeInSine: easeInSine,
+    easeOutSine: easeOutSine,
+    easeInOutSine: easeInOutSine,
+    easeInExpo: easeInExpo,
+    easeOutExpo: easeOutExpo,
+    easeInOutExpo: easeInOutExpo,
+    easeInCirc: easeInCirc,
+    easeOutCirc: easeOutCirc,
+    easeInOutCirc: easeInOutCirc,
+    easeOutBounce: easeOutBounce,
+    easeInBack: easeInBack,
+    easeOutBack: easeOutBack,
+    easeInOutBack: easeInOutBack,
+    elastic: elastic,
+    swingFromTo: swingFromTo,
+    swingFrom: swingFrom,
+    swingTo: swingTo,
+    bounce: bounce,
+    bouncePast: bouncePast,
+    easeFromTo: easeFromTo,
+    easeFrom: easeFrom,
+    easeTo: easeTo,
+    linear: linear,
+    bounceBack: bounceBack,
+    boomerang: boomerang,
+    boomerangSmooth: boomerangSmooth,
+  };
+
+  var Tweener = function(target, duration, from, to) {
+     this.setup(target, duration, from, to);
+  };
+
+  var isSpecial = function() {
+    var specials = {
+      ease: true,             // ease func
+      onFinish: true,
+      onStart: true,
+      onReverseStart: true,
+      onReverseFinish: true,
+      onUpdate: true,
+      paused: true,
+      delay: true,
+      startRelative: true,         // use start values relative to when this tween starts (is this overkill? maybe you should use an onFinish and setup a new tween)
+      endRelative: true,           // use end values relative to when this tween ends
+    };
+
+    return function isSpecial(prop) {
+      return specials[prop];
+    };
+  }();
+
+  var emptyObj = {};
+
+  function numberLerp(dst, start, end, lerp) {
+    return start + (end - start) * lerp;
+  }
+
+  function arrayLerp(dst, start, end, lerp) {
+    var len = start.length;
+    for (var ii = 0; ii < len; ++ii) {
+      dst[ii] = start[ii] + (end[ii] - start[ii]) * lerp;
+    }
+    return dst;
+  }
+
+  function copyValue(v) {
+    return Array.isArray(v) ? v.slice() : v;
+  }
+
+  Tweener.prototype.setup = function(target, duration, from, to) {
+     if (!to) {
+       to = from;
+       from = emptyObj;
+     }
+     var keys = {};
+     function addKey(key) {
+       keys[key] = true;
+     };
+     Object.keys(to).forEach(addKey);
+     Object.keys(from).forEach(addKey);
+     var props = [];
+     var specials = {};
+     Object.keys(keys).forEach(function(key) {
+       if (isSpecial(key)) {
+         specials[key] = to[key] !== undefined ? to[key] : from[key];
+       } else {
+         props.push(key);
+       }
+     });
+     var numProps = props.length;
+     var starts = [];
+     var ends = [];
+     var lerpFns = [];
+
+     for (var ii = 0; ii < numProps; ++ii) {
+       var prop = props[ii];
+       starts[ii]  = copyValue(from[prop] !== undefined ? from[prop] : target[prop]);
+       ends[ii]    = copyValue(to[prop]   !== undefined ? to[prop]   : target[prop]);
+       var v = starts[ii];
+       var lerpFn = numberLerp;
+       if (Array.isArray(v)) {
+         lerpFn = arrayLerp;
+       }
+       lerpFns[ii] = lerpFn;
+     }
+
+     this.target   = target;
+     this.props    = props;
+     this.starts   = starts;
+     this.ends     = ends;
+     this.lerpFns  = lerpFns;
+     this.running  = !specials.paused;
+     this.duration = duration || 1;
+     this.delay    = specials.delay || 0;
+     this.easeFn   = specials.ease || linear;
+     this.speed    = specials.speed || 1;
+     this.direction = specials.reverse ? -1 : 1;
+     this.timer    = 0;
+     this.options  = specials;
+     this.onStart  = specials.onStart;
+     this.onFinish = specials.onFinish;
+     this.onReverseStart  = specials.onReverseStart;
+     this.onReverseFinish = specials.onReverseFinish;
+     this.onUpdate = specials.onUpdate;
+  };
+
+  Tweener.prototype.update = function(deltaTime) {
+     if (!this.running) {
+       return true;
+     }
+     // let timer overflow so we can tell
+     // how much into next tween to start
+     var oldTime = this.timer - this.delay;
+     var actualSpeed = this.speed * this.direction * deltaTime;
+     this.timer += actualSpeed;
+     var time = this.timer - this.delay;
+
+     // Need to handle last/first frames
+     var starting = false;
+     var finishing = false;
+
+     if (actualSpeed > 0) {
+       if (oldTime <= 0 && time > 0) {
+         starting = true;
+       }
+       if (oldTime < this.duration && time >= this.duration) {
+         finishing = true;
+       }
+     } else {
+       if (oldTime >= this.duration && time < this.duration) {
+         starting = true;
+       }
+       if (oldTime > 0 && time <= 0) {
+         finishing = true;
+       }
+     }
+
+     if (time >= 0) {
+       var target   = this.target;
+       var props    = this.props;
+       var starts   = this.starts;
+       var ends     = this.ends;
+       var lerpFns  = this.lerpFns;
+       var easeFn   = this.easeFn;
+       // clamp because we let it overflow. See above
+       var pos      = Math.max(0, Math.min(time / this.duration, 1));
+       var numProps = props.length;
+       for (var ii = 0; ii < numProps; ++ii) {
+         var prop  = props[ii];
+         target[prop] = lerpFns[ii](target[prop], starts[ii], ends[ii], easeFn(pos));
+       }
+
+       if (this.onUpdate) {
+         this.onUpdate(this);
+       }
+     }
+
+     if (actualSpeed > 0) {
+       if (starting && this.onStart) {
+         this.onStart(this);
+       }
+       if (finishing && this.onFinish) {
+         this.onFinish(this);
+       }
+     } else {
+       if (starting && this.onReverseStart) {
+         this.onReverseStart(this);
+       }
+       if (finishing && this.onReverseFinish) {
+         this.onReverseFinish(this);
+       }
+     }
+
+     return time < this.duration;
+  }
+
+  Tweener.prototype.isFinished = function() {
+     return this.timer - this.delay >= this.duration;
+  };
+
+  var TweenManager = function() {
+     this.tweeners = [];
+     this.newTweeners = [];
+  };
+
+  TweenManager.prototype.haveTweens = function() {
+    return this.tweeners.length + this.newTweeners.length;
+  };
+
+  TweenManager.prototype.update = function(deltaTime) {
+    // TODO: optimize? We can keep the arrays around, track highest used, put Tweeners on free list,
+    //   use loop so we're not creating a new closure every time?
+    if (this.newTweeners.length) {
+      this.tweeners = this.tweeners.concat(this.newTweeners);
+      this.newTweeners = [];
+    }
+    this.tweeners = this.tweeners.filter(function(tweener) {
+      return tweener.update(deltaTime);
+    });
+  };
+
+  TweenManager.prototype.addTweener = function(tweener) {
+    this.newTweeners.push(tweener);
+    return tweener;
+  }
+
+  TweenManager.prototype.to = function(target, duration, to) {
+    return this.addTweener(new Tweener(target, duration, to));
+  }
+
+  TweenManager.prototype.from = function(target, duration, from) {
+    return this.addTweener(new Tweener(target, duration, from, {}));
+  }
+
+  TweenManager.prototype.fromTo = function(target, duration, from, to) {
+    return this.addTweener(new Tweener(target, duration, from, to));
+  }
+
+  // thinking out loud, in the past an animation would have been just a lot of points
+  // with linear interpolation.
+  var Timeline = function() {
+    this.tweeners = [];
+  };
+
+  return {
+    "TweenManager": TweenManager,
+    "fn": easeFunctions,
+  };
+});
+
+
 /**
  * @license twgl.js 0.0.34 Copyright (c) 2015, Gregg Tavares All Rights Reserved.
  * Available via the MIT license.
@@ -18396,6 +18928,7 @@ define('src/js/main',[
     '3rdparty/colorutils',
     '3rdparty/cssparse',
     '3rdparty/glsl',
+    '3rdparty/tweeny',
     '3rdparty/twgl-full',
     '3rdparty/notifier',
     './fullscreen',
@@ -18409,6 +18942,7 @@ define('src/js/main',[
      colorUtils,
      cssParse,
      glsl,
+     tweeny,
      twgl,
      Notifier,
      fullScreen,
@@ -18696,6 +19230,12 @@ define('src/js/main',[
     var _pauseIcon = "❚❚";
     var _playIcon = "▶";
     var editorElem = $("#editor");
+    var editorWrapElem = $("#editorWrap");
+    var commentAreaElem = $("#commentarea");
+    var centerSizeElem = $("#centerSize");
+    var commentWrapElem = $("#commentWrap");
+    var uimodeElem = $("#uimode");
+    var uimodeDropdownElem = $("#toolbar .uimodedropdown");
     var savingElem = $("#saving");
     var stopElem = $("#stop");
     var stopIconElem = $("#stop .stop-icon")
@@ -18744,6 +19284,7 @@ define('src/js/main',[
       saveable: false,
       pause: false,
       touches: [],
+      animRects: [],
     };
     g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
 
@@ -18831,7 +19372,13 @@ define('src/js/main',[
       s.analyser = s.context.createAnalyser();
       s.analyser.connect(s.context.destination);
 
+      s.rectProgramInfo = twgl.createProgramInfo(gl, [getShader("rect-vs"), getShader("rect-fs")]);
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
+
+      s.rectUniforms = {
+        u_color: [0, 0, 0, 0.7],
+        u_matrix: m4.identity(),
+      };
 
       var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
       s.numSoundSamples = Math.min(maxTextureSize, s.analyser.frequencyBinCount);
@@ -19345,46 +19892,87 @@ define('src/js/main',[
       return Math.min(max, Math.max(min, v));
     }
 
+    function lerp(s, e, l) {
+      return s + (e - s) * l;
+    }
+
+    function lerp01(s, e, l) {
+      return s + (e - s) * clamp(0, 1, l);
+    }
+
+    function animateElemRect(options) {
+      if (!s.running || g.pause) {
+        return;
+      }
+      var fromRect = options.from.getBoundingClientRect();
+      var toRect = options.to.getBoundingClientRect();
+      var anim = {
+        from: fromRect,
+        to: toRect,
+        fromColor: options.fromColor,
+        toColor: options.toColor,
+        duration: options.duration,
+        startTime: g.time,
+      };
+      g.animRects.push(anim);
+    }
+
     var uiModes = {
-      '#ui-off': function() {
-        $("#editor").style.display = "none";
-        $("#commentarea").style.display = "none";
+      '#ui-off': function(animate) {
+        if (animate) {
+          if (editorElem.style.display !== "none") {
+            animateElemRect({
+              from: editorElem,
+              to: uimodeElem,
+              duration: 0.5,
+            });
+          }
+          if (commentAreaElem.style.display !== "none") {
+            animateElemRect({
+              from: commentAreaElem,
+              to: uimodeElem,
+              duration: 0.5,
+            });
+          }
+        }
+        editorElem.style.display = "none";
+        commentAreaElem.style.display = "none";
       },
       '#ui-one': function() {
         s.show = true;
-        $("#editor").style.display = "block";
-        $("#commentarea").style.display = "none";
-        $("#editorWrap").style.flex = "1 0 100%";
-        $("#commentWrap").style.flex = "1 0 0";
-        $("#editorWrap").style.flex = "1 0 100%";
-        $("#commentWrap").style.flex = "1 0 0";
+        editorElem.style.display = "block";
+        commentAreaElem.style.display = "none";
+        editorWrapElem.style.flex = "1 0 100%";
+        commentWrapElem.style.flex = "1 0 0";
+        editorWrapElem.style.flex = "1 0 100%";
+        commentWrapElem.style.flex = "1 0 0";
         s.cm.refresh();
       },
       '#ui-2h': function() {
         s.show = true;
-        $("#centerSize").style.flexFlow = "column";
-        $("#centerSize").style.webkitFlexFlow = "column";
-        $("#editor").style.display = "block";
-        $("#commentarea").style.display = "block";
-        $("#editorWrap").style.flex = "1 0 50%";
-        $("#commentWrap").style.flex = "1 0 50%";
+        centerSizeElem.style.flexFlow = "column";
+        centerSizeElem.style.webkitFlexFlow = "column";
+        editorElem.style.display = "block";
+        commentAreaElem.style.display = "block";
+        editorWrapElem.style.flex = "1 0 50%";
+        commentWrapElem.style.flex = "1 0 50%";
         s.cm.refresh();
       },
       '#ui-2v': function() {
         s.show = true;
-        $("#centerSize").style.flexFlow = "row";
-        $("#centerSize").style.webkitFlexFlow = "row";
-        $("#editor").style.display = "block";
-        $("#commentarea").style.display = "block";
-        $("#editorWrap").style.flex = "1 0 50%";
-        $("#commentWrap").style.flex = "1 0 50%";
+        centerSizeElem.style.flexFlow = "row";
+        centerSizeElem.style.webkitFlexFlow = "row";
+        editorElem.style.display = "block";
+        commentAreaElem.style.display = "block";
+        editorWrapElem.style.flex = "1 0 50%";
+        commentWrapElem.style.flex = "1 0 50%";
         s.cm.refresh();
       },
     };
 
-    function setUIMode(mode) {
+    function setUIMode(mode, animate) {
       mode = mode || '#ui-2v';
-      uiModes[mode]();
+      uiModes[mode](animate);
     }
 
     Object.keys(uiModes).forEach(function(mode) {
@@ -19394,8 +19982,6 @@ define('src/js/main',[
       });
     });
 
-    var uimodeElem = $("#uimode");
-    var uimodeDropdownElem = $("#toolbar .uimodedropdown");
     uimodeDropdownElem.style.display = "none";
     on(uimodeElem, 'click', function(e) {
       e.stopPropagation();
@@ -19795,6 +20381,47 @@ define('src/js/main',[
       twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
     }
 
+    function renderAnimRect(animRect) {
+      var l = (g.time - animRect.startTime) / animRect.duration;
+      if (l > 1) {
+        return true;
+      }
+
+      l = tweeny.fn.easeInCubic(l);
+      var from = animRect.from;
+      var to   = animRect.to;
+
+      var left   = lerp(from.left,   to.left,   l);
+      var top    = lerp(from.top,    to.top,    l);
+      var right  = lerp(from.right,  to.right,  l);
+      var bottom = lerp(from.bottom, to.bottom, l);
+
+      var mat = s.rectUniforms.u_matrix;
+      m4.identity(mat);
+      m4.ortho(0, gl.canvas.clientWidth, gl.canvas.clientHeight, 0, -1, 1, mat);
+      m4.translate(mat, [left, top, 0], mat);
+      m4.scale(mat, [right - left, bottom - top, 1], mat);
+      m4.translate(mat, [0.5, 0.5, 0], mat);
+      m4.scale(mat, [0.5, 0.5, 1], mat);
+
+      twgl.setUniforms(s.rectProgramInfo, s.rectUniforms);
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+    }
+
+    function renderAnimRects() {
+      gl.disable(gl.DEPTH_TEST);
+      gl.enable(gl.BLEND);
+      gl.useProgram(s.rectProgramInfo.program);
+      twgl.setBuffersAndAttributes(gl, s.rectProgramInfo, s.quadBufferInfo);
+      for (var ii = 0; ii < g.animRects.length;) {
+        if (renderAnimRect(g.animRects[ii])) {
+          g.animRects.splice(ii, 1);
+        } else {
+          ++ii;
+        }
+      }
+    }
+
     function render(time) {
       g.requestId = undefined;
       time *= 0.001;
@@ -19824,11 +20451,13 @@ define('src/js/main',[
 
       updateSoundTime();
 
+      renderAnimRects();
+
       queueRender();
     }
 
     function queueRender(force) {
-      if (!g.requestId && (force || !g.wasRendered || (s.running && !g.pause))) {
+      if (!g.requestId && (force || !g.wasRendered || (s.running && !g.pause)) || g.animRects.length) {
         g.requestId = requestAnimationFrame(render);
       }
     }
@@ -19963,7 +20592,7 @@ define('src/js/main',[
     function makeUIVisible() {
       if (s.uiHidden) {
         s.uiHidden = false;
-        setUIMode(s.uiMode);
+        setUIMode(s.uiMode, true);
       }
     }
 
@@ -19972,7 +20601,7 @@ define('src/js/main',[
       if (!g.lastInputTimestamp || elapsedTime > 15) {
         if (!s.uiHidden) {
           s.uiHidden = true;
-          setUIMode('#ui-off');
+          setUIMode('#ui-off', true);
         }
       }
       setHideUITimeout();
@@ -20003,6 +20632,12 @@ define('src/js/main',[
     on(window, 'mousedown', recordInputAndMakeUIVisible);
     on(window, 'keypress', recordInputAndMakeUIVisible);
     on(window, 'wheel', recordInputAndMakeUIVisible)
+    on(window, 'mousemove', function() {
+      // don't unhide on mousemove because some pieces take mouse movement
+      if (!s.uiHidden) {
+        recordInputAndMakeUIVisible();
+      }
+    });
 
     this.stop = function() {
       clearHideUITimeout();
