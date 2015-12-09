@@ -1738,6 +1738,12 @@ define([
     on(window, 'mousedown', recordInputAndMakeUIVisible);
     on(window, 'keypress', recordInputAndMakeUIVisible);
     on(window, 'wheel', recordInputAndMakeUIVisible)
+    on(window, 'mousemove', function() {
+      // don't unhide on mousemove because some pieces take mouse movement
+      if (!s.uiHidden) {
+        recordInputAndMakeUIVisible();
+      }
+    });
 
     this.stop = function() {
       clearHideUITimeout();
