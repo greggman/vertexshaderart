@@ -34,6 +34,7 @@ define([
     '3rdparty/colorutils',
     '3rdparty/cssparse',
     '3rdparty/glsl',
+    '3rdparty/tweeny',
     '3rdparty/twgl-full',
     '3rdparty/notifier',
     './fullscreen',
@@ -47,6 +48,7 @@ define([
      colorUtils,
      cssParse,
      glsl,
+     tweeny,
      twgl,
      Notifier,
      fullScreen,
@@ -334,6 +336,12 @@ define([
     var _pauseIcon = "❚❚";
     var _playIcon = "▶";
     var editorElem = $("#editor");
+    var editorWrapElem = $("#editorWrap");
+    var commentAreaElem = $("#commentarea");
+    var centerSizeElem = $("#centerSize");
+    var commentWrapElem = $("#commentWrap");
+    var uimodeElem = $("#uimode");
+    var uimodeDropdownElem = $("#toolbar .uimodedropdown");
     var savingElem = $("#saving");
     var stopElem = $("#stop");
     var stopIconElem = $("#stop .stop-icon")
@@ -382,6 +390,7 @@ define([
       saveable: false,
       pause: false,
       touches: [],
+      animRects: [],
     };
     g.errorLineNumberOffset = -g.vsHeader.split("\n").length;
 
@@ -469,7 +478,13 @@ define([
       s.analyser = s.context.createAnalyser();
       s.analyser.connect(s.context.destination);
 
+      s.rectProgramInfo = twgl.createProgramInfo(gl, [getShader("rect-vs"), getShader("rect-fs")]);
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
+
+      s.rectUniforms = {
+        u_color: [0, 0, 0, 0.7],
+        u_matrix: m4.identity(),
+      };
 
       var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
       s.numSoundSamples = Math.min(maxTextureSize, s.analyser.frequencyBinCount);
@@ -983,46 +998,87 @@ define([
       return Math.min(max, Math.max(min, v));
     }
 
+    function lerp(s, e, l) {
+      return s + (e - s) * l;
+    }
+
+    function lerp01(s, e, l) {
+      return s + (e - s) * clamp(0, 1, l);
+    }
+
+    function animateElemRect(options) {
+      if (!s.running || g.pause) {
+        return;
+      }
+      var fromRect = options.from.getBoundingClientRect();
+      var toRect = options.to.getBoundingClientRect();
+      var anim = {
+        from: fromRect,
+        to: toRect,
+        fromColor: options.fromColor,
+        toColor: options.toColor,
+        duration: options.duration,
+        startTime: g.time,
+      };
+      g.animRects.push(anim);
+    }
+
     var uiModes = {
-      '#ui-off': function() {
-        $("#editor").style.display = "none";
-        $("#commentarea").style.display = "none";
+      '#ui-off': function(animate) {
+        if (animate) {
+          if (editorElem.style.display !== "none") {
+            animateElemRect({
+              from: editorElem,
+              to: uimodeElem,
+              duration: 0.5,
+            });
+          }
+          if (commentAreaElem.style.display !== "none") {
+            animateElemRect({
+              from: commentAreaElem,
+              to: uimodeElem,
+              duration: 0.5,
+            });
+          }
+        }
+        editorElem.style.display = "none";
+        commentAreaElem.style.display = "none";
       },
       '#ui-one': function() {
         s.show = true;
-        $("#editor").style.display = "block";
-        $("#commentarea").style.display = "none";
-        $("#editorWrap").style.flex = "1 0 100%";
-        $("#commentWrap").style.flex = "1 0 0";
-        $("#editorWrap").style.flex = "1 0 100%";
-        $("#commentWrap").style.flex = "1 0 0";
+        editorElem.style.display = "block";
+        commentAreaElem.style.display = "none";
+        editorWrapElem.style.flex = "1 0 100%";
+        commentWrapElem.style.flex = "1 0 0";
+        editorWrapElem.style.flex = "1 0 100%";
+        commentWrapElem.style.flex = "1 0 0";
         s.cm.refresh();
       },
       '#ui-2h': function() {
         s.show = true;
-        $("#centerSize").style.flexFlow = "column";
-        $("#centerSize").style.webkitFlexFlow = "column";
-        $("#editor").style.display = "block";
-        $("#commentarea").style.display = "block";
-        $("#editorWrap").style.flex = "1 0 50%";
-        $("#commentWrap").style.flex = "1 0 50%";
+        centerSizeElem.style.flexFlow = "column";
+        centerSizeElem.style.webkitFlexFlow = "column";
+        editorElem.style.display = "block";
+        commentAreaElem.style.display = "block";
+        editorWrapElem.style.flex = "1 0 50%";
+        commentWrapElem.style.flex = "1 0 50%";
         s.cm.refresh();
       },
       '#ui-2v': function() {
         s.show = true;
-        $("#centerSize").style.flexFlow = "row";
-        $("#centerSize").style.webkitFlexFlow = "row";
-        $("#editor").style.display = "block";
-        $("#commentarea").style.display = "block";
-        $("#editorWrap").style.flex = "1 0 50%";
-        $("#commentWrap").style.flex = "1 0 50%";
+        centerSizeElem.style.flexFlow = "row";
+        centerSizeElem.style.webkitFlexFlow = "row";
+        editorElem.style.display = "block";
+        commentAreaElem.style.display = "block";
+        editorWrapElem.style.flex = "1 0 50%";
+        commentWrapElem.style.flex = "1 0 50%";
         s.cm.refresh();
       },
     };
 
-    function setUIMode(mode) {
+    function setUIMode(mode, animate) {
       mode = mode || '#ui-2v';
-      uiModes[mode]();
+      uiModes[mode](animate);
     }
 
     Object.keys(uiModes).forEach(function(mode) {
@@ -1032,8 +1088,6 @@ define([
       });
     });
 
-    var uimodeElem = $("#uimode");
-    var uimodeDropdownElem = $("#toolbar .uimodedropdown");
     uimodeDropdownElem.style.display = "none";
     on(uimodeElem, 'click', function(e) {
       e.stopPropagation();
@@ -1433,6 +1487,47 @@ define([
       twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
     }
 
+    function renderAnimRect(animRect) {
+      var l = (g.time - animRect.startTime) / animRect.duration;
+      if (l > 1) {
+        return true;
+      }
+
+      l = tweeny.fn.easeInCubic(l);
+      var from = animRect.from;
+      var to   = animRect.to;
+
+      var left   = lerp(from.left,   to.left,   l);
+      var top    = lerp(from.top,    to.top,    l);
+      var right  = lerp(from.right,  to.right,  l);
+      var bottom = lerp(from.bottom, to.bottom, l);
+
+      var mat = s.rectUniforms.u_matrix;
+      m4.identity(mat);
+      m4.ortho(0, gl.canvas.clientWidth, gl.canvas.clientHeight, 0, -1, 1, mat);
+      m4.translate(mat, [left, top, 0], mat);
+      m4.scale(mat, [right - left, bottom - top, 1], mat);
+      m4.translate(mat, [0.5, 0.5, 0], mat);
+      m4.scale(mat, [0.5, 0.5, 1], mat);
+
+      twgl.setUniforms(s.rectProgramInfo, s.rectUniforms);
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+    }
+
+    function renderAnimRects() {
+      gl.disable(gl.DEPTH_TEST);
+      gl.enable(gl.BLEND);
+      gl.useProgram(s.rectProgramInfo.program);
+      twgl.setBuffersAndAttributes(gl, s.rectProgramInfo, s.quadBufferInfo);
+      for (var ii = 0; ii < g.animRects.length;) {
+        if (renderAnimRect(g.animRects[ii])) {
+          g.animRects.splice(ii, 1);
+        } else {
+          ++ii;
+        }
+      }
+    }
+
     function render(time) {
       g.requestId = undefined;
       time *= 0.001;
@@ -1462,11 +1557,13 @@ define([
 
       updateSoundTime();
 
+      renderAnimRects();
+
       queueRender();
     }
 
     function queueRender(force) {
-      if (!g.requestId && (force || !g.wasRendered || (s.running && !g.pause))) {
+      if (!g.requestId && (force || !g.wasRendered || (s.running && !g.pause)) || g.animRects.length) {
         g.requestId = requestAnimationFrame(render);
       }
     }
@@ -1601,7 +1698,7 @@ define([
     function makeUIVisible() {
       if (s.uiHidden) {
         s.uiHidden = false;
-        setUIMode(s.uiMode);
+        setUIMode(s.uiMode, true);
       }
     }
 
@@ -1610,7 +1707,7 @@ define([
       if (!g.lastInputTimestamp || elapsedTime > 15) {
         if (!s.uiHidden) {
           s.uiHidden = true;
-          setUIMode('#ui-off');
+          setUIMode('#ui-off', true);
         }
       }
       setHideUITimeout();
