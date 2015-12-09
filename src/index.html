@@ -376,5 +376,24 @@ void main() {
 }
   </script>
   <!- =========================================================== ->
+  <script id="rect-vs" type="notjs">
+attribute vec4 position;
+uniform mat4 u_matrix;
+
+void main() {
+  gl_Position = u_matrix * position;
+}
+  </script>
+  <!- =========================================================== ->
+  <script id="rect-fs" type="notjs">
+precision mediump float;
+
+uniform vec4 u_color;
+
+void main() {
+  gl_FragColor = u_color;
+}
+  </script>
+  <!- =========================================================== ->
   <script data-main="js/start.js" src="3rdparty/require.js"></script>
 </html>
