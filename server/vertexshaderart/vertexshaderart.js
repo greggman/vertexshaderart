@@ -869,7 +869,7 @@ if (Meteor.isClient) {
     showNotes: function() {
       var route = Router.current();
       // Don't show if anon and no notes
-      return route.data() && route.data().owner && route.data().notes;
+      return route.data() && route.data().owner;
     },
     currentUserAvatar: function() {
       return getCurrentUserAvatar();
