@@ -1,12 +1,6 @@
 ﻿# To Do
 
-*   animate editor to UI button
-
 *   fix revision buttons
-
-*   fix not updating with comment change
-
-*   fix, save -anon- does go to new URL
 
 *   fix time on docker host
 
@@ -98,6 +92,12 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   fix, save -anon- does go to new URL
+
+*   fix not updating with comment change
+
+*   animate editor to UI button
 
 *   check UI hides after art->gallery->art
 
