@@ -483,7 +483,6 @@ canvas {
     border: 1px solid #444;
     border-radius: 0.5em;
     position: absolute;
-    left: 0;
     z-index: 5;
 }
 .dropdownmenu li {
@@ -574,6 +573,7 @@ canvas {
     vertical-align: middle;
 }
 #toolbar {
+  position: relative;
   width: 100%;
   display: flex;
   display: -webkit-flex;
@@ -587,6 +587,10 @@ canvas {
   -webkit-justify-content: space-between;
   -webkit-align-content: center;
   -webkit-align-items: center;
+}
+#toolbar .uimodedropdown {
+  left: 0.5em;
+  top: 2em;
 }
 #numRange {
   flex: 1 0 auto;

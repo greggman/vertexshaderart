@@ -17456,21 +17456,35 @@ define('src/js/listenermanager',[], function() {
   "use strict";
 
   function ListenerManager() {
-    var listeners = [];
+    var listeners = {};
+    var nextId = 1;
 
+    // Returns an id for the listener. This is easier IMO than
+    // the normal remove listener which requires the same arguments as addListener
     this.on = function(elem, event, listener, useCapture) {
       var args = Array.prototype.slice.call(arguments, 1);
       elem.addEventListener.apply(elem, args);
-      listeners.push({
+      var id = nextId++;
+      listeners[id] = {
         elem: elem,
         args: args,
-      });
+      };
+      return id;
+    };
+
+    this.remove = function(id) {
+      var listener = listeners[id];
+      if (listener) {
+        delete listener[id];
+        listener.elem.removeEventListener.apply(listener.elem, listener.args);
+      }
     };
 
     this.removeAll = function() {
       var old = listeners;
-      listeners = [];
-      old.forEach(function(listener) {
+      listeners = {};
+      Object.keys(old).forEach(function(id) {
+        var listener = old[id];
         listener.elem.removeEventListener.apply(listener.elem, listener.args);
       });
     };
@@ -18558,11 +18572,15 @@ define('src/js/main',[
 
     this.getProgramInfo = function() {
       return _programInfo;
-    }
+    };
 
     this.clear = function() {
       _programInfo = undefined;
-    }
+    };
+
+    this.isProcessing = function() {
+      return _processing;
+    };
   };
 
   function HistoryTexture(gl, options) {
@@ -18701,6 +18719,7 @@ define('src/js/main',[
     var playElem2 = $("#vsa .play");
     var listenerManager = new ListenerManager();
     var on = listenerManager.on.bind(listenerManager);
+    var remove = listenerManager.remove.bind(listenerManager);
     var settings = {
       lineSize: 1,
       backgroundColor: [0,0,0,1],
@@ -19326,12 +19345,12 @@ define('src/js/main',[
       return Math.min(max, Math.max(min, v));
     }
 
-    on($("#ui-off"), 'click', function() {
-        s.show = true;
+    var uiModes = {
+      '#ui-off': function() {
         $("#editor").style.display = "none";
         $("#commentarea").style.display = "none";
-    });
-    on($("#ui-one"), 'click', function() {
+      },
+      '#ui-one': function() {
         s.show = true;
         $("#editor").style.display = "block";
         $("#commentarea").style.display = "none";
@@ -19340,8 +19359,8 @@ define('src/js/main',[
         $("#editorWrap").style.flex = "1 0 100%";
         $("#commentWrap").style.flex = "1 0 0";
         s.cm.refresh();
-    });
-    on($("#ui-2h"), 'click', function() {
+      },
+      '#ui-2h': function() {
         s.show = true;
         $("#centerSize").style.flexFlow = "column";
         $("#centerSize").style.webkitFlexFlow = "column";
@@ -19350,8 +19369,8 @@ define('src/js/main',[
         $("#editorWrap").style.flex = "1 0 50%";
         $("#commentWrap").style.flex = "1 0 50%";
         s.cm.refresh();
-    });
-    on($("#ui-2v"), 'click', function() {
+      },
+      '#ui-2v': function() {
         s.show = true;
         $("#centerSize").style.flexFlow = "row";
         $("#centerSize").style.webkitFlexFlow = "row";
@@ -19360,6 +19379,39 @@ define('src/js/main',[
         $("#editorWrap").style.flex = "1 0 50%";
         $("#commentWrap").style.flex = "1 0 50%";
         s.cm.refresh();
+      },
+    };
+
+    function setUIMode(mode) {
+      mode = mode || '#ui-2v';
+      uiModes[mode]();
+    }
+
+    Object.keys(uiModes).forEach(function(mode) {
+      on($(mode), 'click', function() {
+        s.uiMode = mode;
+        setUIMode(mode);
+      });
+    });
+
+    var uimodeElem = $("#uimode");
+    var uimodeDropdownElem = $("#toolbar .uimodedropdown");
+    uimodeDropdownElem.style.display = "none";
+    on(uimodeElem, 'click', function(e) {
+      e.stopPropagation();
+      uimodeDropdownElem.style.display = "";
+      var id1;
+      var id2;
+
+      var closeDropdown = function(e) {
+        e.stopPropagation();
+        remove(id1);
+        remove(id2);
+        uimodeDropdownElem.style.display = "none";
+      };
+
+      id1 = on(window.document, 'click', closeDropdown);
+      id2 = on(window.document, 'keypress', closeDropdown);
     });
 
     var colorElem = $("#background");
@@ -19467,6 +19519,12 @@ define('src/js/main',[
         oldText = text;
         oldTrimmedText = trimmedText;
         tryNewProgram(text);
+      } else {
+        // The text is functionally equivalent
+        // If it was okay before it should be ok now
+        if (g.saveable) {
+          settings.shader = text;
+        }
       }
     }
     s.cm.on('change', handleChange);
@@ -19573,11 +19631,13 @@ define('src/js/main',[
           }
           $("#start").style.display = "none";
           $("#screenshot").style.display = "none";
+          setUIMode(s.uiMode);
           realSetSettings(settings, options);
         });
       } else {
         $("#start").style.display = "none";
         $("#screenshot").style.display = "none";
+        setUIMode(s.uiMode);
         realSetSettings(settings, options);
       }
     }
@@ -19900,7 +19960,52 @@ define('src/js/main',[
     on(touchTarget, 'touchcancel', recordTouchCancel);
     on(touchTarget, 'touchmove', recordTouchMove);
 
+    function makeUIVisible() {
+      if (s.uiHidden) {
+        s.uiHidden = false;
+        setUIMode(s.uiMode);
+      }
+    }
+
+    function checkHideUI() {
+      var elapsedTime = (Date.now() - g.lastInputTimestamp) * 0.001;
+      if (!g.lastInputTimestamp || elapsedTime > 15) {
+        if (!s.uiHidden) {
+          s.uiHidden = true;
+          setUIMode('#ui-off');
+        }
+      }
+      setHideUITimeout();
+    }
+
+    function clearHideUITimeout() {
+      if (g.hideUITimeoutId) {
+        clearTimeout(g.hideUITimeoutId);
+        g.hideUITimeoutId = undefined;
+      }
+    }
+
+    function setHideUITimeout(seconds) {
+      clearHideUITimeout();
+      // Don't set if user has manually set mode
+      if (!s.uiMode) {
+        g.hideUITimeoutId = setTimeout(checkHideUI, seconds * 1000);
+      }
+    }
+
+    function recordInputAndMakeUIVisible() {
+      g.lastInputTimestamp = Date.now();
+      makeUIVisible();
+    }
+
+    setHideUITimeout(5);
+
+    on(window, 'mousedown', recordInputAndMakeUIVisible);
+    on(window, 'keypress', recordInputAndMakeUIVisible);
+    on(window, 'wheel', recordInputAndMakeUIVisible)
+
     this.stop = function() {
+      clearHideUITimeout();
       s.running = false;
       stopRender();
       if (s.interruptMusic !== false && !s.lockMusic && s.streamSource.isPlaying()) {
