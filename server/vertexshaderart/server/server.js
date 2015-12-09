@@ -36,6 +36,30 @@ function addAvatarUrls() {
       });
     }
   });
+
+  function addAvatarUrlsToCollection(collection) {
+    collection.find({
+      $and: [
+        { owner: {$exists: true}, },
+        { owner: {$ne: null}, },
+      ],
+      avatarUrl: {$exists: false},
+    }).forEach(function(art) {
+      var user = Meteor.users.findOne(art.owner);
+      if (!user) {
+        console.log("missing user for art:", art._id, "user:", art.owner);
+        return;
+      }
+      console.log("adding avatarUrl to: ", art._id);
+      collection.update({_id: art._id}, {
+        $set: {
+          avatarUrl: user.profile.avatarUrl,
+        },
+      });
+    });
+  }
+  addAvatarUrlsToCollection(Art);
+  addAvatarUrlsToCollection(ArtRevision);
 }
 addAvatarUrls();
 
