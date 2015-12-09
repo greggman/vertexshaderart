@@ -471,11 +471,11 @@ if (Meteor.isClient) {
     },
   });
 
-//  Template.revision.events({
-//    "click .artpiece .private": function(e) {
-//      Meteor.call("setPrivate", this._id, !this.private);
-//    },
-//  });
+  Template.publicity.helpers({
+    isOwner: function() {
+      return this.owner === Meteor.userId();
+    },
+  });
 
   function safeGetTime(date) {
     return date ? date.getTime() : 0;
@@ -875,7 +875,8 @@ if (Meteor.isClient) {
       return getCurrentUserAvatar();
     },
     avatar: function() {
-      return getAvatarUrl(this.avatarUrl);
+      var route = Router.current();
+      return getAvatarUrl(route.data().avatarUrl);
     },
     comments: function() {
       var route = Router.current();
@@ -1897,14 +1898,6 @@ Meteor.methods({
     }
     Comments.remove({_id: id});
   },
-  //testSSR: function() {
-  //  if (Meteor.isServer) {
-  //    var html = SSR.render("artSSR", {
-  //      art: Art.find({}).fetch(),
-  //    });
-  //    console.log("-----\n", html);
-  //  }
-  //},
   incArtViews: function(artId) {
     check(artId, String);
     Art.update({_id: artId}, {$inc: {views: 1}});
@@ -1913,24 +1906,6 @@ Meteor.methods({
 
 
 Meteor.startup(function () {
- if(Meteor.isClient){
- }
- if(Meteor.isClient){
-     // SEO.config({
-     //   title: 'vertexshaderart.com',
-     //   meta: {
-     //     'apple-mobile-web-app-capable': "yes",
-     //     'apple-mobile-web-app-status-bar-style': "black",
-     //     'HandheldFriendly': "True",
-     //     'MobileOptimized': "320",
-     //     'viewport': "width=device-width, target-densitydpi=160dpi, initial-scale=1.0, minimal-ui",
-     //     'description': 'vertexshaderart.com - realtime vertex shader art',
-     //   },
-     //   og: {
-     //     'image': 'http://vertexshaderart.com/static/resources/images/vertexshaderart.png',
-     //   },
-     // });
- }
 });
 
 

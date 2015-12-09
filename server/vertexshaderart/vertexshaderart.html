@@ -179,32 +179,36 @@
             <div>{{createdAtFormatted}}</div>
           </div>
           <div class="artstate">
-              {{#if isOwner}}
-                {{#dropdownTrigger name=(_id)}}
-                  {{#if private}}
-                    <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/private.svg" /></a>
-                  {{else}}
-                    {{#if unlisted}}
-                      <a href="" class="private tooltip-bottom" data-tooltip="unlisted" ><img src="/static/resources/images/unlisted.svg" /></a>
-                    {{else}}
-                      <a href="" class="private tooltip-bottom" data-tooltip="public" ><img src="/static/resources/images/public.svg" /></a>
-                    {{/if}}
-                  {{/if}}
-                {{/dropdownTrigger}}
-
-
-                {{#dropdown name=(_id) align="left"}}
-                  {{> privacypopup}}
-                {{/dropdown}}
-
-
-              {{/if}}
+              {{> publicity}}
               {{#if hasSound}}
                 <div class="hasSound tooltip-bottom" data-tooltip="has sound"><img src="/static/resources/images/speaker.svg" /></div>
               {{/if}}
           </div>
         </a>
     </div>
+</template>
+
+<template name="publicity">
+ {{#if isOwner}}
+   {{#dropdownTrigger name=(_id)}}
+     {{#if private}}
+       <a href="" class="private tooltip-bottom" data-tooltip="private"><img src="/static/resources/images/private.svg" /></a>
+     {{else}}
+       {{#if unlisted}}
+         <a href="" class="private tooltip-bottom" data-tooltip="unlisted" ><img src="/static/resources/images/unlisted.svg" /></a>
+       {{else}}
+         <a href="" class="private tooltip-bottom" data-tooltip="public" ><img src="/static/resources/images/public.svg" /></a>
+       {{/if}}
+     {{/if}}
+   {{/dropdownTrigger}}
+
+
+   {{#dropdown name=(_id) align="left"}}
+     {{> privacypopup}}
+   {{/dropdown}}
+
+
+ {{/if}}
 </template>
 
 <template name="artrevisions">
@@ -556,18 +560,32 @@
    <div class="meta">
        {{#if showNotes}}
      <div class="revisionnotes">
-       <div class="title">
-         revisions: <button class="outlinedbutton">prev</button> <button class="outlinedbutton">next</button>
-       </div>
+       {{#if hasRevisions}}
+         <div class="title">
+           revisions:
+         </div>
+         <div class="comment">
+           <div class="artstate">
+               {{#if hasPrevRevision}}
+                 <button class="outlinedbutton">prev</button>
+               {{/if}}
+               {{#if hasNextRevision}}
+                 <button class="outlinedbutton">next</button>
+               {{/if}}
+           </div>
+         </div>
+       {{/if}}
        <div class="title">
          notes:
+       </div>
           <!-- reusing comment template so less css -->
-          <div class="comment">
-            <div class="avatar"><img src="{{avatar}}" /></div>
-            <div class="content">
-              {{> markedfield settings=settings}}
-            </div>
-          </div>
+       <div class="comments">
+         <div class="comment">
+           <div class="avatar"><img src="{{avatar}}" /></div>
+           <div class="content">
+             {{> markedfield settings=settings}}
+           </div>
+         </div>
        </div>
      </div>
        {{/if}}
