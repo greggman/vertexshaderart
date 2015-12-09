@@ -353,6 +353,7 @@ define([
     var playElem2 = $("#vsa .play");
     var listenerManager = new ListenerManager();
     var on = listenerManager.on.bind(listenerManager);
+    var remove = listenerManager.remove.bind(listenerManager);
     var settings = {
       lineSize: 1,
       backgroundColor: [0,0,0,1],
@@ -1025,6 +1026,26 @@ define([
         s.uiMode = mode;
         setUIMode(mode);
       });
+    });
+
+    var uimodeElem = $("#uimode");
+    var uimodeDropdownElem = $("#toolbar .uimodedropdown");
+    uimodeDropdownElem.style.display = "none";
+    on(uimodeElem, 'click', function(e) {
+      e.stopPropagation();
+      uimodeDropdownElem.style.display = "";
+      var id1;
+      var id2;
+
+      var closeDropdown = function(e) {
+        e.stopPropagation();
+        remove(id1);
+        remove(id2);
+        uimodeDropdownElem.style.display = "none";
+      };
+
+      id1 = on(window.document, 'click', closeDropdown);
+      id2 = on(window.document, 'keypress', closeDropdown);
     });
 
     var colorElem = $("#background");
