@@ -1,5 +1,7 @@
 ﻿# To Do
 
+*   Make sure notes start with previous notes on a revision
+
 *   fix revision buttons
 
 *   fix time on docker host
