@@ -867,6 +867,7 @@ if (Meteor.isClient) {
       };
     },
     showNotes: function() {
+      var route = Router.current();
       // Don't show if anon and no notes
       return route.data() && route.data().owner && route.data().notes;
     },
@@ -1555,8 +1556,9 @@ function addArt(name, origId, vsData, data) {
   //    }
   name = name || "unnamed";
   var owner = Meteor.userId();
-  var username = owner ? Meteor.user().username : "-anon-";
-  var avatarUrl = owner ? Meteor.user().profile.avatarUrl : "";
+  var user = Meteor.user();
+  var username = (owner && user) ? user.username : "-anon-";
+  var avatarUrl = (owner && user && user.profile) ? user.profile.avatarUrl : "";
   var settings = vsData.settings || {};
   var screenshotDataURL = vsData.screenshot.dataURL || "";
   var screenshotURL = "";
@@ -1606,7 +1608,7 @@ function addArt(name, origId, vsData, data) {
     private: privacy.private,
     unlisted: privacy.unlisted,
     username: username,
-    avatarUrl: Meteor.user().profile.avatarUrl,
+    avatarUrl: avatarUrl,
     settings: JSON.stringify(settings),
     hasSound: hasSound,
     screenshotURL: screenshotURL,
@@ -1621,7 +1623,8 @@ function addArt(name, origId, vsData, data) {
 
 function updateArt(name, origId, vsData, data) {
   var owner = Meteor.userId();
-  if (!owner) {
+  var user = Meteor.user();
+  if (!owner || !user) {
     throw new Meteor.Error("not-loggedin", "use must be logged in to update");
   }
   var arts = Art.find({_id: origId}).fetch();
@@ -1660,7 +1663,7 @@ function updateArt(name, origId, vsData, data) {
     settings: JSON.stringify(settings),
     hasSound: hasSound,
     screenshotURL: screenshotURL,
-    avatarUrl: Meteor.user().profile.avatarUrl,
+    avatarUrl: (user && user.profile) ? user.profile.avatarUrl : "",
   });
   if (privacy.listed || art.private || art.unlisted) {
     Art.update({_id: origId},
@@ -1821,6 +1824,8 @@ Meteor.methods({
       throw e;
     }
     Art.update({owner: Meteor.userId()}, {$set: {username: username}}, {multi: true});
+    ArtRevision.update({owner: Meteor.userId()}, {$set: {username: username}}, {multi: true});
+    Comments.update({owner: Meteor.userId()}, {$set: {username: username}}, {multi: true});
   },
   changeUserinfo: function(info) {
     check(info, StringLengthLessThan2k);
@@ -1838,6 +1843,7 @@ Meteor.methods({
   },
   addComment: function(data) {
     var owner = Meteor.userId();
+    var user = Meteor.user() || {};
     if (!owner) {
       throw new Meteor.Error("not-loggedin", "use must be logged in to comment");
     }
@@ -1854,8 +1860,8 @@ Meteor.methods({
       comment: data.comment,
       createdAt: date,
       modifiedAt: date,
-      username: Meteor.user().username,
-      avatarUrl: Meteor.user().profile.avatarUrl,
+      username: user.username,
+      avatarUrl: user.profile.avatarUrl,
     });
   },
   updateComment: function(data) {
