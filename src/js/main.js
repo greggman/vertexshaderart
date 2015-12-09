@@ -210,11 +210,15 @@ define([
 
     this.getProgramInfo = function() {
       return _programInfo;
-    }
+    };
 
     this.clear = function() {
       _programInfo = undefined;
-    }
+    };
+
+    this.isProcessing = function() {
+      return _processing;
+    };
   };
 
   function HistoryTexture(gl, options) {
@@ -1153,6 +1157,12 @@ define([
         oldText = text;
         oldTrimmedText = trimmedText;
         tryNewProgram(text);
+      } else {
+        // The text is functionally equivalent
+        // If it was okay before it should be ok now
+        if (g.saveable) {
+          settings.shader = text;
+        }
       }
     }
     s.cm.on('change', handleChange);
