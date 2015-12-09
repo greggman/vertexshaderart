@@ -1,5 +1,9 @@
 ﻿# To Do
 
+*   animate editor to UI button
+
+*   fix revision buttons
+
 *   fix not updating with comment change
 
 *   fix, save -anon- does go to new URL
