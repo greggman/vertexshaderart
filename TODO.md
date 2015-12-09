@@ -1,5 +1,7 @@
 ﻿# To Do
 
+*   fix not updating with comment change
+
 *   fix, save -anon- does go to new URL
 
 *   fix time on docker host
@@ -92,6 +94,12 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   check UI hides after art->gallery->art
+
+*   make UI state sticky
+
+*   make code and comments fade out if no key or mouse
 
 *   See if we can not restart music on URL change
 
