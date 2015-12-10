@@ -1318,6 +1318,8 @@ define([
       options = options || {};
       settings = JSON.parse(JSON.stringify(settings));
 
+      var uiMode = s.uiMode || options.uiMode;
+
       $("#uicontainer").style.display = "block";
 
       var autoPlay = (q.autoPlay || q.autoplay);
@@ -1340,13 +1342,13 @@ define([
           }
           $("#start").style.display = "none";
           $("#screenshot").style.display = "none";
-          setUIMode(s.uiMode);
+          setUIMode(uiMode);
           realSetSettings(settings, options);
         });
       } else {
         $("#start").style.display = "none";
         $("#screenshot").style.display = "none";
-        setUIMode(s.uiMode);
+        setUIMode(uiMode);
         realSetSettings(settings, options);
       }
     }
