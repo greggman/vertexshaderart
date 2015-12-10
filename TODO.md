@@ -8,6 +8,18 @@
 
 *   make it not re-start music if the same URL.
 
+    *   Don't stop music when leaving page?
+
+    *   Don't start music on new page if URL is same
+
+    *   add "play/pause" to header for gallery
+
+*   Fix music info. If no artist don't show artist area
+
+*   Make markededitor expand to # of lines
+
+*   Make dialog for delete? (do I care that it's an alert?)
+
 *   check slider on iPad
 
 *   add mic support (Can I do line-in?)
