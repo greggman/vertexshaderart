@@ -1764,6 +1764,11 @@ Meteor.methods({
     if (!userId) {
       throw new Meteor.Error("not-loggedin", "can not update notes if not logged in");
     }
+    // We can't do this on the client because the revision we are about to look up is
+    // NOT in the mini mongo. Should we add it?
+    if (Meteor.isClient) {
+      return;
+    }
     var revision = ArtRevision.findOne({_id: data.revisionId});
     if (!revision) {
       throw new Meteor.Error("not-exists", "can not update notes of non-existant revision");
@@ -1782,7 +1787,7 @@ Meteor.methods({
       },
     });
     if (art.revisionId == data.revisionId) {
-      Art.update({_id: reversion.artId},
+      Art.update({_id: revision.artId},
         {$set: {
           notes: data.notes,
         },
