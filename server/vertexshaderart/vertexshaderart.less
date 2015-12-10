@@ -25,6 +25,9 @@
     font-family: monospace;
     font-size: medium;
 }
+.textshadow {
+    text-shadow: rgba( 0, 0, 0, 1 ) 1px 1px 1px;
+}
 .markededit,
 .textarea {
     width: 100%;
@@ -36,8 +39,39 @@
     background-color: inherit;
     border-radius: 0.5em !important;
     border: 1px solid #444;
-    text-shadow: rgba( 0, 0, 0, 1 ) 1px 1px 1px;
+    .textshadow;
 }
+ul, li, ol {
+  .textshadow;
+}
+ol {
+    counter-reset: li;
+    list-style-type: none;
+}
+ol li{
+    position:relative;
+}
+ol li:before{
+    content: counter(li)'.';
+    counter-increment: li;
+    position:absolute;
+    right:100%;
+    margin-right:0.5em;
+}
+ul {
+  list-style-type: none;
+}
+ul li{
+    position:relative;
+}
+ul li:before {
+    content: '\2022';
+    position:absolute;
+    right:100%;
+    margin-right:0.5em;
+    text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
+}
+
 .markedfield .editable {
     color: #444;
 }
@@ -403,6 +437,19 @@ header .user.nouser.outlinedbutton {
     display: flex;
     padding: 1em;
     width: 100%;
+}
+.comment code {
+    background-color: rgba(0,0,0,0.25);
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+}
+.comment pre {
+    padding: 0.5em;
+    background-color: rgba(0,0,0,0.25);
+}
+.comment pre code {
+    padding: 0;
+    background-color: transparent;
 }
 .comment .username {
    display: inline-block;
