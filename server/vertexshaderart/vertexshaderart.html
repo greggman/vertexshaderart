@@ -562,16 +562,25 @@
      <div class="revisionnotes">
        {{#if hasRevisions}}
          <div class="title">
-           revisions:
+           revision:
          </div>
          <div class="comment">
-           <div class="artstate">
-               {{#if hasPrevRevision}}
-                 <button class="outlinedbutton">prev</button>
-               {{/if}}
-               {{#if hasNextRevision}}
-                 <button class="outlinedbutton">next</button>
-               {{/if}}
+           <div>
+               <div class="revisiondate">
+                   {{date}}
+               </div>
+               <div class="revisions">
+                 {{#if prevRevision}}
+                   <a class="outlinedbutton" href="{{prevRevision}}">prev</a>
+                 {{else}}
+                   <a class="outlinedbuttondisabled" href="">prev</a>
+                 {{/if}}
+                 {{#if nextRevision}}
+                   <a class="outlinedbutton" href="{{nextRevision}}">next</a>
+                 {{else}}
+                   <a class="outlinedbuttondisabled" href="">next</a>
+                 {{/if}}
+               </div>
            </div>
          </div>
        {{/if}}

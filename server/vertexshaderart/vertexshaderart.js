@@ -52,9 +52,26 @@ StringLengthLessThan2k = Match.Where(function(v) {
   return v.length < 2 * 1024;
 });
 
+function findNextPrevArtRevision(artId, date, next) {
+  check(artId, String);
+  return ArtRevision.find({
+    artId: artId,
+    createdAt: (next ? {$gt: date} : {$lt: date}),
+    $or: [
+      {
+        private: {$ne: true},
+        unlisted: {$ne: true},
+      },
+      { owner: this.userId },
+    ],
+  }, {
+    fields: {settings: false, notes: false,},
+    limit: 1,
+    sort: {createdAt: next ? 1 : -1},
+  });
+};
+
 if (Meteor.isServer) {
-
-
   Meteor.publish("artForGrid", function(username, sortField, skip, limit) {
     var find = {
       private: {$ne: true},
@@ -79,7 +96,7 @@ if (Meteor.isServer) {
     var sort = {};
     sort[sortField] = -1;
     var options = {
-      fields: {settings: false},
+      fields: {settings: false, notes: false,},
       sort: sort,
       skip: skip,
       limit: limit,
@@ -97,7 +114,7 @@ if (Meteor.isServer) {
     var sort = {};
     sort[sortField] = -1;
     var options = {
-      fields: {settings: false},
+      fields: {settings: false, notes: false,},
       sort: sort,
       limit: limit,
     };
@@ -197,12 +214,20 @@ if (Meteor.isServer) {
         { owner: this.userId },
       ],
     }, {
-      fields: {settings: false},
+      fields: {settings: false, notes: false,},
       skip: skip,
       limit: limit,
       sort: {createdAt: -1},
     });
   });
+
+  Meteor.publish("artNextRevision", function(artId, date) {
+    return findNextPrevArtRevision(artId, date, true);
+  });
+  Meteor.publish("artPrevRevision", function(artId, date) {
+    return findNextPrevArtRevision(artId, date, false);
+  });
+
 
   Meteor.publish("comments", function(artId, skip, limit) {
     check(artId, String);
@@ -571,6 +596,16 @@ if (Meteor.isClient) {
     });
   }
 
+  function getSimpleDate(d) {
+    if (!d) {
+      return "-";
+    }
+    var day = d.getDate();
+    var month = d.getMonth() + 1; //Months are zero based
+    var year = d.getFullYear();
+    return year + "-" + month + "-" + day;
+  }
+
   Template.share.events({
     "click .share": function(e) {
       Session.set(S_CURRENTLY_SHARING, !Session.get(S_CURRENTLY_SHARING));
@@ -804,7 +839,10 @@ if (Meteor.isClient) {
     var instance = this;
     instance.autorun(function() {
       var route = Router.current();
-      instance.subscribe('comments', route.params._id);
+      var artId = route.data().artId || route.data()._id;
+      instance.subscribe('comments', artId);
+      instance.subscribe('artNextRevision', artId, route.data().createdAt);
+      instance.subscribe('artPrevRevision', artId, route.data().createdAt);
     });
   });
 
@@ -836,7 +874,30 @@ if (Meteor.isClient) {
     return url || "/static/resources/images/missing-avatar.png";
   }
 
+  function getNextPrevArtRevisionUrl(next) {
+    var route = Router.current();
+    var artId = route.params._id;//data().artId || route.data()._id;
+    var result = findNextPrevArtRevision(artId, route.data().createdAt, next).fetch();
+    if (!result || result.length === 0) {
+      return;
+    }
+    var rev = result[0];
+    return "/art/" + rev.artId + "/revision/" + rev._id;
+  }
+
   Template.meta.helpers({
+    date: function() {
+      return getSimpleDate(this.createdAt);
+    },
+    hasRevisions: function() {
+      return getNextPrevArtRevisionUrl(true) || getNextPrevArtRevisionUrl(false);
+    },
+    prevRevision: function() {
+      return getNextPrevArtRevisionUrl(false);
+    },
+    nextRevision: function() {
+      return getNextPrevArtRevisionUrl(true);
+    },
     settings: function() {
       var route = Router.current();
       var dataContext = this;
@@ -930,14 +991,7 @@ if (Meteor.isClient) {
       return marked(this.comment || "");
     },
     date: function() {
-      var d = this.modifiedAt;
-      if (!d) {
-        return "-";
-      }
-      var day = d.getDate();
-      var month = d.getMonth() + 1; //Months are zero based
-      var year = d.getFullYear();
-      return year + "-" + month + "-" + day;
+      return getSimpleDate(this.modifiedAt);
     },
   });
 
