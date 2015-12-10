@@ -839,22 +839,30 @@ if (Meteor.isClient) {
     var instance = this;
     instance.autorun(function() {
       var route = Router.current();
-      var artId = route.data().artId || route.data()._id;
-      instance.subscribe('comments', artId);
-      instance.subscribe('artNextRevision', artId, route.data().createdAt);
-      instance.subscribe('artPrevRevision', artId, route.data().createdAt);
+      var data = (route && route.data && typeof route.data === "function") ? (route.data() || {}) : {};
+      var artId = data.artId || data._id;
+      if (artId) {
+        instance.subscribe('comments', artId);
+        instance.subscribe('artNextRevision', artId, data.createdAt);
+        instance.subscribe('artPrevRevision', artId, data.createdAt);
+      }
     });
   });
 
   Template.meta.events({
     'click .post': function(e, template) {
       var route = Router.current();
+      var artId = route.params._id;
+      if (!artId) {
+        console.log("can not add comment to unsaved art");
+        return;
+      }
       var ta = template.find('.newcomment');
       var comment = ta.value.trim();
       if (comment.length > 0) {
         ta.disabled = true;
         var data = {
-          artId: route.params._id,
+          artId: artId,
           comment: comment,
         };
         Meteor.call('addComment', data, function() {
@@ -918,14 +926,23 @@ if (Meteor.isClient) {
         setText: function(newText) {
           if (newText.length > 0 && newText !== this.comment) {
             var route = Router.current();
+            var revisionId = dataContext.revisionId || dataContext._id;
+            if (!revisionId) {
+              console.log("Can't set notes of unsaved art");
+              return;
+            }
             var data = {
-              revisionId: dataContext.revisionId || dataContext._id,
+              revisionId: revisionId,
               notes: newText,
             };
             Meteor.call('updateNote', data);
           }
         },
       };
+    },
+    haveArt: function() {
+      var route = Router.current();
+      return route.data && route.data()._id;
     },
     showNotes: function() {
       var route = Router.current();
@@ -972,6 +989,10 @@ if (Meteor.isClient) {
         },
         setText: function(newText) {
           if (newText && newText !== comment) {
+            if (!_id) {
+              console.log("cannot set comment on unsaved art");
+              return;
+            }
             var data = {
               _id: _id,
               comment: newText,
@@ -1078,6 +1099,10 @@ if (Meteor.isClient) {
 
   function SetArt(data) {
     var settings;
+    var options = {
+      saveFn: save,
+      screenshotURL: data && data.screenshotURL,
+    };
     Session.set(S_ART_OWNER_ID, undefined);
     Session.set(S_ART_OWNER_NAME, "-anon-");
     Session.set(S_ART_NAME, "unnamed");
@@ -1097,13 +1122,14 @@ if (Meteor.isClient) {
         console.log("data.settings not set for id:", data._id);
       }
     }
-    if (!settings && window.location.pathname.substr(0, 5) !== "/new/") {
-      settings = window.vsart.missingSettings;
+    var isNew = window.location.pathname.substr(0, 5) === "/new/"
+    if (!settings) {
+      options.uiMode = "#ui-one";
+      if (!isNew) {
+        settings = window.vsart.missingSettings;
+      }
     }
-    window.vsart.setSettings(settings, {
-      saveFn: save,
-      screenshotURL: data && data.screenshotURL,
-    });
+    window.vsart.setSettings(settings, options);
   }
 
   function goWithoutInterruptingMusic(url) {

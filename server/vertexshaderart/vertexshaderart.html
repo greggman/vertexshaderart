@@ -557,6 +557,7 @@
 </template>
 
 <template name="meta">
+ {{#if haveArt}}
    <div class="meta">
        {{#if showNotes}}
      <div class="revisionnotes">
@@ -634,6 +635,7 @@
        </div>
      </div>
    </div>
+ {{/if}}
 </template>
 
 <template name="comment">
