@@ -19231,6 +19231,7 @@ define('src/js/main',[
     var _playIcon = "▶";
     var editorElem = $("#editor");
     var editorWrapElem = $("#editorWrap");
+    var artElem = $("#art");
     var commentAreaElem = $("#commentarea");
     var centerSizeElem = $("#centerSize");
     var commentWrapElem = $("#commentWrap");
@@ -19937,6 +19938,8 @@ define('src/js/main',[
         }
         editorElem.style.display = "none";
         commentAreaElem.style.display = "none";
+        centerSizeElem.className = "";
+        gl.canvas.style.width = "100%";
       },
       '#ui-one': function() {
         s.show = true;
@@ -19944,18 +19947,8 @@ define('src/js/main',[
         commentAreaElem.style.display = "none";
         editorWrapElem.style.flex = "1 0 100%";
         commentWrapElem.style.flex = "1 0 0";
-        editorWrapElem.style.flex = "1 0 100%";
-        commentWrapElem.style.flex = "1 0 0";
-        s.cm.refresh();
-      },
-      '#ui-2h': function() {
-        s.show = true;
-        centerSizeElem.style.flexFlow = "column";
-        centerSizeElem.style.webkitFlexFlow = "column";
-        editorElem.style.display = "block";
-        commentAreaElem.style.display = "block";
-        editorWrapElem.style.flex = "1 0 50%";
-        commentWrapElem.style.flex = "1 0 50%";
+        gl.canvas.style.width = "100%";
+        centerSizeElem.className = "";
         s.cm.refresh();
       },
       '#ui-2v': function() {
@@ -19966,6 +19959,30 @@ define('src/js/main',[
         commentAreaElem.style.display = "block";
         editorWrapElem.style.flex = "1 0 50%";
         commentWrapElem.style.flex = "1 0 50%";
+        gl.canvas.style.width = "100%";
+        centerSizeElem.className = "";
+        s.cm.refresh();
+      },
+      '#ui-ea': function() {
+        s.show = true;
+        editorElem.style.display = "block";
+        commentAreaElem.style.display = "none";
+        editorWrapElem.style.flex = "0 0 50%";
+        commentWrapElem.style.flex = "1 0 0";
+        gl.canvas.style.width = "50%";
+        art.className = "artright";
+        centerSizeElem.className = "artleft";
+        s.cm.refresh();
+      },
+      '#ui-ae': function() {
+        s.show = true;
+        editorElem.style.display = "block";
+        commentAreaElem.style.display = "none";
+        editorWrapElem.style.flex = "0 0 50%";
+        commentWrapElem.style.flex = "1 0 0";
+        gl.canvas.style.width = "50%";
+        art.className = "artleft";
+        centerSizeElem.className = "artright";
         s.cm.refresh();
       },
     };

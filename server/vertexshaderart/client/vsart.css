@@ -469,6 +469,24 @@ html, body {
   color: white;
   background-color: #000;
 }
+#art {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  display: -webkit-flex;
+  flex-flow: row;
+  -webkit-flex-flow: row;
+}
+.artleft {
+  justify-content: flex-start;
+  -webkit-justify-content: flex-start;
+}
+.artright {
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  flex-flow: row-reverse !important;
+  -webkit-flex-flow: row-reverse !important;
+}
 canvas {
   width: 100%;
   height: 100%;
@@ -726,10 +744,8 @@ input,
   display: -webkit-flex;
   flex-flow: row;
   -webkit-flex-flow: row;
-  justify-content: center;
   align-content: center;
   align-items: center;
-  -webkit-justify-content: center;
   -webkit-align-content: center;
   -webkit-align-items: center;
 }
