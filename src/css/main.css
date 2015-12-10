@@ -23,14 +23,16 @@ html, body {
   -webkit-flex-flow: row;
 }
 .artleft {
-  justify-content: flex-start;
-  -webkit-justify-content: flex-start;
 }
 .artright {
-  justify-content: flex-end;
-  -webkit-justify-content: flex-end;
-  flex-flow: row-reverse !important;
-  -webkit-flex-flow: row-reverse !important;
+  justify-content: flex-end !important;
+  -webkit-justify-content: flex-end !important;
+}
+.editleft {
+}
+.editright {
+  flex-direction: row-reverse !important;
+  -webkit-justify-content: row-reverse !important;
 }
 canvas {
   width: 100%;

@@ -1077,7 +1077,7 @@ define([
         commentWrapElem.style.flex = "1 0 0";
         gl.canvas.style.width = "50%";
         art.className = "artright";
-        centerSizeElem.className = "artleft";
+        centerSizeElem.className = "editleft";
         s.cm.refresh();
       },
       '#ui-ae': function() {
@@ -1088,7 +1088,7 @@ define([
         commentWrapElem.style.flex = "1 0 0";
         gl.canvas.style.width = "50%";
         art.className = "artleft";
-        centerSizeElem.className = "artright";
+        centerSizeElem.className = "editright";
         s.cm.refresh();
       },
     };
