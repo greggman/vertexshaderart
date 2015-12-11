@@ -41,35 +41,38 @@
     border: 1px solid #444;
     .textshadow;
 }
-ul, li, ol {
-  .textshadow;
-}
-ol {
-    counter-reset: li;
+.comment {
+  a {
+    text-decoration: none;
+    color: #FF8;
+  }
+  ol {
+      counter-reset: li;
+      list-style-type: none;
+  }
+  ol li{
+      position:relative;
+  }
+  ol li:before{
+      content: counter(li)'.';
+      counter-increment: li;
+      position: absolute;
+      right: 100%;
+      margin-right: 1em;
+  }
+  ul {
     list-style-type: none;
-}
-ol li{
-    position:relative;
-}
-ol li:before{
-    content: counter(li)'.';
-    counter-increment: li;
-    position: absolute;
-    right: 100%;
-    margin-right: 1em;
-}
-ul {
-  list-style-type: none;
-}
-ul li{
-    position:relative;
-}
-ul li:before {
-    content: '\2022';
-    position:absolute;
-    right:100%;
-    margin-right: 1em;
-    text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
+  }
+  ul li{
+      position:relative;
+  }
+  ul li:before {
+      content: '\2022';
+      position:absolute;
+      right:100%;
+      margin-right: 1em;
+      .textshadow;
+  }
 }
 
 .markedfield .editable {
