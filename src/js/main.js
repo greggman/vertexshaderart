@@ -1190,7 +1190,7 @@ define([
       return m === undefined ? gl.LINES : m;
     }
 
-    var mainRE = /(void[\s\S]+main[\s\S]*\([\s\S]*\)[\s\S]*\{)/g;
+    var mainRE = /(void[ \t\n\r]+main[ \t\n\r]*\([ \t\n\r]*\)[ \t\n\r]\{)/g;
     function tryNewProgram(text) {
       var vsrc = g.vsHeader + text;
       vsrc = vsrc.replace(mainRE, function(m) {
