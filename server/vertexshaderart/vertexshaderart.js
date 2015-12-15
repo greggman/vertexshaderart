@@ -229,7 +229,7 @@ if (Meteor.isServer) {
   });
 
 
-  Meteor.publish("comments", function(artId, skip, limit) {
+  Meteor.publish("artComments", function(artId, skip, limit) {
     check(artId, String);
     var options = {
       sort: {createdAt: -1},
@@ -275,6 +275,25 @@ if (Meteor.isServer) {
 
     return u;
   }
+
+  Meteor.publish("commentsWithArt", function(skip, limit) {
+    check(skip, Number);
+    check(limit, NumberLessThan100);
+    var commentsCursor = Comments.find({}, {
+      skip: skip,
+      limit: limit,
+      sort: { createdAt: -1 },
+    });
+    var artIds = commentsCursor.map(function(c) { return c.artId; });
+    return [
+      commentsCursor,
+      Art.find({
+        _id: {$in: artIds},
+      }, {
+        fields: {settings: false, notes: false,},
+      }),
+    ];
+  });
 }
 
 var pwd = AccountsTemplates.removeField('password');
@@ -508,7 +527,10 @@ if (Meteor.isClient) {
 
   Template.artpiece.helpers({
     hasRevisions: function() {
-      return Router.current() && Router.current().data && Router.current().data().showRevisions && safeGetTime(this.createdAt) !== safeGetTime(this.modifiedAt);
+      return Router.current() &&
+             Router.current().data &&
+             Router.current().data().showRevisions &&
+             safeGetTime(this.createdAt) !== safeGetTime(this.modifiedAt);
     },
     screenshotLink: function() {
       if (this.screenshotURL) {
@@ -842,7 +864,7 @@ if (Meteor.isClient) {
       var data = (route && route.data && typeof route.data === "function") ? (route.data() || {}) : {};
       var artId = data.artId || data._id;
       if (artId) {
-        instance.subscribe('comments', artId);
+        instance.subscribe('artComments', artId);
         instance.subscribe('artNextRevision', artId, data.createdAt);
         instance.subscribe('artPrevRevision', artId, data.createdAt);
       }
@@ -1016,6 +1038,21 @@ if (Meteor.isClient) {
     },
   });
 
+  Template.allcomments.helpers({
+    comments: function() {
+      return Comments.find({}, {sort: {createdAt: -1}});
+    },
+  });
+
+  Template.commentart.helpers({
+  });
+
+  Template.separatecomment.helpers({
+    art: function() {
+      return Art.findOne({_id: this.artId});
+    },
+  });
+
   Template.pagination.helpers({
     pages: function() {
       var instance = Template.instance();
@@ -1030,11 +1067,6 @@ if (Meteor.isClient) {
       var lastPage = numPages - 1;
       var path = route.data().path;
       var sort = route.data().sort;
-
-      if (window.screen && window.screen.availWidth < 400) {
-        numPageButtons = 0;
-        pageRange = 0;
-      }
 
       var makeUrl = function(pageId) {
         return path + '/' + pageId + (sort ? ('?sort=' + sort) : '');
@@ -1525,6 +1557,29 @@ Router.route('/art/:_id/revisions/:_page', {
     var artId = this.params._id;
     var subs = [
       Meteor.subscribe('artRevisionCount', artId),
+    ];
+    return subs;
+  },
+  cache: 5,
+  expire: 5,
+});
+Router.route('/comments', function() {
+  Router.go('/comments/1');
+});
+Router.route('/comments/:_page', {
+  template: 'allcomments',
+  data: function() {
+    var page = this.params._page;
+    return {
+      page: page,
+    };
+  },
+  subscriptions: function() {
+    var page = this.params._page - 1;
+    var skip = page * 50;
+    var limit = 50;
+    var subs = [
+      Meteor.subscribe('commentsWithArt', skip, limit),
     ];
     return subs;
   },

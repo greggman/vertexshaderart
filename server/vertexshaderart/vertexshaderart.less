@@ -41,6 +41,9 @@
     border: 1px solid #444;
     .textshadow;
 }
+.comments {
+  text-align: left;
+}
 .comment {
   a {
     text-decoration: none;
@@ -72,6 +75,9 @@
       right:100%;
       margin-right: 1em;
       .textshadow;
+  }
+  .art {
+    padding: 1em;
   }
 }
 
@@ -294,8 +300,10 @@ embed, object {
     text-overflow: ellipsis;
     margin-right: 0;
 }
-
-.gallery {
+.artgrid {
+  text-align: left;
+}
+.artpiece {
   text-align: left;
   display: inline-block;
   height: 100%;
@@ -308,7 +316,7 @@ embed, object {
   width: 200px;
   height: 110px;
 }
-.gallery .artpiece {
+.artpiece {
   position: relative;
   margin: 0em 1em 1em 0em;
   display: inline-block;
@@ -317,7 +325,7 @@ embed, object {
   width: 200px;
   color: #888;
 }
-.gallery .artpiece img.thumbnail:hover {
+.artpiece img.thumbnail:hover {
   box-shadow: inset 0px 0px 10px 3px #24A, 0px 0px 10px 3px #24A;
 }
 .hearticon {
@@ -339,7 +347,7 @@ embed, object {
     text-decoration: none;
     color: #888;
 }
-.artpiece .artstate {
+.artstate {
     position: absolute;
     left: 0.5em;
     top: 0.5em;
@@ -347,7 +355,7 @@ embed, object {
     justify-content: flex-start;
     align-items: center;
 }
-.artstate .private, .artpiece .artstate .revisions, .artstate .hasSound {
+.artstate .private, .artstate .revisions, .artstate .hasSound {
     width: 2em;
     height: 2em;
     background-color: rgba(0,0,0,0.8);
@@ -431,6 +439,16 @@ header .user.nouser.outlinedbutton {
     padding: 2em;
 }
 
+.separatecomment {
+    display: flex;
+    padding: 1em;
+    width: 100%;
+
+    .art {
+      padding: 1em;
+      position: relative;
+    }
+}
 #commentarea .meta {
   overflow: scroll;
   width: 100%;
@@ -527,9 +545,6 @@ header .user.nouser.outlinedbutton {
 .sorting .selected {
     background-color: #446;
 }
-.gallery .bottomsorting {
-    display: none;
-}
 .accounts-dialog {
     background-color: black;
     color: white;
@@ -609,6 +624,12 @@ header .user.nouser.outlinedbutton {
   }
 }
 
+@media (max-width : 800px) {
+  .separatecomment {
+    flex-direction: column;
+  }
+}
+
 @media (max-width : 500px) {
     header>div {
         flex-direction: column-reverse;
@@ -624,6 +645,9 @@ header .user.nouser.outlinedbutton {
     .container {
         padding: 0.75em;
     }
+    .artgrid {
+        text-align: center;
+    }
     .gallery .topsorting .pagination {
         display: none;
     }
@@ -632,9 +656,6 @@ header .user.nouser.outlinedbutton {
     }
     .gallery .artpiece {
         margin: 0 0 1em 0;
-    }
-    .gallery .artgrid {
-        text-align: center;
     }
     .gallery .sortcriteria .title {
         width: 100%;
