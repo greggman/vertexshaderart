@@ -20449,7 +20449,7 @@ define('src/js/main',[
       g.then = now;
       g.time += elapsed;
 
-      twgl.resizeCanvasToDisplaySize(gl.canvas);
+      twgl.resizeCanvasToDisplaySize(gl.canvas, window.devicePixelRatio || 1);
 
       updateSoundAndTouchHistory();
 
