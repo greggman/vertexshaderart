@@ -228,6 +228,9 @@ var isBot = (function() {
   ];
   var botRE = new RegExp('(' + bots.join('|') + ')', RegExp.ignoreCase);
   return function isBot(req) {
+    if (req.url && req.url.indexOf && req.url.indexOf("_escaped_fragment_=") >= 0) {
+      return true;
+    }
     var ua = req.headers["user-agent"] || '';
     var bot = botRE.test(ua);
     return bot;
@@ -257,7 +260,6 @@ function sendArtRevisionSSR(req, res, revisionId) {
   res.write(html);
   res.end();
 }
-
 
 var artPathRE = /\/art\/([^/]+)$/;
 var artRevisionPathRE = /\/art\/([^/]+)\/revision\/([^/]+)$/;
