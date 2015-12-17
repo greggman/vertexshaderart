@@ -1555,7 +1555,7 @@ define([
       g.then = now;
       g.time += elapsed;
 
-      twgl.resizeCanvasToDisplaySize(gl.canvas, window.devicePixelRatio || 1);
+      twgl.resizeCanvasToDisplaySize(gl.canvas);
 
       updateSoundAndTouchHistory();
 
