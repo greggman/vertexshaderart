@@ -31,6 +31,7 @@
 define([
     '3rdparty/audiostreamsource',
     '3rdparty/codemirror/lib/codemirror',
+    '3rdparty/codemirror/addon/scroll/simplescrollbars',
     '3rdparty/colorutils',
     '3rdparty/cssparse',
     '3rdparty/glsl',
@@ -45,6 +46,7 @@ define([
   ], function(
      audioStreamSource,
      CodeMirror,
+     CodeMirrorSimpleScrollbars,
      colorUtils,
      cssParse,
      glsl,
@@ -658,6 +660,7 @@ define([
         theme: "blackboard",
         mode: "x-text/x-glsl",
         lineNumbers: true,
+        scrollbarStyle: "overlay",
       });
     }
 

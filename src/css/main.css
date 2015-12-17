@@ -1,5 +1,6 @@
 @import url("../3rdparty/codemirror/lib/codemirror.css");
 @import url("../3rdparty/codemirror/theme/blackboard.css");
+@import url("../3rdparty/codemirror/addon/scroll/simplescrollbars.css");
 @import url("../3rdparty/tooltip.css");
 @import url("../3rdparty/notifier.css");
 
@@ -443,6 +444,28 @@ input[type="color"] {
 }
 .CodeMirror-selected { background: rgba(0,128,255,0.5); }
 .CodeMirror-focused .CodeMirror-selected { background: rgba(128,128,255,0.8); }
+
+.CodeMirror-overlayscroll-horizontal div,
+.CodeMirror-overlayscroll-vertical div {
+  position: absolute;
+  background: rgba(0, 0, 0, 0);
+  border-radius: 5px;
+}
+.CodeMirror-overlayscroll-horizontal {
+  height: 8px;
+}
+.CodeMirror-overlayscroll-vertical {
+  width: 8px;
+}
+.CodeMirror-scrollbar-filler {
+  background: transparent;
+}
+#centerSize:hover .CodeMirror-overlayscroll-horizontal div,
+#centerSize:hover .CodeMirror-overlayscroll-vertical div {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #222;
+}
+
 
 
 #uicontainer.iframe {
