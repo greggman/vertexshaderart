@@ -1240,6 +1240,7 @@ define([
       }
     }
     s.cm.on('change', handleChange);
+    s.cm.on('cursorActivity', recordInputAndMakeUIVisible);
 
     function validateSettings(settings) {
       settings.num = clamp(1, g.maxCount, (settings.num || 10000) | 0);
@@ -1743,6 +1744,7 @@ define([
     }
 
     function setHideUITimeout(seconds) {
+      seconds = seconds || 15;
       clearHideUITimeout();
       // Don't set if user has manually set mode
       if (!s.uiMode) {
@@ -1763,7 +1765,7 @@ define([
     on(window, 'mousemove', function() {
       // don't unhide on mousemove because some pieces take mouse movement
       if (!s.uiHidden) {
-        recordInputAndMakeUIVisible();
+        recordInputAndMakeUIVisible(5);
       }
     });
 
@@ -1778,6 +1780,7 @@ define([
       listenerManager.removeAll();
       clearLineErrors();
       s.cm.off('change', handleChange);
+      s.cm.off('cursorActivity', recordInputAndMakeUIVisible);
       gl.canvas.parentNode.removeChild(gl.canvas);
       saveRestoreSettings();
     }
