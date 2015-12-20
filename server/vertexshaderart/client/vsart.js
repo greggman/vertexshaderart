@@ -19376,6 +19376,33 @@ define('src/js/main',[
     removeItem: function() {},
   };
 
+  function toggleMusic(setPauseFn) {
+    setPauseFn = setPauseFn || function() {};
+    if (!s.streamSource) {
+      return false;
+    }
+
+    if (s.streamSource.isPlaying()) {
+      s.streamSource.stop();
+      if (s.inIframe) {
+        setPauseFn(true);
+      }
+    } else {
+      s.streamSource.play();
+      var source = s.streamSource.getSource();
+      if (source) {
+        source.connect(s.analyser);
+      }
+      if (s.inIframe) {
+        setPauseFn(false)
+      }
+    }
+  }
+
+  function getMusicState() {
+    return s.streamSource ? s.streamSource.isPlaying() : false;
+  }
+
   function VS() {
     var _pauseIcon = "❚❚";
     var _playIcon = "▶";
@@ -19813,24 +19840,16 @@ define('src/js/main',[
       s.streamSource.setSource(src);
     }
 
+    function setMusicPause(pause) {
+      g.pause = pause;
+      if (!pause) {
+        queueRender();
+      }
+    }
+
     playElems.forEach(function(playElem) {
       on(playElem, 'click', function() {
-        if (s.streamSource.isPlaying()) {
-          s.streamSource.stop();
-          if (s.inIframe) {
-            g.pause = true;
-          }
-        } else {
-          s.streamSource.play();
-          var source = s.streamSource.getSource();
-          if (source) {
-            source.connect(s.analyser);
-          }
-          if (s.inIframe) {
-            g.pause = false;
-            queueRender();
-          }
-        }
+        toggleMusic(setMusicPause);
         setPlayState();
       });
     });
@@ -20450,9 +20469,10 @@ define('src/js/main',[
       if (duration) {
         var currentTime = s.streamSource.getCurrentTime();
         var l = currentTime / duration;
-        pixels = l * soundTime.clientWidth | 0;
+        pixels = (l * soundTime.clientWidth) | 0;
       }
       if (pixels != g.soundTimePixelWidth) {
+        g.soundTimePixelWidth = pixels;
         soundTime.style.background = "linear-gradient(90deg, rgba(30,30,30,0.7) " + (l * 100).toFixed(2) + "%, rgba(0,0,0,0.7) " + (l * 100). toFixed(2) + "%)";
       }
     }
@@ -20811,11 +20831,11 @@ define('src/js/main',[
       }
     });
 
-    this.stop = function() {
+    this.stop = function(keepMusic) {
       clearHideUITimeout();
       s.running = false;
       stopRender();
-      if (s.interruptMusic !== false && !s.lockMusic && s.streamSource.isPlaying()) {
+      if (!keepMusic && s.interruptMusic !== false && !s.lockMusic && s.streamSource.isPlaying()) {
         s.streamSource.stop();
       }
       s.programManager.clear();
@@ -20865,9 +20885,9 @@ define('src/js/main',[
     });
   }
 
-  function stop() {
+  function stop(keepMusic) {
     if (vs) {
-      vs.stop();
+      vs.stop(keepMusic);
     }
   }
 
@@ -20940,6 +20960,8 @@ define('src/js/main',[
   return {
     start: start,
     stop: stop,
+    toggleMusic: toggleMusic,
+    getMusicState: getMusicState,
     isSaveable: isSaveable,
     getSettings: getSettings,
     setSettings: setSettings,
