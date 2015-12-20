@@ -88,6 +88,7 @@
 
     <div>
         <div class="buttons">
+            {{> play}}
             {{> userinfosignin}}
             <a href="/new/">create new</a>
             <a href="http://github.com/greggman/vertexshaderart">github</a>
@@ -218,6 +219,7 @@
 
     <div>
         <div class="buttons">
+            {{> play}}
             {{> userinfosignin}}
             <a href="/new/">create new</a>
             <a href="/">gallery</a>
@@ -350,6 +352,7 @@
 
     <div>
         <div class="buttons">
+           {{> play}}
            {{> userinfosignin}}
            <a href="/new/">create new</a>
            <a href="/">gallery</a>
@@ -661,6 +664,7 @@
 
     <div>
         <div class="buttons">
+            {{> play}}
             {{> userinfosignin}}
             <a href="/new/">create new</a>
             <a href="http://github.com/greggman/vertexshaderart">github</a>
@@ -692,3 +696,12 @@
   </div>
 </template>
 
+<template name="play">
+    <button class="playbutton outlinedbutton">
+      {{#if isPlaying}}
+            ❚❚
+      {{else}}
+            ▶
+      {{/if}}
+    </button>
+</template>

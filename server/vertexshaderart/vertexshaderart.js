@@ -1176,7 +1176,7 @@ if (Meteor.isClient) {
   });
 
   Template.artpage.onDestroyed(function() {
-    window.vsart.stop();
+    window.vsart.stop(true);
   });
 
   function save() {
@@ -1296,6 +1296,20 @@ if (Meteor.isClient) {
     },
     "click #cancel": function() {
       Session.set("saving", false);
+    },
+  });
+
+  Template.play.events({
+    'click .playbutton': function() {
+      window.vsart.toggleMusic();
+      Session.set("MusicState", window.vsart.getMusicState());
+    }
+  });
+
+  Template.play.helpers({
+    isPlaying: function() {
+      Session.get("MusicState");
+      return window.vsart.getMusicState();
     },
   });
 
