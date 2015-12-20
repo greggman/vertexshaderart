@@ -334,6 +334,33 @@ define([
     removeItem: function() {},
   };
 
+  function toggleMusic(setPauseFn) {
+    setPauseFn = setPauseFn || function() {};
+    if (!s.streamSource) {
+      return false;
+    }
+
+    if (s.streamSource.isPlaying()) {
+      s.streamSource.stop();
+      if (s.inIframe) {
+        setPauseFn(true);
+      }
+    } else {
+      s.streamSource.play();
+      var source = s.streamSource.getSource();
+      if (source) {
+        source.connect(s.analyser);
+      }
+      if (s.inIframe) {
+        setPauseFn(false)
+      }
+    }
+  }
+
+  function getMusicState() {
+    return s.streamSource ? s.streamSource.isPlaying() : false;
+  }
+
   function VS() {
     var _pauseIcon = "❚❚";
     var _playIcon = "▶";
@@ -771,24 +798,16 @@ define([
       s.streamSource.setSource(src);
     }
 
+    function setMusicPause(pause) {
+      g.pause = pause;
+      if (!pause) {
+        queueRender();
+      }
+    }
+
     playElems.forEach(function(playElem) {
       on(playElem, 'click', function() {
-        if (s.streamSource.isPlaying()) {
-          s.streamSource.stop();
-          if (s.inIframe) {
-            g.pause = true;
-          }
-        } else {
-          s.streamSource.play();
-          var source = s.streamSource.getSource();
-          if (source) {
-            source.connect(s.analyser);
-          }
-          if (s.inIframe) {
-            g.pause = false;
-            queueRender();
-          }
-        }
+        toggleMusic(setMusicPause);
         setPlayState();
       });
     });
@@ -1769,11 +1788,11 @@ define([
       }
     });
 
-    this.stop = function() {
+    this.stop = function(keepMusic) {
       clearHideUITimeout();
       s.running = false;
       stopRender();
-      if (s.interruptMusic !== false && !s.lockMusic && s.streamSource.isPlaying()) {
+      if (!keepMusic && s.interruptMusic !== false && !s.lockMusic && s.streamSource.isPlaying()) {
         s.streamSource.stop();
       }
       s.programManager.clear();
@@ -1823,9 +1842,9 @@ define([
     });
   }
 
-  function stop() {
+  function stop(keepMusic) {
     if (vs) {
-      vs.stop();
+      vs.stop(keepMusic);
     }
   }
 
@@ -1898,6 +1917,8 @@ define([
   return {
     start: start,
     stop: stop,
+    toggleMusic: toggleMusic,
+    getMusicState: getMusicState,
     isSaveable: isSaveable,
     getSettings: getSettings,
     setSettings: setSettings,
