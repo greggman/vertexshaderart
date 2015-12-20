@@ -209,6 +209,7 @@ input,
   user-select: none;
   font-family: monospace;
   font-size: small;
+  line-height: 100%;
 }
 #toolbar>button:disabled,
 #toolbar>input:disabled {
