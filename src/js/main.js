@@ -1427,9 +1427,10 @@ define([
       if (duration) {
         var currentTime = s.streamSource.getCurrentTime();
         var l = currentTime / duration;
-        pixels = l * soundTime.clientWidth | 0;
+        pixels = (l * soundTime.clientWidth) | 0;
       }
       if (pixels != g.soundTimePixelWidth) {
+        g.soundTimePixelWidth = pixels;
         soundTime.style.background = "linear-gradient(90deg, rgba(30,30,30,0.7) " + (l * 100).toFixed(2) + "%, rgba(0,0,0,0.7) " + (l * 100). toFixed(2) + "%)";
       }
     }
