@@ -756,7 +756,7 @@ define([
       var touchHistoryTex = s.touchHistory.getTexture();
       var historyTex = s.soundHistory.getTexture();
       var floatHistoryTex = s.canUseFloat ? s.floatSoundHistory.getTexture() : historyTex;
-      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, "CSS", [0, 0]);
+      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, "CSS", g.mouse);
       var ctx = s.screenshotCanvas.getContext("2d");
       var w = ctx.canvas.width  / gl.canvas.width;
       var h = ctx.canvas.height / gl.canvas.height;
