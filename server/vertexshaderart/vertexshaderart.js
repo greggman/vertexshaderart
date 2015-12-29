@@ -228,6 +228,24 @@ if (Meteor.isServer) {
     return findNextPrevArtRevision(artId, date, false);
   });
 
+  Meteor.publish("users", function(skip, limit) {
+    check(skip, Number);
+    check(limit, NumberLessThan100);
+    return Meteor.users.find({}, {
+      skip: skip,
+      limit: limit,
+      fields: {
+        username: true,
+        createdAt: true,
+        profile: true,
+      },
+      sort: {createdAt: 1},
+    });
+  });
+
+  Meteor.publish("userCount", function() {
+    Counts.publish(this, 'userCount', Meteor.users.find({}));
+  });
 
   Meteor.publish("artComments", function(artId, skip, limit) {
     check(artId, String);
@@ -1053,6 +1071,33 @@ if (Meteor.isClient) {
     },
   });
 
+  Template.user.onCreated(function() {
+    var instance = this;
+
+    instance.autorun(function() {
+      var route = Router.current();
+      var pageId = route.data().page;
+      var page = pageId - 1;
+      var skip = page * G_PAGE_SIZE;
+
+      instance.subscribe('userCount');
+    });
+  });
+
+  Template.users.helpers({
+    users: function() {
+      return Meteor.users.find({}, {
+        sort: {createdAt: 1},
+      });
+    },
+  });
+
+  Template.user.helpers({
+    avatar: function() {
+      return getAvatarUrl(this.profile.avatarUrl);
+    },
+  });
+
   Template.pagination.helpers({
     pages: function() {
       var instance = Template.instance();
@@ -1426,6 +1471,32 @@ Router.route('/user/:_username/:_page', {
     };
   },
 });
+Router.route('/users', function() {
+  Router.go('/users/1');
+});
+Router.route('/users/:_page', {
+  template: 'users',
+  data: function() {
+    var page = this.params._page;
+    return {
+      page: page,
+      count: 'userCount',
+      path: '/users',
+    };
+  },
+  subscriptions: function() {
+    var page = this.params._page - 1;
+    var skip = page * 50;
+    var limit = 50;
+    var subs = [
+      Meteor.subscribe('users', skip, limit),
+      Meteor.subscribe('userCount'),
+   ];
+    return subs;
+  },
+  cache: 5,
+  expire: 5,
+});
 Router.route('/art/:_id', {
   template: 'artpage',
   subscriptions: function() {
@@ -1593,7 +1664,7 @@ Router.route('/comments/:_page', {
     var skip = page * 50;
     var limit = 50;
     var subs = [
-      Meteor.subscribe('commentsWithArt', skip, limit),
+      Meteor.subscribe('users', skip, limit),
     ];
     return subs;
   },

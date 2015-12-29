@@ -315,6 +315,41 @@
     </div>
 </template>
 
+<template name="users">
+  <header>
+
+    <div>
+        <div class="buttons">
+            {{> play}}
+            {{> userinfosignin}}
+            <a href="/new/">create new</a>
+            <a href="http://github.com/greggman/vertexshaderart">github</a>
+        </div>
+        {{> logo}}
+    </div>
+  </header>
+  <div class="container">
+      <div class="users">
+      <div class="pagination">
+          {{> pagination}}
+      </div>
+          {{#each users}}
+            {{> user}}
+          {{/each}}
+      </div>
+  </div>
+
+  {{> vslogin}}
+
+</template>
+
+<template name="user">
+  <div class="user">
+    <div class="avatar"><a href="/user/{{username}}"><img src="{{avatar}}" /></a></div>
+    <a class="name" href="/user/{{username}}">{{username}}</a>
+  </div>
+</template>
+
 <template name="share">
     {{#unless private}}
       <button class="share button icon">
