@@ -85,9 +85,24 @@ I'm pretty sure this will work though I haven't tested it on a fresh machine
 
     On Linux that's probably just opening a terminal
 
-4.  cd to the `server/deploy` folder and type
+4.  Start the docker VM
 
         docker-machine start default
+
+5.  Install docker-compose in the docker VM
+
+        ssh 192.168.99.100
+
+    You may be asked for a password for docker. The default password
+    is `tcuser`.
+
+        curl -L https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+        exit
+
+6.  Push it!
+
+        cd server/deploy
         ./push-local.sh
 
     **NOTE: You'll probably see several errors at the beginning.**
@@ -98,7 +113,7 @@ I'm pretty sure this will work though I haven't tested it on a fresh machine
     You may be asked for a password for docker. The default password
     is `tcuser`.
 
-5.  type
+7.  type
 
         ssh 192.168.99.100 'docker logs -f c_meteor_1'
 
@@ -106,12 +121,12 @@ I'm pretty sure this will work though I haven't tested it on a fresh machine
     meteor. Once you see "Starting Meteor..." (or if you see
     "Building the Bundle..." and you've waited 3-5 mins) then...
 
-6.  Go to `http://192.168.99.100:3000`
+8.  Go to `http://192.168.99.100:3000`
 
     If you see the website it's running. There's no data so there
     will be no art to view. You'll need to make some
 
-To update the local VM check stuff into your github repo and run steps 4+ again.
+To update the local VM check stuff into your github repo and run steps 6+ again.
 
 ### Deploy Live
 
@@ -134,18 +149,25 @@ asked for passwords a billion times as you run these scripts.
 
     Test it by typing
 
-        ssh <ipaddress>
+        ssh <ipaddressOrDomainOfDroplet>
 
     It should connect to your droplet no questions asked. If it doesn't then you either
     didn't setup your ssh keys or something else is wrong. Type `exit` to exit or press Ctrl-D.
 
-5.  Copy the file `server/deploy/settings-live-orig.json` to `server/deploy/settings-live.json`
+5.  Install docker-compose in your droplet
+
+        ssh <ipaddressOrDomainOfDroplet>
+        curl -L https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+        exit
+
+6.  Copy the file `server/deploy/settings-live-orig.json` to `server/deploy/settings-live.json`
 
         cp server/deploy/settings-live-orig.json server/deploy/settings-live.json
 
     **IMPORTANT!! DO NOT ADD THIS FILE TO GIT!!**
 
-6.  Edit the file `server/deploy/docker-compose-live.yml` and change these lines
+7.  Edit the file `server/deploy/docker-compose-live.yml` and change these lines
 
         - REPO=https://github.com/greggman/vertexshaderart
         - ROOT_URL=http://www.vertexshaderart.com
@@ -154,26 +176,26 @@ asked for passwords a billion times as you run these scripts.
     The second like needs to be the place your site can be reached. If you haven't setup
     a domain name use your droplets ip address. (eg: `- ROOT_URL=http://123.234.12.34`)
 
-7.  Edit the file `server/deploy/push-live.sh`
+8.  Edit the file `server/deploy/push-live.sh`
 
     Change `DOCKER=vertexshaderart.com` to the IP address or domain of your droplet.
 
-8.  cd to the `server/deploy` folder and type
+9.  cd to the `server/deploy` folder and type
 
         ./push-live.sh
 
-9.  type
+10. type
 
-        ssh <ipaddress-of-drople> 'docker logs -f c_meteor_1'
+        ssh <ipaddressOrDomainOfDroplet> 'docker logs -f c_meteor_1'
 
     This will show you output from the docker container running
     meteor. Once you see "Starting Meteor..." ..
 
-10. Go to `http://<ipaddresofdroplet>`
+11. Go to `http://<ipaddressOrDomainOfDroplet>`
 
     Your site is live.
 
-To update the site check stuff into your github repo and run steps 8+ again
+To update the site check stuff into your github repo and run steps 9+ again
 
 #### Configuring login services
 
