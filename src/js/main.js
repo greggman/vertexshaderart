@@ -572,7 +572,7 @@ define([
             options.client_id = _clientId;
             options.format = "json";
             options["_status_code_map[302]"] = 200;
-            var scUrl = "http://api.soundcloud.com" + url + misc.objectToSearchString(options);
+            var scUrl = "https://api.soundcloud.com" + url + misc.objectToSearchString(options);
 
             var handleResult = function(err, obj) {
               if (!err) {
