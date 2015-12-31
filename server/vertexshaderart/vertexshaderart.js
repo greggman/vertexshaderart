@@ -918,8 +918,17 @@ if (Meteor.isClient) {
     return getAvatarUrl(avatarUrl);
   }
 
+  var domainsToConvertToHTTPSRE = /(\.wp\.com)$/i;
   function getAvatarUrl(url) {
-    return url || "/static/resources/images/missing-avatar.png";
+    url = url || "/static/resources/images/missing-avatar.png";
+    try {
+      var u = new URL(url);
+      if (u.protocol === "http:" && domainsToConvertToHTTPSRE.test(u.domain)) {
+        url = "https" + url.substr(5);
+      }
+    } catch (e) {
+    }
+    return url;
   }
 
   function getNextPrevArtRevisionUrl(next) {
