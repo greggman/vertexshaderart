@@ -19614,7 +19614,7 @@ define('src/js/main',[
             options.client_id = _clientId;
             options.format = "json";
             options["_status_code_map[302]"] = 200;
-            var scUrl = "http://api.soundcloud.com" + url + misc.objectToSearchString(options);
+            var scUrl = "https://api.soundcloud.com" + url + misc.objectToSearchString(options);
 
             var handleResult = function(err, obj) {
               if (!err) {
@@ -19798,7 +19798,7 @@ define('src/js/main',[
       var touchHistoryTex = s.touchHistory.getTexture();
       var historyTex = s.soundHistory.getTexture();
       var floatHistoryTex = s.canUseFloat ? s.floatSoundHistory.getTexture() : historyTex;
-      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, "CSS", [0, 0]);
+      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, "CSS", g.mouse);
       var ctx = s.screenshotCanvas.getContext("2d");
       var w = ctx.canvas.width  / gl.canvas.width;
       var h = ctx.canvas.height / gl.canvas.height;
