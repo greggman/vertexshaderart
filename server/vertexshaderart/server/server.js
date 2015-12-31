@@ -43,7 +43,7 @@ function addAvatarUrls() {
         { owner: {$exists: true}, },
         { owner: {$ne: null}, },
       ],
-      avatarUrl: {$exists: false},
+//      avatarUrl: {$exists: false},
     }).forEach(function(art) {
       var user = Meteor.users.findOne(art.owner);
       if (!user) {
