@@ -149,49 +149,71 @@ asked for passwords a billion times as you run these scripts.
 
     Test it by typing
 
-        ssh <ipaddressOrDomainOfDroplet>
+        ssh <ipaddressOfDroplet>
 
     It should connect to your droplet no questions asked. If it doesn't then you either
     didn't setup your ssh keys or something else is wrong. Type `exit` to exit or press Ctrl-D.
 
-5.  Install docker-compose in your droplet
+5.  Point your domain to the IP address of your droplet
+
+    If you don't have a domain name you can skip this step
+
+    I can't really help you with this point as every DNS registrar is different. For namecheap.com
+    [their instructions are here](https://www.namecheap.com/support/knowledgebase/article.aspx/319/78/how-can-i-setup-an-a-address-record-for-my-domain).
+
+    Once you've done this test it by
+
+        ssh yourdomainname.com
+
+    If it works continue to the next step. If not um... ask someone to help
+
+6.  Install docker-compose in your droplet
 
         ssh <ipaddressOrDomainOfDroplet>
         curl -L https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
         chmod +x /usr/local/bin/docker-compose
         exit
 
-6.  Copy the file `server/deploy/settings-live-orig.json` to `server/deploy/settings-live.json`
+7.  Copy the file `server/deploy/settings-live-orig.json` to `server/deploy/settings-live.json`
 
         cp server/deploy/settings-live-orig.json server/deploy/settings-live.json
 
     **IMPORTANT!! DO NOT ADD THIS FILE TO GIT!!**
 
-7.  Edit the file `server/deploy/docker-compose-live.yml` and change these lines
+8.  Edit the file `server/deploy/docker-compose-live.yml` and change these lines
 
         - REPO=https://github.com/greggman/vertexshaderart
-        - ROOT_URL=http://www.vertexshaderart.com
+        - ROOT_URL=https://www.vertexshaderart.com
+        - VIRTUAL_HOST=www.vertexshaderart.com
+        - LETSENCRYPT_HOST=www.vertexshaderart.com
+        - LETSENCRYPT_EMAIL=letsencrypt@greggman.com
 
-    The first line needs to be the location of your github repo for your new project.
-    The second like needs to be the place your site can be reached. If you haven't setup
-    a domain name use your droplets ip address. (eg: `- ROOT_URL=http://123.234.12.34`)
+    The `REPO` line needs to be the location of your github repo for your new project.
+    The `ROOT_URL`, `VIRTUAL_HOST`, `LETSENCRYPT_HOST`, needs to be the place your site can be reached.
 
-8.  Edit the file `server/deploy/push-live.sh`
+    **NOTE:**
+
+    If you haven't setup a domain name use your droplets ip address.
+    (eg: `- ROOT_URL=http://123.234.12.34`) and make sure it's `http` (no `S`)
+
+    Also delete the line `443:443`
+
+9.  Edit the file `server/deploy/push-live.sh`
 
     Change `DOCKER=vertexshaderart.com` to the IP address or domain of your droplet.
 
-9.  cd to the `server/deploy` folder and type
+10. cd to the `server/deploy` folder and type
 
         ./push-live.sh
 
-10. type
+11. type
 
         ssh <ipaddressOrDomainOfDroplet> 'docker logs -f c_meteor_1'
 
     This will show you output from the docker container running
     meteor. Once you see "Starting Meteor..." ..
 
-11. Go to `http://<ipaddressOrDomainOfDroplet>`
+12. Go to `https://<domainOfDroplet>` or `http://<ipaddressOfDroplet>`
 
     Your site is live.
 
