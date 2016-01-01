@@ -27,7 +27,7 @@ function addAvatarUrls() {
   });
 
   Meteor.users.find({}).forEach(function(user) {
-    //if (!user.profile.avatarUrl)
+    if (!user.profile.avatarUrl)
     {
       var url = getAvatarUrl(user);
       Meteor.users.update({_id: user._id}, {
@@ -44,7 +44,7 @@ function addAvatarUrls() {
         { owner: {$exists: true}, },
         { owner: {$ne: null}, },
       ],
-//      avatarUrl: {$exists: false},
+      avatarUrl: {$exists: false},
     }).forEach(function(art) {
       var user = Meteor.users.findOne(art.owner);
       if (!user) {
