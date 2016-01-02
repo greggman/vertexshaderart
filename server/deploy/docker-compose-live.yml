@@ -24,7 +24,7 @@ meteor:
    - REPO=https://github.com/greggman/vertexshaderart
    - ROOT_URL=https://www.vertexshaderart.com
    - IMAGE_PATH=/data/images
-   - VIRTUAL_HOST=www.vertexshaderart.com
+   - VIRTUAL_HOST=www.vertexshaderart.com,vertexshaderart.com
    - LETSENCRYPT_HOST=www.vertexshaderart.com
    - LETSENCRYPT_EMAIL=letsencrypt@greggman.com
   env_file:
