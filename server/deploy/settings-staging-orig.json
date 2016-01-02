@@ -1,0 +1,34 @@
+{
+  "public" : {
+    "ga": {
+      "id":"UA-XXXXXXXX-X"
+    },
+    "app": {
+      "pageSize": 15,
+      "hotlistSize": 50
+    }
+  },
+  "accounts": {
+    "github": {
+      "clientId": "github-client-id",
+      "secret": "github-secret"
+    },
+    "google": {
+      "clientId": "google-client-id",
+      "secret": "google-secret"
+    },
+    "soundcloud": {
+      "clientId": "soundcloud-client-id",
+      "secret": "soundcloud-secret"
+    },
+    "twitter": {
+      "consumerKey": "twitter-consumer-key",
+      "secret": "twitter-secret"
+    },
+    "facebook": {
+      "appId": "facebook-app-id",
+      "secret": "facebook-secret"
+    }
+  }
+}
+
