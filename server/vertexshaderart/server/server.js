@@ -27,7 +27,7 @@ function addAvatarUrls() {
   });
 
   Meteor.users.find({}).forEach(function(user) {
-    if (!user.profile.avatarUrl)
+//    if (!user.profile.avatarUrl)
     {
       var url = getAvatarUrl(user);
       Meteor.users.update({_id: user._id}, {
@@ -44,7 +44,7 @@ function addAvatarUrls() {
         { owner: {$exists: true}, },
         { owner: {$ne: null}, },
       ],
-      avatarUrl: {$exists: false},
+//      avatarUrl: {$exists: false},
     }).forEach(function(art) {
       var user = Meteor.users.findOne(art.owner);
       if (!user) {
@@ -85,9 +85,9 @@ function getEmailOrHash(user) {
   return emailOrHash;
 };
 
-function getGravatarUrl(user, defaultUrl) {
+function getGravatarUrl(user) {
   var options = {
-    default: defaultUrl,
+    default: "retro",
     size: 200,
     secure: true,
   };
@@ -115,8 +115,7 @@ function getAvatarUrl(user) {
   } else if (serviceName === 'soundcloud') {
     url = user.services.soundcloud.avatar_url;
   } else if (serviceName === 'password') {
-    var defaultUrl = Meteor.absoluteUrl() + "static/resources/images/missing-avatar.png";
-    url = getGravatarUrl(user, defaultUrl);
+    url = getGravatarUrl(user);
   }
   return url;
 }
