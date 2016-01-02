@@ -19370,7 +19370,14 @@ define('src/js/main',[
     return status == gl.FRAMEBUFFER_COMPLETE;
   }
 
-  var storage = (window.localStorage && !s.inIframe) ? window.localStorage : {
+  var storage;
+  if (!s.inIframe) {
+    try {
+      storage = window.localStorage;  // apparently you can get a security error for this
+    } catch (e) {
+    }
+  }
+  storage = storage || {
     getItem: function() {},
     setItem: function() {},
     removeItem: function() {},
