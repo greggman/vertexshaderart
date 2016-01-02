@@ -15,7 +15,7 @@ function extractDataForRank() {
 };
 //extractDataForRank();
 
-function addAvatarUrls() {
+function addAvatarUrls(force) {
   Meteor.users.find({}).forEach(function(user) {
     if (!user.profile) {
       Meteor.users.update({_id: user._id}, {
@@ -27,7 +27,7 @@ function addAvatarUrls() {
   });
 
   Meteor.users.find({}).forEach(function(user) {
-//    if (!user.profile.avatarUrl)
+    if (force || !user.profile.avatarUrl)
     {
       var url = getAvatarUrl(user);
       Meteor.users.update({_id: user._id}, {
@@ -39,13 +39,16 @@ function addAvatarUrls() {
   });
 
   function addAvatarUrlsToCollection(collection) {
-    collection.find({
+    var find = {
       $and: [
         { owner: {$exists: true}, },
         { owner: {$ne: null}, },
       ],
-//      avatarUrl: {$exists: false},
-    }).forEach(function(art) {
+    };
+    if (!force) {
+      find.avatarUrl = {$exists: false};
+    }
+    collection.find(find).forEach(function(art) {
       var user = Meteor.users.findOne(art.owner);
       if (!user) {
         console.log("missing user for art:", art._id, "user:", art.owner);
