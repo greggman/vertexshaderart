@@ -184,7 +184,7 @@ asked for passwords a billion times as you run these scripts.
 
         - REPO=https://github.com/greggman/vertexshaderart
         - ROOT_URL=https://www.vertexshaderart.com
-        - VIRTUAL_HOST=www.vertexshaderart.com
+        - VIRTUAL_HOST=www.vertexshaderart.com,vertexshaderart.com
         - LETSENCRYPT_HOST=www.vertexshaderart.com
         - LETSENCRYPT_EMAIL=letsencrypt@greggman.com
 
@@ -218,6 +218,28 @@ asked for passwords a billion times as you run these scripts.
     Your site is live.
 
 To update the site check stuff into your github repo and run steps 9+ again
+
+### Deploy Staging
+
+NOTE: I'm not normally running a staging server. The only reason I needed
+a staging server was to test HTTPS because letsencrypt requires a publically
+accessable server at the domain for which it will be issuing a certificate.
+
+So, the instructions almost the same as [Deploy Live](#deploy-live). You
+need to make a separate droplet for staging so yes, start from step 1 of
+[Deploy Live](#deploy-live).
+
+The differences.
+
+Step 5, make a subdomain like `staging.myapp.com` at your DNS registar
+and point it at the staging droplet.
+
+Step 7, copy `settings-staging-orig.json` to `settings-staging.json`
+
+Steps 8 through 12, everywhere it says `www.` change it to `staging.`.
+Everwhere something ends with `-live` use `-staging` instead.
+
+That's pretty much it. It should work the same.
 
 #### Configuring login services
 
@@ -364,6 +386,10 @@ for debugging or testing new ideas with actual data
 
     # restoring a backup made with backup-live.sh to the dev version
     ./restore-dev.sh 2015-11-07.16:32:57
+
+
+
+
 
 
 
