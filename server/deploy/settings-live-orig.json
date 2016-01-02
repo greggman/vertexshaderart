@@ -24,6 +24,10 @@
     "twitter": {
       "consumerKey": "twitter-consumer-key",
       "secret": "twitter-secret"
+    },
+    "facebook": {
+      "appId": "facebook-app-id",
+      "secret": "facebook-secret"
     }
   }
 }
