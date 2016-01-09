@@ -709,9 +709,15 @@
   </header>
   <div class="container">
       <div class="comments">
+          <div class="pagination">
+              {{> pagination}}
+          </div>
              {{#each comments}}
                {{> separatecomment}}
              {{/each}}
+          <div class="pagination">
+              {{> pagination}}
+          </div>
       </div>
   </div>
 </template>

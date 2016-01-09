@@ -312,6 +312,11 @@ if (Meteor.isServer) {
       }),
     ];
   });
+
+  Meteor.publish("commentCount", function() {
+    Counts.publish(this, 'commentCount', Comments.find());
+  });
+
 }
 
 var pwd = AccountsTemplates.removeField('password');
@@ -1666,6 +1671,7 @@ Router.route('/comments/:_page', {
     var page = this.params._page;
     return {
       page: page,
+      count: 'commentCount',
     };
   },
   subscriptions: function() {
@@ -1673,7 +1679,8 @@ Router.route('/comments/:_page', {
     var skip = page * 50;
     var limit = 50;
     var subs = [
-      Meteor.subscribe('users', skip, limit),
+      Meteor.subscribe('commentsWithArt', skip, limit),
+      Meteor.subscribe('commentCount'),
     ];
     return subs;
   },
