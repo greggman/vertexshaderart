@@ -239,7 +239,9 @@ Step 7, copy `settings-staging-orig.json` to `settings-staging.json`
 Steps 8 through 12, everywhere it says `www.` change it to `staging.`.
 Everwhere something ends with `-live` use `-staging` instead.
 
-That's pretty much it. It should work the same.
+That's pretty much it. It should work the same. One more note, if
+you want to test any of the login serivces they'll need their own
+codes, separate from the live site's codes. See below.
 
 #### Configuring login services
 
@@ -323,12 +325,13 @@ uses `consumerKey` etc..
 *   Go back to the Dashboard tab.
 *   Get App Id and App Secret
 
-##### Live vs Local
+##### Live vs Local vs Staging
 
 If I understand correctly the callback for each URL needs to be accessable from the browser
 which means you either need to edit them all for live vs local or else register separate apps
 for each service (mysite and mysite-dev).  Every where it says `<ipaddressofdroplet-or-domain>`
-above would be `192.168.99.100:3000` for local. Personally I haven't set any up for local
+above would be `192.168.99.100:3000` for local. Personally I haven't set any up for local but
+I have setup separate ones for staging.
 
 #### Configuring Google Analytics
 
