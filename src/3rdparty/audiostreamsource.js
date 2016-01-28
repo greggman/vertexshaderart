@@ -112,8 +112,10 @@
 
     function setSource(src) {
       canPlayHandled = false;
-      if (isPlaying()) {
+      if (source) {
         source.disconnect();
+      }
+      if (isPlaying()) {
         audio.pause();
       }
       audio.src = src;
