@@ -471,6 +471,7 @@ define("node_modules/almond/almond.js", function(){});
   // standard that things will actually work.
   //var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
   var shittyBrowser = /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -496,9 +497,10 @@ define("node_modules/almond/almond.js", function(){});
     var self = this;
     var context = options.context;
     var autoPlay = options.autoPlay;
-    var audio = new Audio();
     var source;
+    var audio;
     var canPlayHandled = false;
+    var playRequested = false;
     var handleAudioError = function handleAudioError(e) {
       emit('error', e);
     };
@@ -507,8 +509,11 @@ define("node_modules/almond/almond.js", function(){});
         canPlayHandled = true;
         if (source) {
           source.disconnect();
+          if (isSafari) {
+            source = undefined;
+          }
         }
-        if (autoPlay) {
+        if (autoPlay || playRequested) {
           startPlaying(play, emit);
         }
         if (!source) {
@@ -520,9 +525,6 @@ define("node_modules/almond/almond.js", function(){});
     var handleEnded = function handleEnded() {
       emit('ended');
     };
-    audio.addEventListener('error', handleAudioError);
-    audio.addEventListener('canplay', handleCanplay);
-    audio.addEventListener('ended', handleEnded);
 
     function showEvent(e) {
       console.log("got event:", e.type);
@@ -557,12 +559,6 @@ define("node_modules/almond/almond.js", function(){});
     //  audio.addEventListener(event, showEvent);
     //});
 
-    audio.loop = options.loop;
-    audio.autoplay = options.autoPlay;
-    if (options.crossOrigin !== undefined) {
-      audio.crossOrigin = "anonymous";
-    }
-
     function setSource(src) {
       canPlayHandled = false;
       if (source) {
@@ -570,6 +566,22 @@ define("node_modules/almond/almond.js", function(){});
       }
       if (isPlaying()) {
         audio.pause();
+      }
+      if (!audio || isSafari) {
+        if (audio) {
+          audio.removeEventListener('error', handleAudioError);
+          audio.removeEventListener('canplay', handleCanplay);
+          audio.removeEventListener('ended', handleEnded);
+        }
+        audio = new Audio();
+        audio.loop = options.loop;
+        audio.autoplay = options.autoPlay;
+        if (options.crossOrigin !== undefined) {
+          audio.crossOrigin = "anonymous";
+        }
+        audio.addEventListener('error', handleAudioError);
+        audio.addEventListener('canplay', handleCanplay);
+        audio.addEventListener('ended', handleEnded);
       }
       audio.src = src;
       audio.load();
@@ -584,29 +596,36 @@ define("node_modules/almond/almond.js", function(){});
     }
 
     function play() {
+      playRequested = false;
       audio.play();
       audio.currentTime = 0;
     }
 
     function isPlaying() {
-      return !audio.paused;
+      return audio && !audio.paused;
     }
 
     function getCurrentTime() {
-      return audio.currentTime || 0;
+      return audio ? (audio.currentTime || 0) : 0;
     }
 
     function getDuration() {
-      return audio.duration || 0;
+      return audio ? (audio.duration || 0) : 0;
     }
 
     this.isPlaying = isPlaying;
 
     this.play = function() {
-      startPlaying(play, emit);
+      if (canPlayHandled) {
+        startPlaying(play, emit);
+      } else {
+        playRequested = true;
+      }
     };
     this.stop = function() {
-      audio.pause();
+      if (audio) {
+        audio.pause();
+      }
     };
     this.setSource = setSource;
     this.getSource = getSource;
