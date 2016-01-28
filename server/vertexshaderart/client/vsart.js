@@ -565,6 +565,10 @@ define("node_modules/almond/almond.js", function(){});
 
     function setSource(src) {
       canPlayHandled = false;
+      if (isPlaying()) {
+        source.disconnect();
+        audio.pause();
+      }
       audio.src = src;
       audio.load();
     }
