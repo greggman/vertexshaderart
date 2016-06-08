@@ -48,7 +48,7 @@ iron:core@1.0.11
 iron:dynamic-template@1.0.12
 iron:layout@1.0.12
 iron:location@1.0.11
-iron:middleware-stack@1.0.11
+iron:middleware-stack@1.1.0
 iron:router@1.0.12
 iron:url@1.0.11
 jparker:crypto-core@0.1.0
@@ -63,8 +63,8 @@ logging@1.0.8
 lookback:dropdowns@1.2.1
 meteor@1.1.10
 meteor-base@1.0.1
-meteorhacks:inject-initial@1.0.3
-meteorhacks:kadira@2.26.3
+meteorhacks:inject-initial@1.0.4
+meteorhacks:kadira@2.28.7
 meteorhacks:meteorx@1.4.1
 meteorhacks:ssr@2.2.0
 meteorhacks:zones@1.6.0
