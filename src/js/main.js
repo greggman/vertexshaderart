@@ -693,7 +693,7 @@ define([
         value: "",
         theme: "blackboard",
         mode: "x-text/x-glsl",
-        lineNumbers: true,
+        lineNumbers: false,
         scrollbarStyle: "overlay",
       });
     }
