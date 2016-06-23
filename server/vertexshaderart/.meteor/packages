@@ -9,6 +9,7 @@ accounts-google
 accounts-twitter
 accounts-github
 iron:router
+standard-minifiers
 meteor-base
 mobile-experience
 mongo
@@ -38,5 +39,3 @@ lookback:dropdowns
 accounts-facebook
 less
 jparker:gravatar
-standard-minifier-css
-standard-minifier-js
