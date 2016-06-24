@@ -10,7 +10,7 @@ nginx:
 
 meteor:
   container_name: c_meteor_1
-  image: gmanjapan/meteor
+  image: ulexus/meteor
   restart: on-failure:5
   ports:
    - "127.0.0.1:3000:80"
