@@ -451,6 +451,21 @@ define([
       $("#uicontainer").className = "iframe";
     }
 
+    var mainRE = /(void[ \t\n\r]+main[ \t\n\r]*\([ \t\n\r]*\)[ \t\n\r]\{)/g;
+    function applyTemplateToShader(src) {
+      var vsrc = g.vsHeader + src;
+      vsrc = vsrc.replace(mainRE, function(m) {
+        return m + "gl_PointSize=1.0;";
+      });
+      var lastBraceNdx = vsrc.lastIndexOf("}");
+      if (lastBraceNdx >= 0) {
+        var before = vsrc.substr(0, lastBraceNdx);
+        var after = vsrc.substr(lastBraceNdx);
+        vsrc = before + ";gl_PointSize = max(0., gl_PointSize*_dontUseDirectly_pointSize);" + after;
+      }
+      return vsrc;
+    }
+
     on(fullScreenElem, 'click', function(e) {
       if (fullScreen.isFullScreen()) {
         fullScreen.cancelFullScreen();
@@ -519,6 +534,7 @@ define([
 
       s.rectProgramInfo = twgl.createProgramInfo(gl, [getShader("rect-vs"), getShader("rect-fs")]);
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
+      s.waveProgramInfo = twgl.createProgramInfo(gl, [applyTemplateToShader(getShader("wave-vs")), getShader("fs")]);
 
       s.rectUniforms = {
         u_color: [0, 0, 0, 0.7],
@@ -764,10 +780,13 @@ define([
 
     on(window, 'beforeunload', saveRestoreSettings);
     function handleKeyDown(e) {
+      clearVisualizers();
       if (s.keyRouter.handleKeyDown(e)) {
         // a handler was called
       }
     }
+
+    on(window, 'click', clearVisualizers);
     on(window, 'keydown', handleKeyDown);
     on(document, 'visibilitychange', clearRestore);
     on(window, 'resize', function() {
@@ -1068,6 +1087,11 @@ define([
       g.animRects.push(anim);
     }
 
+    function clearVisualizers() {
+      q.showHistory = false;
+      q.showWave = false;
+    }
+
     var uiModes = {
       '#ui-off': function(animate) {
         if (animate) {
@@ -1207,12 +1231,32 @@ define([
 
     var helpElem = $("#help");
     var helpDialogElem = $("#helpDialog");
-    on(helpElem, 'click', function(e) {
-      helpDialogElem.style.display = "";
-    });
-    on(helpDialogElem, 'click', function(e) {
+    on(helpElem, 'click', showHelp);
+    on(helpDialogElem, 'click', hideHelp);
+
+    function hideHelp() {
       helpDialogElem.style.display = "none";
+    }
+
+    var showsoundtextureElem = $("#showsoundtexture");
+    on(showsoundtextureElem, 'click', function(e) {
+      e.stopPropagation();
+      clearVisualizers();
+      hideHelp();
+      q.showHistory = true;
     });
+
+    var showwaveElem = $("#showwave");
+    on(showwaveElem, 'click', function(e) {
+      e.stopPropagation();
+      clearVisualizers();
+      hideHelp();
+      q.showWave = true;
+    });
+
+    function showHelp() {
+      helpDialogElem.style.display = (helpDialogElem.style.display != "") ? "" : "none";
+    }
 
     s.keyRouter.on(112, showHelp);
 
@@ -1236,18 +1280,8 @@ define([
       return m === undefined ? gl.LINES : m;
     }
 
-    var mainRE = /(void[ \t\n\r]+main[ \t\n\r]*\([ \t\n\r]*\)[ \t\n\r]\{)/g;
     function tryNewProgram(text) {
-      var vsrc = g.vsHeader + text;
-      vsrc = vsrc.replace(mainRE, function(m) {
-        return m + "gl_PointSize=1.0;";
-      });
-      var lastBraceNdx = vsrc.lastIndexOf("}");
-      if (lastBraceNdx >= 0) {
-        var before = vsrc.substr(0, lastBraceNdx);
-        var after = vsrc.substr(lastBraceNdx);
-        vsrc = before + ";gl_PointSize = max(0., gl_PointSize*_dontUseDirectly_pointSize);" + after;
-      }
+      var vsrc = applyTemplateToShader(text);
       setShaderSuccessStatus(false);
       s.programManager.compile(vsrc, g.fSource, text);
     }
@@ -1489,7 +1523,7 @@ define([
       gl.clearColor.apply(gl, settings.backgroundColor);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      var programInfo = s.programManager.getProgramInfo();
+      var programInfo = q.showWave ? s.waveProgramInfo : s.programManager.getProgramInfo();
       if (programInfo) {
         g.wasRendered = true;
 
