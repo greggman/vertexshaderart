@@ -1535,8 +1535,10 @@ define([
       if (programInfo) {
         g.wasRendered = true;
 
+        var num = q.showWave ? 7000 : settings.num;
+        var mode = q.showWave ? gl.LINES : g.mode;
         uniforms.time = time;
-        uniforms.vertexCount = settings.num;
+        uniforms.vertexCount = num;
         uniforms.resolution[0] = gl.canvas.width;
         uniforms.resolution[1] = gl.canvas.height;
         uniforms.background[0] = settings.backgroundColor[0];
@@ -1553,7 +1555,7 @@ define([
         gl.useProgram(programInfo.program);
         twgl.setBuffersAndAttributes(gl, programInfo, s.countBufferInfo);
         twgl.setUniforms(programInfo, uniforms);
-        twgl.drawBufferInfo(gl, g.mode, s.countBufferInfo, settings.num);
+        twgl.drawBufferInfo(gl, mode, s.countBufferInfo, num);
       }
     }
 
