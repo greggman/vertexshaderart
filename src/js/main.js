@@ -40,6 +40,7 @@ define([
     '3rdparty/notifier',
     './fullscreen',
     './io',
+    './keyrouter',
     './listenermanager',
     './misc',
     './strings',
@@ -55,6 +56,7 @@ define([
      Notifier,
      fullScreen,
      io,
+     KeyRouter,
      ListenerManager,
      misc,
      strings
@@ -523,6 +525,20 @@ define([
         u_matrix: m4.identity(),
       };
 
+      s.keyRouter = new KeyRouter();
+      if (navigator.platform.match("Mac")) {
+        s.keyRouter.on(83, 'm', saveArt);
+      } else {
+        s.keyRouter.on(83, 'c', saveArt);
+      }
+
+      function saveArt(e) {
+        e.preventDefault();
+        if (g.saveFn) {
+          g.saveFn();
+        }
+      }
+
       var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
       s.numSoundSamples = Math.min(maxTextureSize, s.analyser.frequencyBinCount);
       s.numHistorySamples = 60 * 4; // 4 seconds;
@@ -743,17 +759,16 @@ define([
       }
     }
 
-    function trySave(e) {
-      if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
-        e.preventDefault();
-        if (g.saveFn) {
-          g.saveFn();
-        }
       }
     }
 
-    on(window, 'keydown', trySave);
     on(window, 'beforeunload', saveRestoreSettings);
+    function handleKeyDown(e) {
+      if (s.keyRouter.handleKeyDown(e)) {
+        // a handler was called
+      }
+    }
+    on(window, 'keydown', handleKeyDown);
     on(document, 'visibilitychange', clearRestore);
     on(window, 'resize', function() {
       queueRender(true);
@@ -1198,6 +1213,8 @@ define([
     on(helpDialogElem, 'click', function(e) {
       helpDialogElem.style.display = "none";
     });
+
+    s.keyRouter.on(112, showHelp);
 
     function isAllNumbers0to1(array) {
       for (var ii = 0; ii < array.length; ++ii) {
