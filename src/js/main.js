@@ -775,10 +775,17 @@ define([
       }
     }
 
+    function confirmUnload(e) {
+      console.log("checking unload");
+      if (!misc.deepCompare(settings, g.origSettings)) {
+        console.log("need confirmation");
+        saveRestoreSettings();
+        var msg = "Local Changes Present: Leave?";
+        e.returnValue = msg;
+        return msg;
       }
     }
 
-    on(window, 'beforeunload', saveRestoreSettings);
     function handleKeyDown(e) {
       clearVisualizers();
       if (s.keyRouter.handleKeyDown(e)) {
@@ -788,6 +795,7 @@ define([
 
     on(window, 'click', clearVisualizers);
     on(window, 'keydown', handleKeyDown);
+    on(window, 'beforeunload', confirmUnload);
     on(document, 'visibilitychange', clearRestore);
     on(window, 'resize', function() {
       queueRender(true);
