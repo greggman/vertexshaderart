@@ -18123,6 +18123,64 @@ define('src/js/io',[],function() {
 
 
 
+define('src/js/keyrouter',[], function() {
+  function getMods(e) {
+    return '' + // this must be in alphabetical order
+      (e.altKey   ? 'a' : '') +
+      (e.ctrlKey  ? 'c' : '') +
+      (e.shiftKey ? 's' : '') +
+      (e.metaKey  ? 'm' : '');
+  }
+
+  function prepMods(mods) {
+    var chars = Array.prototype.map.call(mods.toLowerCase(), function(c) {
+      return c;
+    });
+    chars.sort();
+    return chars.join("");
+  }
+
+  /**
+   * Routes keys based on keycode and modifier
+   */
+  function KeyRouter() {
+    this.handlers = {};
+  }
+
+  /**
+   * Routes a key
+   * @param {Event} e the key event
+   * @return {bool} true if event was routed
+   */
+  KeyRouter.prototype.handleKeyDown = function(e) {
+    var keyId = e.keyCode + ':' + getMods(e);
+    var handler = this.handlers[keyId];
+    if (handler) {
+      handler(e);
+      return true;
+    }
+    return false;
+  };
+
+  /**
+   * @param {number} keyCode the keycode
+   * @param {string} [mods] the modifiers where
+   *   's' = shift, 'c' = ctrl, 'a' = alt, 'm' = meta (apple key, windows key)
+   * @param {function(Event}) handler the funciton to call when key is pressed
+   */
+  KeyRouter.prototype.on = function(keyCode, mods, handler) {
+    if (handler === undefined) {
+      handler = mods;
+      mods = '';
+    }
+    var keyId = keyCode + ':' + prepMods(mods);
+    this.handlers[keyId] = handler;
+  };
+
+  return KeyRouter;
+});
+
+
 /*
  * Copyright 2015, Gregg Tavares.
  * All rights reserved.
@@ -19103,6 +19161,7 @@ define('src/js/main',[
     '3rdparty/notifier',
     './fullscreen',
     './io',
+    './keyrouter',
     './listenermanager',
     './misc',
     './strings',
@@ -19118,6 +19177,7 @@ define('src/js/main',[
      Notifier,
      fullScreen,
      io,
+     KeyRouter,
      ListenerManager,
      misc,
      strings
@@ -19512,6 +19572,21 @@ define('src/js/main',[
       $("#uicontainer").className = "iframe";
     }
 
+    var mainRE = /(void[ \t\n\r]+main[ \t\n\r]*\([ \t\n\r]*\)[ \t\n\r]\{)/g;
+    function applyTemplateToShader(src) {
+      var vsrc = g.vsHeader + src;
+      vsrc = vsrc.replace(mainRE, function(m) {
+        return m + "gl_PointSize=1.0;";
+      });
+      var lastBraceNdx = vsrc.lastIndexOf("}");
+      if (lastBraceNdx >= 0) {
+        var before = vsrc.substr(0, lastBraceNdx);
+        var after = vsrc.substr(lastBraceNdx);
+        vsrc = before + ";gl_PointSize = max(0., gl_PointSize*_dontUseDirectly_pointSize);" + after;
+      }
+      return vsrc;
+    }
+
     on(fullScreenElem, 'click', function(e) {
       if (fullScreen.isFullScreen()) {
         fullScreen.cancelFullScreen();
@@ -19580,11 +19655,26 @@ define('src/js/main',[
 
       s.rectProgramInfo = twgl.createProgramInfo(gl, [getShader("rect-vs"), getShader("rect-fs")]);
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
+      s.waveProgramInfo = twgl.createProgramInfo(gl, [applyTemplateToShader(getShader("wave-vs")), getShader("fs")]);
 
       s.rectUniforms = {
         u_color: [0, 0, 0, 0.7],
         u_matrix: m4.identity(),
       };
+
+      s.keyRouter = new KeyRouter();
+      if (navigator.platform.match("Mac")) {
+        s.keyRouter.on(83, 'm', saveArt);
+      } else {
+        s.keyRouter.on(83, 'c', saveArt);
+      }
+
+      function saveArt(e) {
+        e.preventDefault();
+        if (g.saveFn) {
+          g.saveFn();
+        }
+      }
 
       var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
       s.numSoundSamples = Math.min(maxTextureSize, s.analyser.frequencyBinCount);
@@ -19806,17 +19896,27 @@ define('src/js/main',[
       }
     }
 
-    function trySave(e) {
-      if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
-        e.preventDefault();
-        if (g.saveFn) {
-          g.saveFn();
-        }
+    function confirmUnload(e) {
+      console.log("checking unload");
+      if (!misc.deepCompare(settings, g.origSettings)) {
+        console.log("need confirmation");
+        saveRestoreSettings();
+        var msg = "Local Changes Present: Leave?";
+        e.returnValue = msg;
+        return msg;
       }
     }
 
-    on(window, 'keydown', trySave);
-    on(window, 'beforeunload', saveRestoreSettings);
+    function handleKeyDown(e) {
+      clearVisualizers();
+      if (s.keyRouter.handleKeyDown(e)) {
+        // a handler was called
+      }
+    }
+
+    on(window, 'click', clearVisualizers);
+    on(window, 'keydown', handleKeyDown);
+    on(window, 'beforeunload', confirmUnload);
     on(document, 'visibilitychange', clearRestore);
     on(window, 'resize', function() {
       queueRender(true);
@@ -20116,6 +20216,11 @@ define('src/js/main',[
       g.animRects.push(anim);
     }
 
+    function clearVisualizers() {
+      q.showHistory = false;
+      q.showWave = false;
+    }
+
     var uiModes = {
       '#ui-off': function(animate) {
         if (animate) {
@@ -20255,12 +20360,34 @@ define('src/js/main',[
 
     var helpElem = $("#help");
     var helpDialogElem = $("#helpDialog");
-    on(helpElem, 'click', function(e) {
-      helpDialogElem.style.display = "";
-    });
-    on(helpDialogElem, 'click', function(e) {
+    on(helpElem, 'click', showHelp);
+    on(helpDialogElem, 'click', hideHelp);
+
+    function hideHelp() {
       helpDialogElem.style.display = "none";
+    }
+
+    var showsoundtextureElem = $("#showsoundtexture");
+    on(showsoundtextureElem, 'click', function(e) {
+      e.stopPropagation();
+      clearVisualizers();
+      hideHelp();
+      q.showHistory = true;
     });
+
+    var showwaveElem = $("#showwave");
+    on(showwaveElem, 'click', function(e) {
+      e.stopPropagation();
+      clearVisualizers();
+      hideHelp();
+      q.showWave = true;
+    });
+
+    function showHelp() {
+      helpDialogElem.style.display = (helpDialogElem.style.display != "") ? "" : "none";
+    }
+
+    s.keyRouter.on(112, showHelp);
 
     function isAllNumbers0to1(array) {
       for (var ii = 0; ii < array.length; ++ii) {
@@ -20282,18 +20409,8 @@ define('src/js/main',[
       return m === undefined ? gl.LINES : m;
     }
 
-    var mainRE = /(void[ \t\n\r]+main[ \t\n\r]*\([ \t\n\r]*\)[ \t\n\r]\{)/g;
     function tryNewProgram(text) {
-      var vsrc = g.vsHeader + text;
-      vsrc = vsrc.replace(mainRE, function(m) {
-        return m + "gl_PointSize=1.0;";
-      });
-      var lastBraceNdx = vsrc.lastIndexOf("}");
-      if (lastBraceNdx >= 0) {
-        var before = vsrc.substr(0, lastBraceNdx);
-        var after = vsrc.substr(lastBraceNdx);
-        vsrc = before + ";gl_PointSize = max(0., gl_PointSize*_dontUseDirectly_pointSize);" + after;
-      }
+      var vsrc = applyTemplateToShader(text);
       setShaderSuccessStatus(false);
       s.programManager.compile(vsrc, g.fSource, text);
     }
@@ -20535,12 +20652,14 @@ define('src/js/main',[
       gl.clearColor.apply(gl, settings.backgroundColor);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      var programInfo = s.programManager.getProgramInfo();
+      var programInfo = q.showWave ? s.waveProgramInfo : s.programManager.getProgramInfo();
       if (programInfo) {
         g.wasRendered = true;
 
+        var num = q.showWave ? 7000 : settings.num;
+        var mode = q.showWave ? gl.LINES : g.mode;
         uniforms.time = time;
-        uniforms.vertexCount = settings.num;
+        uniforms.vertexCount = num;
         uniforms.resolution[0] = gl.canvas.width;
         uniforms.resolution[1] = gl.canvas.height;
         uniforms.background[0] = settings.backgroundColor[0];
@@ -20557,7 +20676,7 @@ define('src/js/main',[
         gl.useProgram(programInfo.program);
         twgl.setBuffersAndAttributes(gl, programInfo, s.countBufferInfo);
         twgl.setUniforms(programInfo, uniforms);
-        twgl.drawBufferInfo(gl, g.mode, s.countBufferInfo, settings.num);
+        twgl.drawBufferInfo(gl, mode, s.countBufferInfo, num);
       }
     }
 
