@@ -805,7 +805,9 @@ define([
       var touchHistoryTex = s.touchHistory.getTexture();
       var historyTex = s.soundHistory.getTexture();
       var floatHistoryTex = s.canUseFloat ? s.floatSoundHistory.getTexture() : historyTex;
-      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, "CSS", g.mouse);
+      gl.canvas.width = s.screenshotCanvas.width * 2;
+      gl.canvas.height = s.screenshotCanvas.height * 2;
+      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
       var ctx = s.screenshotCanvas.getContext("2d");
       var w = ctx.canvas.width  / gl.canvas.width;
       var h = ctx.canvas.height / gl.canvas.height;
