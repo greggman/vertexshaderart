@@ -1530,7 +1530,7 @@ define([
       gl.enable(gl.DEPTH_TEST);
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-      gl.clearColor.apply(gl, settings.backgroundColor);
+      gl.clearColor.apply(gl, q.showWave ? [0, 0, 0, 1] : settings.backgroundColor);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
       var programInfo = q.showWave ? s.waveProgramInfo : s.programManager.getProgramInfo();
