@@ -1201,10 +1201,12 @@ define([
       id2 = on(window.document, 'keypress', closeDropdown);
     });
 
-    var colorElem = $("#background");
-    on(colorElem, 'change', function(e) {
+    function updateBackgroundColor(e) {
       settings.backgroundColor = cssParse.parseCSSColor(e.target.value, true);
-    });
+    };
+    var colorElem = $("#background");
+    on(colorElem, 'change', updateBackgroundColor);
+    on(colorElem, 'input', updateBackgroundColor);
 
     var numElem = $("#num");
     var numRangeElem = $("#numRange");
