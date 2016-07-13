@@ -1729,10 +1729,11 @@ define([
     }
 
     function recordMouseMove(e) {
-      var w = window.innerWidth;
-      var h = window.innerHeight;
-      var x = e.clientX / w;
-      var y = e.clientY / h;
+      var rect = gl.canvas.getBoundingClientRect();
+      var w = gl.canvas.clientWidth;
+      var h = gl.canvas.clientHeight;
+      var x = (e.clientX - rect.left) / w;
+      var y = (e.clientY - rect.top ) / h;
 
       g.mouse[0] = x *  2 - 1;
       g.mouse[1] = y * -2 + 1;
@@ -1773,12 +1774,13 @@ define([
     }
 
     function recordTouchStart(e) {
+      var rect = gl.canvas.getBoundingClientRect();
       for (var ii = 0; ii < e.touches.length; ++ii) {
         var t = e.touches[ii];
-        var w = window.innerWidth;
-        var h = window.innerHeight;
-        var x = t.clientX / w;
-        var y = t.clientY / h;
+        var w = gl.canvas.clientWidth;
+        var h = gl.canvas.clientHeight;
+        var x = (t.clientX - rect.left) / w;
+        var y = (t.clientY - rect.top)  / h;
         var ndx = getTouchIndex(t);
         addTouchPosition(ndx, x, y);
         addTouchPressure(ndx, t.force || 1);
