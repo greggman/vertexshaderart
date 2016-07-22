@@ -307,11 +307,13 @@ define([
     };
   }
 
-  function checkCanUseFloat(gl) {
-    if (!gl.getExtension("OES_texture_float")) {
-      return false;
     }
 
+  function checkCanUseFloat(gl) {
+    return gl.getExtension("OES_texture_float") ? true : false;
+  }
+
+  function checkCanRenderToFloat(gl) {
     // Can we render to float?
     var testAttachments = [
       {
@@ -487,7 +489,9 @@ define([
 
       s.canUseFloat = checkCanUseFloat(gl);
       s.canFilterFloat = s.canUseFloat && gl.getExtension("OES_texture_float_linear");
+      s.canRenderToFloat = checkCanRenderToFloat(gl);
       console.log("can " + (s.canUseFloat ? "" : "not ") + "use floating point textures");
+      console.log("can " + (s.canRenderToFloat ? "" : "not ") + "render to floating point textures");
       if (s.canUseFloat) {
         console.log("can " + (s.canFilterFloat ? "" : "not ") + "filter floating point textures");
       }
@@ -565,7 +569,7 @@ define([
         format: gl.ALPHA,
       });
 
-      if (s.canUseFloat) {
+      if (s.canUseFloat && s.canRenderToFloat) {
         var floatFilter = s.canFilterFloat ? gl.LINEAR : gl.NEAREST;
         s.floatSoundHistory = new HistoryTexture(gl, {
           width: s.numSoundSamples,
@@ -578,7 +582,7 @@ define([
       }
 
       s.touchColumns = 32;
-      s.touchHistory = new HistoryTexture(gl, {
+      s.touchHistory = new (s.canRenderToFloat ? HistoryTexture : CPUHistoryTexture)(gl, {
         width: s.touchColumns,
         length: s.numHistorySamples,
         type: s.canUseFloat ? gl.FLOAT : gl.UNSIGNED_BYTE,
@@ -804,7 +808,7 @@ define([
     function takeScreenshot() {
       var touchHistoryTex = s.touchHistory.getTexture();
       var historyTex = s.soundHistory.getTexture();
-      var floatHistoryTex = s.canUseFloat ? s.floatSoundHistory.getTexture() : historyTex;
+      var floatHistoryTex = s.floatSoundHistory ? s.floatSoundHistory.getTexture() : historyTex;
       gl.canvas.width = s.screenshotCanvas.width * 2;
       gl.canvas.height = s.screenshotCanvas.height * 2;
       renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
@@ -1567,7 +1571,7 @@ define([
       // Copy audio data to Nx1 texture
       s.analyser.getByteFrequencyData(s.soundHistory.buffer);
 
-      if (s.canUseFloat) {
+      if (s.floatSoundHistory) {
         s.analyser.getFloatFrequencyData(s.floatSoundHistory.buffer);
       }
 
@@ -1583,7 +1587,7 @@ define([
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
 
       s.soundHistory.update();
-      if (s.canUseFloat) {
+      if (s.floatSoundHistory) {
         s.floatSoundHistory.update();
       }
       s.touchHistory.update();
@@ -1657,13 +1661,13 @@ define([
 
       var touchHistoryTex = s.touchHistory.getTexture();
       var historyTex = s.soundHistory.getTexture();
-      var floatHistoryTex = s.canUseFloat ? s.floatSoundHistory.getTexture() : historyTex;
+      var floatHistoryTex = s.floatSoundHistory ? s.floatSoundHistory.getTexture() : historyTex;
       renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
 
       if (q.showHistory) {
         renderHistory(s.soundHistory.getTexture(), 0, 1);
       }
-      if (q.showFloatHistory && s.canUseFloat) {
+      if (q.showFloatHistory && s.floatSoundHistory) {
         renderHistory(s.floatSoundHistory.getTexture(), 0, -0.005);
       }
       if (q.showTouchHistory) {
