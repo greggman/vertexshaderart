@@ -554,7 +554,7 @@ define([
         s.keyRouter.on(83, 'c', saveArt);
       }
 
-      function saveArt(e) {
+      var saveArt = function(e) {
         e.preventDefault();
         if (g.saveFn) {
           g.saveFn();
