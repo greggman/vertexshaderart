@@ -561,8 +561,10 @@ header .user.nouser.outlinedbutton {
 
 .sorting, .sorting .sorttype, .sorting .pagination {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: flex-start;
+    max-width: 100vw;
 }
 .sorting a {
     min-width: 3em;
@@ -658,6 +660,9 @@ header .user.nouser.outlinedbutton {
 }
 
 @media (max-width : 500px) {
+    .github {
+      display: none;
+    }
     header>div {
         flex-direction: column-reverse;
     }
@@ -700,14 +705,19 @@ header .user.nouser.outlinedbutton {
         padding-bottom: 1em;
     }
     .sorting .sorttype {
-        justify-content: space-around;
+        justify-content: space-between;
         width: 100%;
     }
     .sorting .button {
-        padding: 1em;
+        padding: 0.75em;
+        margin: 0;
+    }
+    .sorting .pagination {
+        width: 100%;
+        justify-content: space-between;
     }
     .sorting .pagination .button {
-        margin: 1em;
+        margin: 0.5em 0 0.5em 0;
     }
     #loginhelpdialog>div {
         width: 95%;
