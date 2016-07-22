@@ -44,6 +44,7 @@ define([
     './listenermanager',
     './misc',
     './strings',
+    './typedarray-copyWithin-polyfill',
   ], function(
      audioStreamSource,
      CodeMirror,
@@ -59,7 +60,8 @@ define([
      KeyRouter,
      ListenerManager,
      misc,
-     strings
+     strings,
+     typedArrayCopyWithinPolyfill
   ) {
 
   "use strict";
