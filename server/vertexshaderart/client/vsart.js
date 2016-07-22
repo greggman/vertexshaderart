@@ -21529,18 +21529,18 @@ define('src/js/main',[
         u_matrix: m4.identity(),
       };
 
-      s.keyRouter = new KeyRouter();
-      if (navigator.platform.match("Mac")) {
-        s.keyRouter.on(83, 'm', saveArt);
-      } else {
-        s.keyRouter.on(83, 'c', saveArt);
-      }
-
       var saveArt = function(e) {
         e.preventDefault();
         if (g.saveFn) {
           g.saveFn();
         }
+      }
+
+      s.keyRouter = new KeyRouter();
+      if (navigator.platform.match("Mac")) {
+        s.keyRouter.on(83, 'm', saveArt);
+      } else {
+        s.keyRouter.on(83, 'c', saveArt);
       }
 
       var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
