@@ -1,4 +1,4 @@
-﻿# To Do
+# To Do
 
 *   Make sure notes start with previous notes on a revision
 
