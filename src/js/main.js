@@ -309,7 +309,41 @@ define([
     };
   }
 
+  function CPUHistoryTexture(gl, options) {
+    var _width = options.width;
+    var type  = options.type || gl.UNSIGNED_BYTE;
+    var format = options.format || gl.RGBA;
+    var ctor  = twgl.getTypedArrayTypeForGLType(type);
+    var numComponents = twgl.getNumComponentsForFormat(format);
+    var _length = options.length;
+    var _rowSize = _width * numComponents;
+    var _size  = _rowSize * _length;
+    var _buffer = new ctor(_size);
+    var _texSpec = {
+      src: _buffer,
+      height: _length,
+      min: options.min || gl.LINEAR,
+      mag: options.mag || gl.LINEAR,
+      wrap: gl.CLAMP_TO_EDGE,
+      format: format,
+      auto: false,  // don't set tex params or call genmipmap
     }
+    var _tex = twgl.createTexture(gl, _texSpec);
+
+    this.buffer = _buffer;
+
+    this.update = function update() {
+      // Upload the latest
+      twgl.setTextureFromArray(gl, _tex, _texSpec.src, _texSpec);
+
+      // scroll the data
+      _buffer.copyWithin(_rowSize, 0, _size - _rowSize);
+    };
+
+    this.getTexture = function getTexture() {
+      return _tex;
+    };
+  }
 
   function checkCanUseFloat(gl) {
     return gl.getExtension("OES_texture_float") ? true : false;
