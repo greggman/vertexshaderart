@@ -66,6 +66,8 @@ define([
 
   "use strict";
 
+
+
   // There's really no good way to tell which browsers fail.
   // Right now Safari doesn't expose AudioContext (it's still webkitAudioContext)
   // so my hope is whenever they get around to actually supporting the 3+ year old
@@ -646,6 +648,7 @@ define([
           _clientId = options.client_id;
         };
         this.get = function(url, options, callback) {
+
           options = JSON.parse(JSON.stringify(options));
           var provideResult = function(fn) {
             options.client_id = _clientId;
@@ -660,7 +663,7 @@ define([
                   return;
                 }
               }
-              callback(obj, err);
+              fn(obj, err);
             };
 
             io.sendJSON(scUrl, {}, handleResult, {
@@ -957,9 +960,14 @@ define([
       s.currentTrackNdx = s.trackNdx % s.playlist.length;
       s.trackNdx = (s.trackNdx + 1) % s.playlist.length;
       var track = s.playlist[s.currentTrackNdx];
-      var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
-      setSoundSource(src);
-      setSoundLink(track);
+      if (track === 'mic') {
+        setSoundSource('mic');
+        setSoundLink();
+      } else {
+        var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
+        setSoundSource(src);
+        setSoundLink(track);
+      }
     }
 
     function setSoundUrl(url, byUser) {
@@ -977,27 +985,32 @@ define([
         setPlayState();
         setSoundLink();
         return;
-      }
-      s.sc.get("/resolve", { url: url }, function(result, err) {
-        if (err) {
-          console.error("bad url:", url, err);
-          setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
-          return;
-        }
-        var tracks = result.kind === "playlist" ? result.tracks : [result];
+      } else if (url === 'mic') {
         s.trackNdx = 0;
-        s.playlist = [];
-        if (Array.isArray(tracks)) {
-          s.playlist = tracks.filter(isStreamable);
-        }
+        s.playlist = ['mic'];
+        playNextTrack();
+      } else {
+        s.sc.get("/resolve", { url: url }, function(result, err) {
+          if (err) {
+            console.error("bad url:", url, err);
+            setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
+            return;
+          }
+          var tracks = result.kind === "playlist" ? result.tracks : [result];
+          s.trackNdx = 0;
+          s.playlist = [];
+          if (Array.isArray(tracks)) {
+            s.playlist = tracks.filter(isStreamable);
+          }
 
-        if (!s.playlist.length) {
-          console.error("no streamable tracks");
-          setSoundSuccessState(false, "not streamable according to soundcloud");
-        } else {
-          playNextTrack();
-        }
-      });
+          if (!s.playlist.length) {
+            console.error("no streamable tracks");
+            setSoundSuccessState(false, "not streamable according to soundcloud");
+          } else {
+            playNextTrack();
+          }
+        });
+      }
     }
 
     on(soundElem, 'change', function(e) {

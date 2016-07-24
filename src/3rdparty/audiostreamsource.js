@@ -19,6 +19,7 @@
   //var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
   var shittyBrowser = /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
   var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -51,20 +52,24 @@
     var handleAudioError = function handleAudioError(e) {
       emit('error', e);
     };
-    var handleCanplay = function handleCanplay() {
+    var handleCanplay = function handleCanplay(unused, micStream) {
       if (!canPlayHandled) {
         canPlayHandled = true;
         if (source) {
           source.disconnect();
-          if (isSafari) {
+          if (isSafari || micStream) {
             source = undefined;
           }
         }
-        if (autoPlay || playRequested) {
-          startPlaying(play, emit);
-        }
-        if (!source) {
-          source = context.createMediaElementSource(audio);
+        if (micStream) {
+          source = context.createMediaStreamSource(micStream);
+        } else {
+          if (autoPlay || playRequested) {
+            startPlaying(play, emit);
+          }
+          if (!source) {
+            source = context.createMediaElementSource(audio);
+          }
         }
         emit('newSource', source);
       }
@@ -114,11 +119,18 @@
       if (isPlaying()) {
         audio.pause();
       }
-      if (!audio || isSafari) {
+      var isMic = src === 'mic';
+      if (!audio || isSafari || isMic) {
         if (audio) {
           audio.removeEventListener('error', handleAudioError);
           audio.removeEventListener('canplay', handleCanplay);
           audio.removeEventListener('ended', handleEnded);
+        }
+        if (isMic) {
+          getUserMedia.call(navigator, {audio:true}, function(stream) {
+            handleCanplay(null, stream);
+          }, handleAudioError);
+          return;
         }
         audio = new Audio();
         audio.loop = options.loop;
