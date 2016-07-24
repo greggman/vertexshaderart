@@ -34,6 +34,7 @@ define([
     '3rdparty/codemirror/addon/scroll/simplescrollbars',
     '3rdparty/colorutils',
     '3rdparty/cssparse',
+    '3rdparty/gif',
     '3rdparty/glsl',
     '3rdparty/tweeny',
     '3rdparty/twgl-full',
@@ -51,6 +52,7 @@ define([
      CodeMirrorSimpleScrollbars,
      colorUtils,
      cssParse,
+     GIFDummy,
      glsl,
      tweeny,
      twgl,
@@ -65,7 +67,7 @@ define([
   ) {
 
   "use strict";
-
+console.log(GIF);
   // There's really no good way to tell which browsers fail.
   // Right now Safari doesn't expose AudioContext (it's still webkitAudioContext)
   // so my hope is whenever they get around to actually supporting the 3+ year old
@@ -585,6 +587,20 @@ define([
         e.preventDefault();
         if (g.saveFn) {
           g.saveFn();
+        } else {
+          g.gifCtx = g.gifCtx || document.createElement("canvas").getContext("2d");
+          g.gifCtx.canvas.width = 256;
+          g.gifCtx.canvas.height = 256;
+          g.gifNumFrames = 120;
+          g.gif = new GIF({
+            workers: 2,
+            repeat: 0,
+            quality: 10,
+            workerScript: '/src/3rdparty/gif.worker.js',
+            background: '#000',
+            width: g.gifCtx.canvas.width,
+            height: g.gifCtx.canvas.height,
+          });
         }
       }
 
@@ -1691,13 +1707,32 @@ define([
       g.then = now;
       g.time += elapsed;
 
-      twgl.resizeCanvasToDisplaySize(gl.canvas);
-
       updateSoundAndTouchHistory();
 
       var touchHistoryTex = s.touchHistory.getTexture();
       var historyTex = s.soundHistory.getTexture();
       var floatHistoryTex = s.floatSoundHistory ? s.floatSoundHistory.getTexture() : historyTex;
+
+      if (g.gifNumFrames) {
+        --g.gifNumFrames;
+        gl.canvas.width = g.gifCtx.canvas.width;
+        gl.canvas.height = g.gifCtx.canvas.height;
+        renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
+        g.gifCtx.drawImage(gl.canvas, 0, 0, g.gifCtx.canvas.width, g.gifCtx.canvas.height);
+        console.log("add frame:", g.gifNumFrames);
+        g.gif.addFrame(g.gifCtx, {copy: true, delay: 20});
+        if (g.gifNumFrames === 0) {
+          g.gif.on('finished', function(blob) {
+            console.log('gif finished');
+            window.open(URL.createObjectURL(blob));
+          });
+          console.log('render');
+          g.gif.render();
+        }
+      }
+
+      twgl.resizeCanvasToDisplaySize(gl.canvas);
+
       renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
 
       if (q.showHistory) {
