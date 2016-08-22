@@ -19,8 +19,15 @@
   //var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
   var shittyBrowser = /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
   var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
   var g_micSource;
+
+  function noGetUserMedia(options, successCallback, errorCallback) {
+    setTimeout(function() {
+      errorCallback("no mic support on this browser/device");
+    });
+  }
+
+  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || noGetUserMedia;
 
   function addEventEmitter(self) {
     var _handlers = {};
