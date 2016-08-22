@@ -468,6 +468,8 @@ define("node_modules/almond/almond.js", function(){});
   //var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
   var shittyBrowser = /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
   var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+  var g_micSource;
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -487,6 +489,23 @@ define("node_modules/almond/almond.js", function(){});
     playFn();
   }
 
+  function isMic(src) {
+    return src === 'mic';
+  }
+
+  function getMicSource(context, callback, errorCallback) {
+    if (g_micSource) {
+      setTimeout(function() {
+        callback(g_micSource);
+      });
+    } else {
+      getUserMedia.call(navigator, {audio:true}, function(stream) {
+        g_micSource = context.createMediaStreamSource(stream);
+        callback(g_micSource);
+      }, errorCallback);
+    }
+  }
+
   function StreamedAudioSource(options) {
     console.log("using streaming audio");
     var emit = addEventEmitter(this);
@@ -500,20 +519,22 @@ define("node_modules/almond/almond.js", function(){});
     var handleAudioError = function handleAudioError(e) {
       emit('error', e);
     };
-    var handleCanplay = function handleCanplay() {
+    var handleCanplay = function handleCanplay(unused, micSource) {
       if (!canPlayHandled) {
         canPlayHandled = true;
         if (source) {
           source.disconnect();
-          if (isSafari) {
-            source = undefined;
+          source = undefined;
+        }
+        if (micSource) {
+          source = micSource;
+        } else {
+          if (autoPlay || playRequested) {
+            startPlaying(play, emit);
           }
-        }
-        if (autoPlay || playRequested) {
-          startPlaying(play, emit);
-        }
-        if (!source) {
-          source = context.createMediaElementSource(audio);
+          if (!source) {
+            source = context.createMediaElementSource(audio);
+          }
         }
         emit('newSource', source);
       }
@@ -563,22 +584,29 @@ define("node_modules/almond/almond.js", function(){});
       if (isPlaying()) {
         audio.pause();
       }
-      if (!audio || isSafari) {
-        if (audio) {
-          audio.removeEventListener('error', handleAudioError);
-          audio.removeEventListener('canplay', handleCanplay);
-          audio.removeEventListener('ended', handleEnded);
-        }
-        audio = new Audio();
-        audio.loop = options.loop;
-        audio.autoplay = options.autoPlay;
-        if (options.crossOrigin !== undefined) {
-          audio.crossOrigin = "anonymous";
-        }
-        audio.addEventListener('error', handleAudioError);
-        audio.addEventListener('canplay', handleCanplay);
-        audio.addEventListener('ended', handleEnded);
+      if (audio) {
+        audio.removeEventListener('error', handleAudioError);
+        audio.removeEventListener('canplay', handleCanplay);
+        audio.removeEventListener('ended', handleEnded);
+        audio = undefined;
       }
+
+      if (isMic(src)) {
+        getMicSource(context, function(micSource) {
+            handleCanplay(null, micSource);
+        }, handleAudioError);
+        return;
+      }
+
+      audio = new Audio();
+      audio.loop = options.loop;
+      audio.autoplay = options.autoPlay;
+      if (options.crossOrigin !== undefined) {
+        audio.crossOrigin = "anonymous";
+      }
+      audio.addEventListener('error', handleAudioError);
+      audio.addEventListener('canplay', handleCanplay);
+      audio.addEventListener('ended', handleEnded);
       audio.src = src;
       audio.load();
     }
@@ -593,8 +621,10 @@ define("node_modules/almond/almond.js", function(){});
 
     function play() {
       playRequested = false;
-      audio.play();
-      audio.currentTime = 0;
+      if (audio) {
+        audio.play();
+        audio.currentTime = 0;
+      }
     }
 
     function isPlaying() {
@@ -653,6 +683,9 @@ define("node_modules/almond/almond.js", function(){});
     }
 
     function play() {
+      if (source && source === g_micSource) {
+        return;
+      }
       if (dataBuffer) {
         if (started) {
           createBufferSource();
@@ -667,6 +700,9 @@ define("node_modules/almond/almond.js", function(){});
     }
 
     function stop() {
+      if (source && source === g_micSource) {
+        return;
+      }
       if (source && playing) {
         source.onended = undefined;
         source.stop(0);
@@ -680,11 +716,11 @@ define("node_modules/almond/almond.js", function(){});
     }
 
     function getDuration() {
-      return source ? source.buffer.duration : 0;
+      return (source && source !== g_micSource) ? source.buffer.duration : 0;
     }
 
     function getCurrentTime() {
-      if (source && playing) {
+      if (source && source !== g_micSource && playing) {
         var elapsedTime = (Date.now() - startTime) * 0.001;
         return elapsedTime % source.buffer.duration;
       } else {
@@ -702,6 +738,17 @@ define("node_modules/almond/almond.js", function(){});
         source.disconnect();
         source = undefined;
       }
+
+      if (isMic(src)) {
+        getMicSource(context, function(micSource) {
+          source = micSource;
+          emit('newSource', micSource);
+        }, function(e) {
+          emit('error', e);
+        });
+        return;
+      }
+
       var req = new XMLHttpRequest();
       req.open("GET", lofiSrc || src, true);
       req.responseType = "arraybuffer";
@@ -21014,6 +21061,8 @@ define('src/js/main',[
 
   "use strict";
 
+
+
   // There's really no good way to tell which browsers fail.
   // Right now Safari doesn't expose AudioContext (it's still webkitAudioContext)
   // so my hope is whenever they get around to actually supporting the 3+ year old
@@ -21518,7 +21567,9 @@ define('src/js/main',[
       g.mode = gl.LINES;
       s.context = new (window.AudioContext || window.webkitAudioContext)();
       s.analyser = s.context.createAnalyser();
-      s.analyser.connect(s.context.destination);
+      s.gainNode = s.context.createGain();
+      s.analyser.connect(s.gainNode);
+      s.gainNode.connect(s.context.destination);
 
       s.rectProgramInfo = twgl.createProgramInfo(gl, [getShader("rect-vs"), getShader("rect-fs")]);
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
@@ -21594,6 +21645,7 @@ define('src/js/main',[
           _clientId = options.client_id;
         };
         this.get = function(url, options, callback) {
+
           options = JSON.parse(JSON.stringify(options));
           var provideResult = function(fn) {
             options.client_id = _clientId;
@@ -21608,7 +21660,7 @@ define('src/js/main',[
                   return;
                 }
               }
-              callback(obj, err);
+              fn(obj, err);
             };
 
             io.sendJSON(scUrl, {}, handleResult, {
@@ -21905,9 +21957,16 @@ define('src/js/main',[
       s.currentTrackNdx = s.trackNdx % s.playlist.length;
       s.trackNdx = (s.trackNdx + 1) % s.playlist.length;
       var track = s.playlist[s.currentTrackNdx];
-      var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
-      setSoundSource(src);
-      setSoundLink(track);
+      if (track === 'mic' || track === 'feedback') {
+        setSoundSource('mic');
+        setSoundLink();
+        s.gainNode.gain.value = track === 'feedback' ? 1 : 0;
+      } else {
+        var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
+        setSoundSource(src);
+        setSoundLink(track);
+        s.gainNode.gain.value = 1;
+      }
     }
 
     function setSoundUrl(url, byUser) {
@@ -21925,27 +21984,32 @@ define('src/js/main',[
         setPlayState();
         setSoundLink();
         return;
-      }
-      s.sc.get("/resolve", { url: url }, function(result, err) {
-        if (err) {
-          console.error("bad url:", url, err);
-          setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
-          return;
-        }
-        var tracks = result.kind === "playlist" ? result.tracks : [result];
+      } else if (url === 'mic' || url === 'feedback') {
         s.trackNdx = 0;
-        s.playlist = [];
-        if (Array.isArray(tracks)) {
-          s.playlist = tracks.filter(isStreamable);
-        }
+        s.playlist = [url];
+        playNextTrack();
+      } else {
+        s.sc.get("/resolve", { url: url }, function(result, err) {
+          if (err) {
+            console.error("bad url:", url, err);
+            setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
+            return;
+          }
+          var tracks = result.kind === "playlist" ? result.tracks : [result];
+          s.trackNdx = 0;
+          s.playlist = [];
+          if (Array.isArray(tracks)) {
+            s.playlist = tracks.filter(isStreamable);
+          }
 
-        if (!s.playlist.length) {
-          console.error("no streamable tracks");
-          setSoundSuccessState(false, "not streamable according to soundcloud");
-        } else {
-          playNextTrack();
-        }
-      });
+          if (!s.playlist.length) {
+            console.error("no streamable tracks");
+            setSoundSuccessState(false, "not streamable according to soundcloud");
+          } else {
+            playNextTrack();
+          }
+        });
+      }
     }
 
     on(soundElem, 'change', function(e) {
