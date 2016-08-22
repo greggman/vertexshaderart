@@ -303,8 +303,9 @@ function computeHotlist() {
     var age = Math.max(now - dob, 0);
     var hoursOld = age / 1000 / 60 / 60;
     // anon ages faster
-    var ageMult = art.owner ? 1 : 2;
-    var agePenalty = Math.max(1, Math.log(hoursOld * ageMult));
+    var ageMult = art.owner ? 1 : 10;
+    var anonAgePenalty = art.owner ? 0 : 11;
+    var agePenalty = Math.max(1, Math.log(hoursOld * ageMult) + anonAgePenalty);
     var bonusPoints = art.owner ? 30 : 1;
     var viewPoints = art.views * 0;
     var likePoints = art.likes * 1;
