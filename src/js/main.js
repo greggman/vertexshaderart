@@ -785,7 +785,7 @@ define([
       setPlayState();
       var tracks = s.playlist.splice(s.currentTrackNdx, 1);
       s.trackNdx = s.currentTrackNdx;
-      var msg = tracks ? tracks[0].title : "";
+      var msg = (tracks && tracks.length) ? (isMic(tracks[0]) ? "" : tracks[0].title) : "";
       setSoundSuccessState(false, "Error streaming music: " + msg + " : " + e.toString());
       playNextTrack();
     });
