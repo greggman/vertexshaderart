@@ -20,6 +20,7 @@
   var shittyBrowser = /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
   var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+  var g_micSource;
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -39,6 +40,23 @@
     playFn();
   }
 
+  function isMic(src) {
+    return src === 'mic';
+  }
+
+  function getMicSource(context, callback, errorCallback) {
+    if (g_micSource) {
+      setTimeout(function() {
+        callback(g_micSource);
+      });
+    } else {
+      getUserMedia.call(navigator, {audio:true}, function(stream) {
+        g_micSource = context.createMediaStreamSource(stream);
+        callback(g_micSource);
+      }, errorCallback);
+    }
+  }
+
   function StreamedAudioSource(options) {
     console.log("using streaming audio");
     var emit = addEventEmitter(this);
@@ -52,17 +70,15 @@
     var handleAudioError = function handleAudioError(e) {
       emit('error', e);
     };
-    var handleCanplay = function handleCanplay(unused, micStream) {
+    var handleCanplay = function handleCanplay(unused, micSource) {
       if (!canPlayHandled) {
         canPlayHandled = true;
         if (source) {
           source.disconnect();
-          if (isSafari || micStream) {
-            source = undefined;
-          }
+          source = undefined;
         }
-        if (micStream) {
-          source = context.createMediaStreamSource(micStream);
+        if (micSource) {
+          source = micSource;
         } else {
           if (autoPlay || playRequested) {
             startPlaying(play, emit);
@@ -119,29 +135,29 @@
       if (isPlaying()) {
         audio.pause();
       }
-      var isMic = src === 'mic';
-      if (!audio || isSafari || isMic) {
-        if (audio) {
-          audio.removeEventListener('error', handleAudioError);
-          audio.removeEventListener('canplay', handleCanplay);
-          audio.removeEventListener('ended', handleEnded);
-        }
-        if (isMic) {
-          getUserMedia.call(navigator, {audio:true}, function(stream) {
-            handleCanplay(null, stream);
-          }, handleAudioError);
-          return;
-        }
-        audio = new Audio();
-        audio.loop = options.loop;
-        audio.autoplay = options.autoPlay;
-        if (options.crossOrigin !== undefined) {
-          audio.crossOrigin = "anonymous";
-        }
-        audio.addEventListener('error', handleAudioError);
-        audio.addEventListener('canplay', handleCanplay);
-        audio.addEventListener('ended', handleEnded);
+      if (audio) {
+        audio.removeEventListener('error', handleAudioError);
+        audio.removeEventListener('canplay', handleCanplay);
+        audio.removeEventListener('ended', handleEnded);
+        audio = undefined;
       }
+
+      if (isMic(src)) {
+        getMicSource(context, function(micSource) {
+            handleCanplay(null, micSource);
+        }, handleAudioError);
+        return;
+      }
+
+      audio = new Audio();
+      audio.loop = options.loop;
+      audio.autoplay = options.autoPlay;
+      if (options.crossOrigin !== undefined) {
+        audio.crossOrigin = "anonymous";
+      }
+      audio.addEventListener('error', handleAudioError);
+      audio.addEventListener('canplay', handleCanplay);
+      audio.addEventListener('ended', handleEnded);
       audio.src = src;
       audio.load();
     }
@@ -156,8 +172,10 @@
 
     function play() {
       playRequested = false;
-      audio.play();
-      audio.currentTime = 0;
+      if (audio) {
+        audio.play();
+        audio.currentTime = 0;
+      }
     }
 
     function isPlaying() {
@@ -216,6 +234,9 @@
     }
 
     function play() {
+      if (source && source === g_micSource) {
+        return;
+      }
       if (dataBuffer) {
         if (started) {
           createBufferSource();
@@ -230,6 +251,9 @@
     }
 
     function stop() {
+      if (source && source === g_micSource) {
+        return;
+      }
       if (source && playing) {
         source.onended = undefined;
         source.stop(0);
@@ -243,11 +267,11 @@
     }
 
     function getDuration() {
-      return source ? source.buffer.duration : 0;
+      return (source && source !== g_micSource) ? source.buffer.duration : 0;
     }
 
     function getCurrentTime() {
-      if (source && playing) {
+      if (source && source !== g_micSource && playing) {
         var elapsedTime = (Date.now() - startTime) * 0.001;
         return elapsedTime % source.buffer.duration;
       } else {
@@ -265,6 +289,17 @@
         source.disconnect();
         source = undefined;
       }
+
+      if (isMic(src)) {
+        getMicSource(context, function(micSource) {
+          source = micSource;
+          emit('newSource', micSource);
+        }, function(e) {
+          emit('error', e);
+        });
+        return;
+      }
+
       var req = new XMLHttpRequest();
       req.open("GET", lofiSrc || src, true);
       req.responseType = "arraybuffer";

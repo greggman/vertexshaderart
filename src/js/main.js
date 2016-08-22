@@ -572,7 +572,9 @@ define([
       g.mode = gl.LINES;
       s.context = new (window.AudioContext || window.webkitAudioContext)();
       s.analyser = s.context.createAnalyser();
-      s.analyser.connect(s.context.destination);
+      s.gainNode = s.context.createGain();
+      s.analyser.connect(s.gainNode);
+      s.gainNode.connect(s.context.destination);
 
       s.rectProgramInfo = twgl.createProgramInfo(gl, [getShader("rect-vs"), getShader("rect-fs")]);
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
@@ -960,13 +962,15 @@ define([
       s.currentTrackNdx = s.trackNdx % s.playlist.length;
       s.trackNdx = (s.trackNdx + 1) % s.playlist.length;
       var track = s.playlist[s.currentTrackNdx];
-      if (track === 'mic') {
+      if (track === 'mic' || track === 'feedback') {
         setSoundSource('mic');
         setSoundLink();
+        s.gainNode.gain.value = track === 'feedback' ? 1 : 0;
       } else {
         var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
         setSoundSource(src);
         setSoundLink(track);
+        s.gainNode.gain.value = 1;
       }
     }
 
@@ -985,9 +989,9 @@ define([
         setPlayState();
         setSoundLink();
         return;
-      } else if (url === 'mic') {
+      } else if (url === 'mic' || url === 'feedback') {
         s.trackNdx = 0;
-        s.playlist = ['mic'];
+        s.playlist = [url];
         playNextTrack();
       } else {
         s.sc.get("/resolve", { url: url }, function(result, err) {
