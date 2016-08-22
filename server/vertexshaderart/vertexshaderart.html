@@ -96,12 +96,7 @@
   <header>
 
     <div>
-        <div class="buttons">
-            {{> play}}
-            {{> userinfosignin}}
-            <a href="/new/">create new</a>
-            <a class="github" href="http://github.com/greggman/vertexshaderart">github</a>
-        </div>
+        {{> topbuttons}}
         {{> logo}}
     </div>
   </header>
@@ -230,9 +225,10 @@
         <div class="buttons">
             {{> play}}
             {{> userinfosignin}}
-            <a href="/new/">create new</a>
+            <a class="createnew" href="/new/">create new</a>
             <a href="/">gallery</a>
-            <a href="http://github.com/greggman/vertexshaderart">github</a>
+            {{> support}}
+            {{> lessons}}
         </div>
         {{> logo}}
     </div>
@@ -242,7 +238,9 @@
     <h2>Revisions:</h2>
     <div class="gallery">
         <div class="sorting">
-            {{> pagination}}
+            <div class="pagination">
+                {{> pagination}}
+            </div>
         </div>
         {{#if Template.subscriptionsReady}}
           {{#each revisions}}
@@ -328,12 +326,7 @@
   <header>
 
     <div>
-        <div class="buttons">
-            {{> play}}
-            {{> userinfosignin}}
-            <a href="/new/">create new</a>
-            <a href="http://github.com/greggman/vertexshaderart">github</a>
-        </div>
+        {{> topbuttons}}
         {{> logo}}
     </div>
   </header>
@@ -398,8 +391,10 @@
         <div class="buttons">
            {{> play}}
            {{> userinfosignin}}
-           <a href="/new/">create new</a>
+           <a class="createnew" href="/new/">create new</a>
            <a href="/">gallery</a>
+           {{> support}}
+           {{> lessons}}
            {{#if userIsCurrentUser}}
              <div class="logout">
                  logout
@@ -703,16 +698,30 @@
   </div>
 </template>
 
+<template name="support">
+  <a class="support" target="_blank" href="http://github.com/greggman/vertexshaderart/issues">support</a>
+</template>
+
+<template name="lessons">
+  <a class="lessons" target="_blank" href="https://www.youtube.com/channel/UC6IqL5vkMJpqBG_bFDjsaxw">lessons</a>
+</template>
+
+
+<template name="topbuttons">
+  <div class="buttons">
+    {{> play}}
+    {{> userinfosignin}}
+    <a class="createnew" href="/new/">create new</a>
+    {{> support}}
+    {{> lessons}}
+  </div>
+</template>
+
 <template name="allcomments">
   <header>
 
     <div>
-        <div class="buttons">
-            {{> play}}
-            {{> userinfosignin}}
-            <a href="/new/">create new</a>
-            <a href="http://github.com/greggman/vertexshaderart">github</a>
-        </div>
+        {{> topbuttons}}
         {{> logo}}
     </div>
   </header>
