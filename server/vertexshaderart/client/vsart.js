@@ -21405,6 +21405,10 @@ define('src/js/main',[
     return s.streamSource ? s.streamSource.isPlaying() : false;
   }
 
+  function isMic(track) {
+    return track === 'mic' || track === 'feedback';
+  }
+
   function VS() {
     var _pauseIcon = "❚❚";
     var _playIcon = "▶";
@@ -21957,7 +21961,7 @@ define('src/js/main',[
       s.currentTrackNdx = s.trackNdx % s.playlist.length;
       s.trackNdx = (s.trackNdx + 1) % s.playlist.length;
       var track = s.playlist[s.currentTrackNdx];
-      if (track === 'mic' || track === 'feedback') {
+      if (isMic(track)) {
         setSoundSource('mic');
         setSoundLink();
         s.gainNode.gain.value = track === 'feedback' ? 1 : 0;
@@ -21974,7 +21978,7 @@ define('src/js/main',[
         s.interruptMusic = true;
         var track = s.playlist[s.currentTrackNdx];
         if (track) {
-          setSoundLink(track);
+          setSoundLink(isMic(track) ? undefined : track);
         }
         return;
       }
@@ -21984,7 +21988,7 @@ define('src/js/main',[
         setPlayState();
         setSoundLink();
         return;
-      } else if (url === 'mic' || url === 'feedback') {
+      } else if (isMic(url)) {
         s.trackNdx = 0;
         s.playlist = [url];
         playNextTrack();
