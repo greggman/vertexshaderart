@@ -1268,7 +1268,7 @@ if (Meteor.isClient) {
       return Session.get("saving");
     },
     visibility: function() {
-      return Session.get(S_SAVE_VISIBILITY) || "public";
+      return Session.get(S_SAVE_VISIBILITY) || "unlisted";
 
     },
     artname: function() {
@@ -1312,7 +1312,7 @@ if (Meteor.isClient) {
       var notesElem = template.find(".notes");
       var notes = notesElem ? notesElem.value : "";
       var data = {
-        privacy: Session.get(S_SAVE_VISIBILITY) || "public",
+        privacy: Session.get(S_SAVE_VISIBILITY) || "unlisted",
         notes: notes,
       };
       Meteor.call("addArt", $("#savedialog #name").val(), origId, window.vsSaveData, data, function(err, result) {
@@ -1335,7 +1335,7 @@ if (Meteor.isClient) {
       var notesElem = template.find(".notes");
       var notes = notesElem ? notesElem.value : "";
       var data = {
-        privacy: Session.get(S_SAVE_VISIBILITY) || "public",
+        privacy: Session.get(S_SAVE_VISIBILITY) || "unlisted",
         notes: notes,
       };
       Session.set("saving", false);
