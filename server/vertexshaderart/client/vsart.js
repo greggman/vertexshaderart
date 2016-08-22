@@ -468,8 +468,15 @@ define("node_modules/almond/almond.js", function(){});
   //var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
   var shittyBrowser = /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
   var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
   var g_micSource;
+
+  function noGetUserMedia(options, successCallback, errorCallback) {
+    setTimeout(function() {
+      errorCallback("no mic support on this browser/device");
+    });
+  }
+
+  var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || noGetUserMedia;
 
   function addEventEmitter(self) {
     var _handlers = {};
@@ -21780,7 +21787,7 @@ define('src/js/main',[
       setPlayState();
       var tracks = s.playlist.splice(s.currentTrackNdx, 1);
       s.trackNdx = s.currentTrackNdx;
-      var msg = tracks ? tracks[0].title : "";
+      var msg = (tracks && tracks.length) ? (isMic(tracks[0]) ? "" : tracks[0].title) : "";
       setSoundSuccessState(false, "Error streaming music: " + msg + " : " + e.toString());
       playNextTrack();
     });
