@@ -184,12 +184,9 @@ asked for passwords a billion times as you run these scripts.
 
         - REPO=https://github.com/greggman/vertexshaderart
         - ROOT_URL=https://www.vertexshaderart.com
-        - VIRTUAL_HOST=www.vertexshaderart.com,vertexshaderart.com
-        - LETSENCRYPT_HOST=www.vertexshaderart.com
-        - LETSENCRYPT_EMAIL=letsencrypt@greggman.com
 
     The `REPO` line needs to be the location of your github repo for your new project.
-    The `ROOT_URL`, `VIRTUAL_HOST`, `LETSENCRYPT_HOST`, needs to be the place your site can be reached.
+    The `ROOT_URL`, needs to be the place your site can be reached.
 
     **NOTE:**
 
@@ -198,26 +195,39 @@ asked for passwords a billion times as you run these scripts.
 
     Also delete the line `443:443`
 
-9.  Edit the file `server/deploy/push-live.sh`
+9.  Edit the file `files/config/caddy/Caddyfile` and change this lines
+
+    The first line
+
+        www.vertexshaderart.com, vertexshaderart.com {
+
+    Put your domain name. The next to the last line
+
+        tls letsencrypt@greggman.com
+
+    Put an email address you want letsencrypt to use to tell you issues
+    with your https certs.
+
+10. Edit the file `server/deploy/push-live.sh`
 
     Change `DOCKER=vertexshaderart.com` to the IP address or domain of your droplet.
 
-10. cd to the `server/deploy` folder and type
+11. cd to the `server/deploy` folder and type
 
         ./push-live.sh
 
-11. type
+12. type
 
         ssh <ipaddressOrDomainOfDroplet> 'docker logs -f c_meteor_1'
 
     This will show you output from the docker container running
     meteor. Once you see "Starting Meteor..." ..
 
-12. Go to `https://<domainOfDroplet>` or `http://<ipaddressOfDroplet>`
+13. Go to `https://<domainOfDroplet>` or `http://<ipaddressOfDroplet>`
 
     Your site is live.
 
-To update the site check stuff into your github repo and run steps 9+ again
+To update the site check stuff into your github repo and run steps 10+ again
 
 ### Deploy Staging
 
@@ -236,7 +246,7 @@ and point it at the staging droplet.
 
 Step 7, copy `settings-staging-orig.json` to `settings-staging.json`
 
-Steps 8 through 12, everywhere it says `www.` change it to `staging.`.
+Steps 8 through 13, everywhere it says `www.` change it to `staging.`.
 Everwhere something ends with `-live` use `-staging` instead.
 
 That's pretty much it. It should work the same. One more note, if

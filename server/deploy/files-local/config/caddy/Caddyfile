@@ -1,0 +1,15 @@
+local.vertexshaderart.com {
+
+  proxy / c_meteor_1:80 {
+    proxy_header Host {host}
+    proxy_header X-Real-IP {remote}
+    proxy_header X-Forwarded-Proto {scheme}
+    websocket
+  }
+
+  gzip
+
+  tls letsencrypt@greggman.com
+
+}
+

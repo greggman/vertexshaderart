@@ -1,15 +1,17 @@
-nginx:
-  container_name: c_nginx
-  image: dmp1ce/nginx-proxy-letsencrypt
+proxy:
+  container_name: c_proxy
+  image: joshix/caddy:v0.9.1
   restart: on-failure:5
   ports:
    - 80:80
+   - 443:443
   volumes:
-   - /var/run/docker.sock:/tmp/docker.sock:ro
+   - ../files/save/caddy:/.caddy:rw
+   - ../files/config/caddy:/var/www/html:ro
 
 meteor:
   container_name: c_meteor_1
-  image: gmanjapan/meteor
+  image: ulexus/meteor:legacy
   restart: on-failure:5
   ports:
    - "3000:80"
@@ -23,18 +25,17 @@ meteor:
    - REPO=https://github.com/greggman/vertexshaderart
    - ROOT_URL=http://192.168.99.100:3000
    - IMAGE_PATH=/data/images
-   - VIRTUAL_HOST=local.vertexshaderart.com
-   - LETSENCRYPT_HOST=local.vertexshaderart.com
-   - LETSENCRYPT_EMAIL=letsencrypt@greggman.com
    - RELEASE=1.3.3.1
   env_file:
-   - ./settings/settings-local.env
+   - ../files-local/config/meteor/settings.env
+
 data:
   container_name: c_data_1
   image: cogniteev/echo
   volumes:
    - /data/images
    - /data/db
+
 mongo:
   container_name: c_mongo_1
   image: mongo
@@ -44,7 +45,7 @@ mongo:
   volumes_from:
    - data
   volumes:
-   - ./backup:/backup
+   - ../backup:/backup
 
 #   - APP_DIR=/appgit/server/vertexshaderart
 
