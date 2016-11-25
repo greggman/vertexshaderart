@@ -26,6 +26,7 @@ meteor:
    - VIRTUAL_HOST=local.vertexshaderart.com
    - LETSENCRYPT_HOST=local.vertexshaderart.com
    - LETSENCRYPT_EMAIL=letsencrypt@greggman.com
+   - RELEASE=1.3.3.1
   env_file:
    - ./settings/settings-local.env
 data:
