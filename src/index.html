@@ -150,6 +150,7 @@ touch       : sampler2D : touch history 32x240 (4sec @60fps)
             :           : column 0 is mouse or first finger.
             :           : column 1 is second finger ...
 time        : float     : time in seconds
+volume      : sampler2D : volume for music 1x240 alpha only
 sound       : sampler2D : data from the music Nx240, alpha only
             :           : 240 rows of history (4secs @60fps)
 floatSound  : sampler2D : data from the music Nx240, alpha only
@@ -200,6 +201,7 @@ uniform vec2 resolution;
 uniform vec4 background;
 uniform float time;
 uniform float vertexCount;
+uniform sampler2D volume;
 uniform sampler2D sound;
 uniform sampler2D floatSound;
 uniform sampler2D touch;

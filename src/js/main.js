@@ -577,8 +577,35 @@ define([
       s.context = new (window.AudioContext || window.webkitAudioContext)();
       s.analyser = s.context.createAnalyser();
       s.gainNode = s.context.createGain();
+      s.processor = s.context.createScriptProcessor(1024, 1, 1);
       s.analyser.connect(s.gainNode);
       s.gainNode.connect(s.context.destination);
+      s.analyser.connect(s.processor);
+      s.processor.onaudioprocess = saveMaxSample;
+      s.processor.connect(s.context.destination);
+
+      function saveMaxSample(e) {
+        const buf = e.inputBuffer.getChannelData(0);
+        const len = buf.length;
+        var last = buf[0];
+        var max = buf[0];
+        var maxDif = 0;
+        var sum = 0;
+        for (var ii = 1; ii < len; ++ii) {
+          var v = buf[ii];
+          if (v > max) {
+            v = max;
+          }
+          var dif = Math.abs(v - last);
+          if (dif > maxDif) {
+            maxDif = dif;
+          }
+          sum += v * v;
+        }
+        s.maxSample = max;
+        s.maxDif = maxDif;
+        s.sum = Math.sqrt(sum / len);
+      }
 
       s.rectProgramInfo = twgl.createProgramInfo(gl, [getShader("rect-vs"), getShader("rect-fs")]);
       s.historyProgramInfo = twgl.createProgramInfo(gl, [getShader("history-vs"), getShader("history-fs")]);
@@ -606,6 +633,12 @@ define([
       var maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
       s.numSoundSamples = Math.min(maxTextureSize, s.analyser.frequencyBinCount);
       s.numHistorySamples = 60 * 4; // 4 seconds;
+
+      s.volumeHistory = new HistoryTexture(gl, {
+        width: 4,
+        length: s.numHistorySamples,
+        format: gl.ALPHA,
+      });
 
       s.soundHistory = new HistoryTexture(gl, {
         width: s.numSoundSamples,
@@ -851,12 +884,13 @@ define([
     });
 
     function takeScreenshot() {
+      var volumeHistoryTex = s.volumeHistory.getTexture();
       var touchHistoryTex = s.touchHistory.getTexture();
       var historyTex = s.soundHistory.getTexture();
       var floatHistoryTex = s.floatSoundHistory ? s.floatSoundHistory.getTexture() : historyTex;
       gl.canvas.width = s.screenshotCanvas.width * 2;
       gl.canvas.height = s.screenshotCanvas.height * 2;
-      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
+      renderScene(volumeHistoryTex, touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
       var ctx = s.screenshotCanvas.getContext("2d");
       var w = ctx.canvas.width  / gl.canvas.width;
       var h = ctx.canvas.height / gl.canvas.height;
@@ -1520,7 +1554,7 @@ define([
       g.mode = validModes[settings.mode];
       //shader// test bad
 
-      setSoundUrl(settings.sound);
+      setSoundUrl(q.sound || settings.sound);
       s.cm.doc.setValue(settings.shader);
       updateStop();
       setPlayState();
@@ -1584,7 +1618,7 @@ define([
       u_texture: undefined,
     };
 
-    function renderScene(touchHistoryTex, soundHistoryTex, floatSoundHistoryTex, time, lineSize, mouse) {
+    function renderScene(volumeHistoryTex, touchHistoryTex, soundHistoryTex, floatSoundHistoryTex, time, lineSize, mouse) {
       twgl.bindFramebufferInfo(gl);
 
       var size = lineSize === "NATIVE" ? 1 : (window.devicePixelRatio || 1);
@@ -1613,6 +1647,7 @@ define([
         uniforms.mouse[0] = mouse[0];
         uniforms.mouse[1] = mouse[1];
         uniforms._dontUseDirectly_pointSize = size;
+        uniforms.volume = volumeHistoryTex;
         uniforms.sound = soundHistoryTex;
         uniforms.floatSound = floatSoundHistoryTex;
         uniforms.touch = touchHistoryTex;
@@ -1627,6 +1662,23 @@ define([
     function updateSoundAndTouchHistory() {
       // Copy audio data to Nx1 texture
       s.analyser.getByteFrequencyData(s.soundHistory.buffer);
+
+      // should we do this in a shader?
+      {
+        const buf = s.soundHistory.buffer;
+        const len = buf.length;
+        var max = 0;
+        for (var ii = 0; ii < len; ++ii) {
+          const v = buf[ii];
+          if (v > max) {
+            max = v;
+          }
+        }
+        s.volumeHistory.buffer[3] = max;
+      }
+      s.volumeHistory.buffer[0] = Math.abs(s.maxSample) * 255;
+      s.volumeHistory.buffer[1] = s.sum * 255;
+      s.volumeHistory.buffer[2] = s.maxDif * 127;
 
       if (s.floatSoundHistory) {
         s.analyser.getFloatFrequencyData(s.floatSoundHistory.buffer);
@@ -1643,6 +1695,7 @@ define([
 
       twgl.setBuffersAndAttributes(gl, s.historyProgramInfo, s.quadBufferInfo);
 
+      s.volumeHistory.update();
       s.soundHistory.update();
       if (s.floatSoundHistory) {
         s.floatSoundHistory.update();
@@ -1716,18 +1769,19 @@ define([
 
       updateSoundAndTouchHistory();
 
+      var volumeHistoryTex = s.volumeHistory.getTexture();
       var touchHistoryTex = s.touchHistory.getTexture();
       var historyTex = s.soundHistory.getTexture();
       var floatHistoryTex = s.floatSoundHistory ? s.floatSoundHistory.getTexture() : historyTex;
-      renderScene(touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
+      renderScene(volumeHistoryTex, touchHistoryTex, historyTex, floatHistoryTex, g.time, settings.lineSize, g.mouse);
 
-      if (q.showHistory) {
+      if (q.showVolume) {
+        renderHistory(s.volumeHistory.getTexture(), 0, 1);
+      } else if (q.showHistory) {
         renderHistory(s.soundHistory.getTexture(), 0, 1);
-      }
-      if (q.showFloatHistory && s.floatSoundHistory) {
+      } else if (q.showFloatHistory && s.floatSoundHistory) {
         renderHistory(s.floatSoundHistory.getTexture(), 0, -0.005);
-      }
-      if (q.showTouchHistory) {
+      } else if (q.showTouchHistory) {
         renderHistory(s.touchHistory.getTexture(), 1, 1);
       }
 
