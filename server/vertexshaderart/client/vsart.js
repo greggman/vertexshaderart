@@ -22522,7 +22522,7 @@ define('src/js/main',[
       g.mode = validModes[settings.mode];
       //shader// test bad
 
-      setSoundUrl(settings.sound);
+      setSoundUrl(q.sound || settings.sound);
       s.cm.doc.setValue(settings.shader);
       updateStop();
       setPlayState();
