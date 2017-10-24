@@ -83,11 +83,13 @@
            <div class="title">
                <div>{{sort}}:</div><div class="right"> <a href="/gallery/1/?sort={{sort}}">see all</a></div>
            </div>
-           {{#if Template.subscriptionsReady}}
-             {{#each art}}
-               {{> artpiece}}
-             {{/each}}
-           {{/if}}
+           <div class="artthumbs">
+               {{#if Template.subscriptionsReady}}
+                 {{#each art}}
+                   {{> artpiece}}
+                 {{/each}}
+               {{/if}}
+           </div>
        </div>
    </div>
 </template>
@@ -260,11 +262,13 @@
              <div class="topsorting">
                  {{> sorting}}
              </div>
-             {{#if Template.subscriptionsReady}}
-               {{#each art}}
-                 {{> artpiece}}
-               {{/each}}
-             {{/if}}
+             <div class="artthumbs">
+               {{#if Template.subscriptionsReady}}
+                 {{#each art}}
+                   {{> artpiece}}
+                 {{/each}}
+               {{/if}}
+             </div>
              <div class="bottomsorting">
                {{> sorting}}
              </div>
