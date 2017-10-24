@@ -129,6 +129,9 @@ canvas {
 #ui:hover {
 
 }
+#size {
+    display: none;
+}
 #vsa {
   width: 100%;
   display: none;
