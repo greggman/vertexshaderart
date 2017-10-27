@@ -60,7 +60,6 @@ define(function() {
   var request = function(url, content, callback, options) {
     content = content || "";
     options = options || { };
-    var error = 'send failed to load url "' + url + '"';
     var request = new XMLHttpRequest();
     if (request.overrideMimeType) {
       request.overrideMimeType(options.mimeTime || 'text/plain');
@@ -81,32 +80,28 @@ define(function() {
         callback = undefined;  // only call it once.
       }
     };
-    var handleAbort = function(e) {
-      log("--abort--");
-      callCallback("error (abort) sending json to " + url);
-    }
-    var handleError = function(e) {
+    var handleError = function(/* e */) {
       log("--error--");
       callCallback("error sending json to " + url);
-    }
-    var handleTimeout = function(e) {
+    };
+    var handleTimeout = function(/* e */) {
       log("--timeout--");
       callCallback("timeout sending json to " + url);
     };
-    var handleForcedTimeout = function(e) {
+    var handleForcedTimeout = function(/* e */) {
       if (callback) {
         log("--forced timeout--");
         request.abort();
         callCallback("forced timeout sending json to " + url);
       }
-    }
+    };
     var handleFinish = function() {
       log("--finish--");
       // HTTP reports success with a 200 status. The file protocol reports
       // success with zero. HTTP does not use zero as a status code (they
       // start at 100).
       // https://developer.mozilla.org/En/Using_XMLHttpRequest
-      var success = request.status == 200 || request.status == 0;
+      var success = request.status === 200 || request.status === 0;
       callCallback(success ? null : 'could not load: ' + url, request.responseText);
     };
     try {
@@ -126,7 +121,9 @@ define(function() {
       log("--sent: " + url);
     } catch (e) {
       log("--exception--");
-      setTimeout(function() { callCallback('could not load: ' + url, null) }, 0);
+      setTimeout(function() {
+        callCallback('could not load: ' + url, null);
+      }, 0);
     }
   };
 
@@ -142,7 +139,7 @@ define(function() {
    * @param {module:IO~Request~Options?} options
    */
   var sendJSON = function(url, jsonObject, callback, options) {
-    var options = JSON.parse(JSON.stringify(options || {}));
+    options = JSON.parse(JSON.stringify(options || {}));
     options.headers = options.headers || {};
     options.headers["Content-type"] = "application/json";
     return request(
@@ -157,14 +154,14 @@ define(function() {
         } catch (e) {
           return callback(e);
         }
-        callback(null, json);
+        return callback(null, json);
       },
       options);
   };
 
   var makeMethodFunc = function(method) {
     return function(url, content, callback, options) {
-      var options = JSON.parse(JSON.stringify(options || {}));
+      options = JSON.parse(JSON.stringify(options || {}));
       options.method = method;
       return request(url, content, callback, options);
     };

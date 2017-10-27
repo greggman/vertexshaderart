@@ -1,0 +1,31 @@
+{
+  "name": "vertexshaderart",
+  "version": "0.0.1",
+  "description": "vertexshaderart.com",
+  "main": "idk.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/greggman/vertexshaderart.git"
+  },
+  "keywords": [
+    "GLSL",
+    "GLSLES",
+    "WebGL",
+    "shader",
+    "vertex",
+    "shader",
+    "art"
+  ],
+  "author": "Gregg Tavares",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/greggman/vertexshaderart/issues"
+  },
+  "homepage": "https://github.com/greggman/vertexshaderart",
+  "dependencies": {
+    "babel-runtime": "^6.26.0"
+  }
+}

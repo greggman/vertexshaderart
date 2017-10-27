@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "description": "vertexshaderart.com",
   "scripts": {
+    "build": "grunt build",
+    "start": "http-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,20 +25,26 @@
   },
   "homepage": "https://github.com/greggman/vertexshaderart.js",
   "devDependencies": {
-    "almond": "^0.3.1",
-    "eslint": "^0.18.0",
-    "eslint-plugin-google-camelcase": "0.0.1",
+    "almond": "^0.3.3",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "eslint": "^4.9.0",
+    "eslint-plugin-google-camelcase": "0.0.2",
     "eslint-plugin-html": "git+https://github.com/greggman/eslint-plugin-html.git#fix-space-eating",
     "eslint-plugin-one-variable-per-var": "0.0.3",
     "eslint-plugin-optional-comma-spacing": "0.0.4",
     "eslint-plugin-require-trailing-comma": "0.0.1",
     "grunt": "^1.0.1",
-    "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-copy": "^0.8.1",
+    "grunt-contrib-clean": "^1.1.0",
+    "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-requirejs": "^1.0.0",
-    "grunt-contrib-uglify": "^0.9.2",
-    "gruntify-eslint": "^1.1.0",
-    "semver": "^5.0.3"
+    "grunt-contrib-uglify": "^3.1.0",
+    "grunt-eslint": "^20.1.0",
+    "grunt-webpack": "^3.0.2",
+    "http-server": "^0.10.0",
+    "load-grunt-tasks": "^3.5.2",
+    "semver": "^5.4.1",
+    "webpack": "^3.8.1"
   },
   "dependencies": {}
 }

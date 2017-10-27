@@ -1,5 +1,23 @@
 # To Do
 
+*   Midi
+*   VR
+*   VR UI
+*   VR editor
+*   sound URL (not just soundcloud)
+*   vsa. uniforms
+    *   try run on client, try every shader, see that it compiles no errors (check it compiles no errors before transformation)
+*   WebGL2
+*   Hotdog menu
+*   Fix CSS
+    *   toolbar should match size
+    *   front page center
+    *   Windows scrollbar
+*   Popout Editor
+*   fix undo reload (if go to new art and undo loads previous)
+*   start with no code?
+*   don't restart song if same URL
+
 *   Make sure notes start with previous notes on a revision
 
 *   fix revision buttons

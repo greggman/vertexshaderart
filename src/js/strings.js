@@ -47,7 +47,7 @@ define([], function() {
   };
   function addCommas(s) {
     var last = s.trim().substr(-1);
-    return noCommaNeeded[last] ? s : (s + ",")
+    return noCommaNeeded[last] ? s : (s + ",");
   }
 
   function isQuote(s) {
@@ -176,7 +176,7 @@ define([], function() {
    * @memberOf module:Strings
    */
   var replaceParams = (function() {
-    var replaceParamsRE = /%\(([^\)]+)\)s/g;
+    var replaceParamsRE = /%\(([^)]+)\)s/g;
 
     return function(str, params) {
       if (!params.length) {
@@ -291,6 +291,6 @@ define([], function() {
     isQuote: isQuote,
     trim: trim,
     parseSettings: parseSettings,
-  }
+  };
 });
 

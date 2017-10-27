@@ -131,8 +131,8 @@ define(function() {
       }
       var query = str.substring(q + 1, e);
       searchStringToObject(query, dst);
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
     return dst;
   };
@@ -159,7 +159,7 @@ define(function() {
    * @func applyUrlSettings
    * @memberOf module:Misc
    */
-  var fixKeysRE = new RegExp("([a-zA-Z0-9_]+)\:", "g");
+  var fixKeysRE = new RegExp("([a-zA-Z0-9_]+):", "g");
 
   var applyUrlSettings = function(opt_obj, opt_argumentName) {
     var argumentName = opt_argumentName || 'settings';
@@ -510,7 +510,7 @@ define(function() {
       if (a.length !== b.length) {
         return false;
       }
-      for (var ii = 0; ii < a.length; ++ii) {
+      for (let ii = 0; ii < a.length; ++ii) {
         if (!deepCompare(a[ii], b[ii])) {
           return false;
         }
@@ -523,7 +523,7 @@ define(function() {
       if (!deepCompare(aKeys, bKeys)) {
         return false;
       }
-      for (var ii = 0; ii < aKeys.length; ++ii) {
+      for (let ii = 0; ii < aKeys.length; ++ii) {
         var key = aKeys[ii];
         if (!deepCompare(a[key], b[key])) {
           return false;

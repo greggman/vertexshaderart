@@ -17,7 +17,7 @@ cp $SRC_DATABASE backups/latest-backup.tar.gz
 tar -s "#backup/latest/admin#backups/latest/meteor#" -s "#backup/latest#backups/latest#" -x -v -z -f backups/latest-backup.tar.gz
 tar -s "#data/images#vsa-uploads#" -P -x -v -z -f backups/latest-images.tar.gz -C ..
 
-mongorestore -h 127.0.0.1 --port 3001 --drop backups/latest
+../mongo/bin/mongorestore -h 127.0.0.1 --port 3001 --drop backups/latest
 
 rm -rf backups/latest
 rm -f  backups/latest-images.tar.gz

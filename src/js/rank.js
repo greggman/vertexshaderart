@@ -10,10 +10,10 @@ requirejs([
     return !art.private;
   });
 
-  var fiveDaysInMs = 1000 * 60 * 60 * 24 * 5;
-  var fiveDaysInHours = 24 * 5;
+  // var fiveDaysInMs = 1000 * 60 * 60 * 24 * 5;
+  // var fiveDaysInHours = 24 * 5;
   var ageBonusInHours = 24 * 2;
-  var oneDayInHours = 24;
+  // var oneDayInHours = 24;
 
   var now = 1447660163874; //Date.now(); A date a few mins after the newest entry in test data
   var hourElem = $("#hour");
@@ -105,13 +105,13 @@ requirejs([
     art.color = rgb((r + 128) % 256, (g + 128) % 256, (b + 128) % 256);
   }
 
-  var specials = {
-    "91": "red",
-    "93": "green",
-    "94": "blue",
-    "96": "purple",
-    "98": "yellow",
-  };
+  // var specials = {
+  //   "91": "red",
+  //   "93": "green",
+  //   "94": "blue",
+  //   "96": "purple",
+  //   "98": "yellow",
+  // };
 
   function sort(db) {
     var num = db.length;
@@ -146,11 +146,13 @@ requirejs([
 //        div.querySelector(".views").style.backgroundColor = bk;
 //      }
     });
-  };
+  }
 
   sort(db);
 
-  hourElem.addEventListener('input', function() { sort(db) });
+  hourElem.addEventListener('input', function() {
+    sort(db);
+  });
 
 });
 

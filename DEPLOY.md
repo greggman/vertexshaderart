@@ -400,7 +400,9 @@ for debugging or testing new ideas with actual data
     # restoring a backup made with backup-live.sh to the dev version
     ./restore-dev.sh 2015-11-07.16:32:57
 
-
+**IMPORTANT:** dev backup and restore expect `mongodump` and `monogorestore` to exist in
+`server/mongo/bin`. You can put links here or just copy the mongo files directly
+there. I did this so each project could have its own version of mongo.
 
 
 

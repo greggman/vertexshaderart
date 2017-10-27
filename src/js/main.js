@@ -44,6 +44,7 @@ define([
     './listenermanager',
     './misc',
     './strings',
+    './shaders',
     './typedarray-copyWithin-polyfill',
   ], function(
      audioStreamSource,
@@ -61,7 +62,8 @@ define([
      ListenerManager,
      misc,
      strings,
-     typedArrayCopyWithinPolyfill
+     shaders,
+     typedArrayCopyWithinPolyfill // eslint-disable-line
   ) {
 
   "use strict";
@@ -99,8 +101,7 @@ define([
   s.screenshotCanvas.height = 336;
 
   function getShader(id) {
-    var elem = $("#" + id);
-    return (elem ? elem.text : window.vsartShaders[id]);
+    return shaders[id];
   }
 
   function randomElement(array) {
@@ -229,16 +230,16 @@ define([
     this.isProcessing = function() {
       return _processing;
     };
-  };
+  }
 
   function HistoryTexture(gl, options) {
     var _width = options.width;
     var type  = options.type || gl.UNSIGNED_BYTE;
     var format = options.format || gl.RGBA;
-    var ctor  = twgl.getTypedArrayTypeForGLType(type);
+    var Ctor  = twgl.getTypedArrayTypeForGLType(type);
     var numComponents = twgl.getNumComponentsForFormat(format);
     var size  = _width * numComponents;
-    var _buffer = new ctor(size);
+    var _buffer = new Ctor(size);
     var _texSpec = {
       src: _buffer,
       height: 1,
@@ -247,7 +248,7 @@ define([
       wrap: gl.CLAMP_TO_EDGE,
       format: format,
       auto: false,  // don't set tex params or call genmipmap
-    }
+    };
     var _tex = twgl.createTexture(gl, _texSpec);
 
     var _length = options.length;
@@ -296,7 +297,7 @@ define([
       _historyUniforms.u_texture = _tex;
       m4.translation(
           [0, -(_length - 0.5) / _length, 0],
-          _historyUniforms.u_matrix)
+          _historyUniforms.u_matrix);
       m4.scale(
           _historyUniforms.u_matrix,
           [1, 1 / _length, 1],
@@ -315,12 +316,12 @@ define([
     var _width = options.width;
     var type  = options.type || gl.UNSIGNED_BYTE;
     var format = options.format || gl.RGBA;
-    var ctor  = twgl.getTypedArrayTypeForGLType(type);
+    var Ctor  = twgl.getTypedArrayTypeForGLType(type);
     var numComponents = twgl.getNumComponentsForFormat(format);
     var _length = options.length;
     var _rowSize = _width * numComponents;
     var _size  = _rowSize * _length;
-    var _buffer = new ctor(_size);
+    var _buffer = new Ctor(_size);
     var _texSpec = {
       src: _buffer,
       height: _length,
@@ -329,7 +330,7 @@ define([
       wrap: gl.CLAMP_TO_EDGE,
       format: format,
       auto: false,  // don't set tex params or call genmipmap
-    }
+    };
     var _tex = twgl.createTexture(gl, _texSpec);
 
     this.buffer = _buffer;
@@ -367,14 +368,14 @@ define([
     var status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    return status == gl.FRAMEBUFFER_COMPLETE;
+    return status === gl.FRAMEBUFFER_COMPLETE;
   }
 
   var storage;
   if (!s.inIframe) {
     try {
       storage = window.localStorage;  // apparently you can get a security error for this
-    } catch (e) {
+    } catch (e) { // eslint-disable-line
     }
   }
   storage = storage || {
@@ -401,7 +402,7 @@ define([
         source.connect(s.analyser);
       }
       if (s.inIframe) {
-        setPauseFn(false)
+        setPauseFn(false);
       }
     }
   }
@@ -419,7 +420,7 @@ define([
     var _playIcon = "▶";
     var editorElem = $("#editor");
     var editorWrapElem = $("#editorWrap");
-    var artElem = $("#art");
+    // var artElem = $("#art");
     var commentAreaElem = $("#commentarea");
     var centerSizeElem = $("#centerSize");
     var commentWrapElem = $("#commentWrap");
@@ -427,11 +428,11 @@ define([
     var uimodeDropdownElem = $("#toolbar .uimodedropdown");
     var savingElem = $("#saving");
     var stopElem = $("#stop");
-    var stopIconElem = $("#stop .stop-icon")
+    var stopIconElem = $("#stop .stop-icon");
     var goIconElem = $("#stop .go-icon");
     var soundElem = $("#sound");
     var soundTime = $("#soundTime");
-    var soundLinkElem = $("#soundLink")
+    var soundLinkElem = $("#soundLink");
     var soundLinkNode = misc.createTextNode(soundLinkElem);
     var soundcloudElem = $("#soundcloud");
     var bandLinkElem = $("#bandLink");
@@ -445,13 +446,13 @@ define([
       return pn;
     });
     var fullScreenElem = $("#vsa .fullscreen");
-    var playElem2 = $("#vsa .play");
+    // var playElem2 = $("#vsa .play");
     var listenerManager = new ListenerManager();
     var on = listenerManager.on.bind(listenerManager);
     var remove = listenerManager.remove.bind(listenerManager);
     var settings = {
       lineSize: 1,
-      backgroundColor: [0,0,0,1],
+      backgroundColor: [0, 0, 0, 1],
     };
 
     if (s.inIframe) {
@@ -510,7 +511,7 @@ define([
       return vsrc;
     }
 
-    on(fullScreenElem, 'click', function(e) {
+    on(fullScreenElem, 'click', function(/* e */) {
       if (fullScreen.isFullScreen()) {
         fullScreen.cancelFullScreen();
       } else {
@@ -621,7 +622,7 @@ define([
         if (g.saveFn) {
           g.saveFn();
         }
-      }
+      };
 
       s.keyRouter = new KeyRouter();
       if (navigator.platform.match("Mac")) {
@@ -724,7 +725,7 @@ define([
             };
           }
         };
-      };
+      }();
 
       var longName = "This is a really long name that might mess up formatting so let's use it to test that long names don't totally mess up formatting just so we have some idea of how messed up things can get if we don't set any limits";
       var music = [
@@ -763,7 +764,7 @@ define([
       if (!s.sc || shittyBrowser || isMobile || q.local) {
         s.sc = new function() {
           function noop() {
-          };
+          }
           this.initialize = noop;
           this.get = function(url, options, callback) {
 
@@ -787,7 +788,7 @@ define([
               };
             }
           };
-        };
+        }();
       }
 
       s.sc.initialize({
@@ -803,7 +804,7 @@ define([
       s.programManager = new ProgramManager(gl);
 
       s.editorElem = editorElem;
-      s.cm = CodeMirror(editorElem, {
+      s.cm = CodeMirror(editorElem, {  // eslint-disable-line
         value: "",
         theme: "blackboard",
         mode: "x-text/x-glsl",
@@ -1057,7 +1058,7 @@ define([
 
     on(soundElem, 'change', function(e) {
       var url = e.target.value.trim();
-      if (url != settings.sound) {
+      if (url !== settings.sound) {
         settings.sound = url;
         setSoundUrl(url, true);
       }
@@ -1076,7 +1077,7 @@ define([
     var validLineSizes = {
       "NATIVE": true,
       "CSS": true,
-    }
+    };
 
     var saveElem = $("#save");
 
@@ -1117,7 +1118,7 @@ define([
       g.errorLines = [];
     }
 
-    var whitespaceRE = /\s\s\s*/g;
+    // var whitespaceRE = /\s\s\s*/g;
     function collapseWhitespace(s) {
       return s.replace(/\s\s*/g, ' ');
     }
@@ -1146,7 +1147,7 @@ define([
 
       clearLineErrors();
 
-      var errorRE = /ERROR\:\s*0\:(\d+)/g;
+      var errorRE = /ERROR:\s*0:(\d+)/g;
       do {
         var m = errorRE.exec(errors);
         if (m) {
@@ -1171,9 +1172,9 @@ define([
       return s + (e - s) * l;
     }
 
-    function lerp01(s, e, l) {
-      return s + (e - s) * clamp(0, 1, l);
-    }
+    // function lerp01(s, e, l) {
+    //   return s + (e - s) * clamp(0, 1, l);
+    // }
 
     function animateElemRect(options) {
       if (!s.running || g.pause) {
@@ -1298,7 +1299,7 @@ define([
 
     function updateBackgroundColor(e) {
       settings.backgroundColor = cssParse.parseCSSColor(e.target.value, true);
-    };
+    }
     var colorElem = $("#background");
     on(colorElem, 'change', updateBackgroundColor);
     on(colorElem, 'input', updateBackgroundColor);
@@ -1332,7 +1333,7 @@ define([
     });
 
     var timeElem = $("#time");
-    on(timeElem, 'click', function(e) {
+    on(timeElem, 'click', function(/* e */) {
       g.time = 0;
     });
 
@@ -1362,7 +1363,7 @@ define([
     });
 
     function showHelp() {
-      helpDialogElem.style.display = (helpDialogElem.style.display != "") ? "" : "none";
+      helpDialogElem.style.display = (helpDialogElem.style.display !== "") ? "" : "none";
     }
 
     s.keyRouter.on(112, showHelp);
@@ -1382,10 +1383,10 @@ define([
 
     s.cm.refresh();
 
-    function getMode(mode) {
-      var m = modes[mode];
-      return m === undefined ? gl.LINES : m;
-    }
+    // function getMode(mode) {
+    //   var m = modes[mode];
+    //   return m === undefined ? gl.LINES : m;
+    // }
 
     function tryNewProgram(text) {
       var vsrc = applyTemplateToShader(text);
@@ -1393,13 +1394,13 @@ define([
       s.programManager.compile(vsrc, g.fSource, text);
     }
 
-    var oldText;
+    // var oldText;
     var oldTrimmedText;
 
     var lineCommentRE = /\/\/.*/g;
     var blockCommentRE = /\/\*[\s\S]*?\*\//g;
-    var whiteSpaceRE = /[ \t][ \t]+/g
-    var eolRE = /\n\n+/g
+    var whiteSpaceRE = /[ \t][ \t]+/g;
+    var eolRE = /\n\n+/g;
     function trimShaderText(text) {
       text = text.replace(lineCommentRE, '');
       text = text.replace(blockCommentRE, '');
@@ -1412,7 +1413,6 @@ define([
       var text = cm.doc.getValue();
       var trimmedText = trimShaderText(text);
       if (trimmedText !== oldTrimmedText) {
-        oldText = text;
         oldTrimmedText = trimmedText;
         tryNewProgram(text);
       } else {
@@ -1476,7 +1476,7 @@ define([
               settings = restore.settings;
             }
           }
-        } catch (e) {
+        } catch (e) {  // eslint-disable-line
         }
       }
       clearRestore();
@@ -1594,7 +1594,7 @@ define([
         var l = currentTime / duration;
         pixels = (l * soundTime.clientWidth) | 0;
       }
-      if (pixels != g.soundTimePixelWidth) {
+      if (pixels !== g.soundTimePixelWidth) {
         g.soundTimePixelWidth = pixels;
         soundTime.style.background = "linear-gradient(90deg, rgba(30,30,30,0.7) " + (l * 100).toFixed(2) + "%, rgba(0,0,0,0.7) " + (l * 100). toFixed(2) + "%)";
       }
@@ -1668,7 +1668,7 @@ define([
         const buf = s.soundHistory.buffer;
         const len = buf.length;
         var max = 0;
-        for (var ii = 0; ii < len; ++ii) {
+        for (let ii = 0; ii < len; ++ii) {
           const v = buf[ii];
           if (v > max) {
             max = v;
@@ -1685,7 +1685,7 @@ define([
       }
 
       // Update time
-      for (var ii = 0; ii < s.touchColumns; ++ii) {
+      for (let ii = 0; ii < s.touchColumns; ++ii) {
         var offset = ii * 4;
         s.touchHistory.buffer[offset + 3] = g.time;
       }
@@ -1834,10 +1834,8 @@ define([
     }
 
     function addTouchPressure(column, pressure) {
-      var time = g.time;
       if (!s.canUseFloat) {
         pressure = Math.max(0, pressure * 255 | 0);
-        time     = time % 256;
       }
       var offset = column * 4;
       s.touchHistory.buffer[offset + 2] = pressure;
@@ -1855,11 +1853,11 @@ define([
       addTouchPosition(0, x, y);
     }
 
-    function recordMouseDown(e) {
+    function recordMouseDown(/* e */) {
       addTouchPressure(0, 1);
     }
 
-    function recordMouseUp(e) {
+    function recordMouseUp(/* e */) {
       addTouchPressure(0, 0);
     }
 
@@ -1877,7 +1875,7 @@ define([
             break;
           }
         }
-        if (ii == 32) {
+        if (ii === 32) {
           console.error("too many touches :(");
           g.touches = [];
           ii = 0;
@@ -1906,7 +1904,7 @@ define([
       for (var ii = 0; ii < e.touches.length; ++ii) {
         var t = e.touches[ii];
         var ndx = getTouchIndex(t);
-        g.touches[ndx] === undefined;
+        g.touches[ndx] = undefined;
         addTouchPressure(ndx, 0);
       }
     }
@@ -1970,7 +1968,7 @@ define([
 
     on(window, 'mousedown', recordInputAndMakeUIVisible);
     on(window, 'keypress', recordInputAndMakeUIVisible);
-    on(window, 'wheel', recordInputAndMakeUIVisible)
+    on(window, 'wheel', recordInputAndMakeUIVisible);
     on(window, 'mousemove', function() {
       // don't unhide on mousemove because some pieces take mouse movement
       if (!s.uiHidden) {
@@ -1992,7 +1990,7 @@ define([
       s.cm.off('cursorActivity', recordInputAndMakeUIVisible);
       gl.canvas.parentNode.removeChild(gl.canvas);
       saveRestoreSettings();
-    }
+    };
 
     this.takeScreenshot = takeScreenshot;
     this.setOptions = setOptions;
@@ -2007,7 +2005,7 @@ define([
     this.markAsSaving = markAsSaving;
     this.isSaveable = function() {
       return g.saveable;
-    }
+    };
   }
 
   var vs;

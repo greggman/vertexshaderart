@@ -15,7 +15,7 @@ define([], function() {
   };
   function addCommas(s) {
     var last = s.trim().substr(-1);
-    return noCommaNeeded[last] ? s : (s + ",")
+    return noCommaNeeded[last] ? s : (s + ",");
   }
 
   function isQuote(s) {

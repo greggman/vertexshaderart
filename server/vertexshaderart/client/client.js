@@ -1,2 +1,0 @@
-﻿IMAGE_PATH = "ihopethisdoesnotmatterontheclient";
-

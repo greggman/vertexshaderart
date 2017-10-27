@@ -37,7 +37,7 @@ define([], function() {
 
     // Returns an id for the listener. This is easier IMO than
     // the normal remove listener which requires the same arguments as addListener
-    this.on = function(elem, event, listener, useCapture) {
+    this.on = function(elem /*, event, listener, useCapture */) {
       var args = Array.prototype.slice.call(arguments, 1);
       elem.addEventListener.apply(elem, args);
       var id = nextId++;

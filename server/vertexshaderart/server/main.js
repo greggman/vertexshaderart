@@ -1,11 +1,24 @@
-IMAGE_PATH = process.env.IMAGE_PATH;
+import { fs } from 'fs';
+import { path } from 'path';
 
-if (!IMAGE_PATH) {
+import { collection as ArtRevision, findNextPrevArtRevision } from '../imports/api/artrevision/artrevision.js';
+import { collection as Art } from '../imports/api/art/art.js';
+import { collection as ArtLikes } from '../imports/api/artlikes/artlikes.js';
+import { collection as Comments } from '../imports/api/comments/comments.js';
+import { g } from '../imports/globals.js';
+import '../imports/pub.js';
+import '../imports/methods.js';
+import '../imports/routes.js';
+
+//import '../imports/vertexshaderart.js';
+
+g.IMAGE_PATH = process.env.IMAGE_PATH
+
+if (!g.IMAGE_PATH) {
   throw "IMAGE_PATH not set";
 }
 
 function extractDataForRank() {
-  var fs = Npm.require('fs');
   fs.writeFileSync('/Users/gregg/src/vertexshaderart/src/rank/db.json', "var db = " + JSON.stringify(Art.find({
     private: {$ne: true},
     unlisted: {$ne: true},
@@ -380,6 +393,5 @@ function setupCronJobs() {
   SyncedCron.start();
 };
 setupCronJobs();
-
 
 

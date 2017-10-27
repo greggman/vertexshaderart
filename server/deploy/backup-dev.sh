@@ -5,7 +5,7 @@ rm -f  backups/latest-images.tar.gz
 rm -rf backups/latest
 
 echo "dump data"
-mongodump -h 127.0.0.1 --port 3001 --out backups/latest
+../mongo/bin/mongodump -h 127.0.0.1 --port 3001 --out backups/latest
 tar -s "#backups/latest/meteor#backup/latest/admin#" -s "#backups/latest#backup/latest#" -c -v -z -f backups/latest-backup.tar.gz backups/latest/
 tar -s "#\\.\\./vsa-uploads#data/images#" -c -v -z -f backups/latest-images.tar.gz ../vsa-uploads/
 

@@ -71,15 +71,9 @@ Pull requests or suggestions welcome. Please [open an issue](http://github.com/g
 
 *   Install [node.js](http://nodejs.org)
 
-*   Install Grunt
-
-    type `sudo npm -g install grunt`.  No `sudo` on windows
-
-*   Install http-server
-
-    type `sudo npm -g install http-server`. No `sudo` on windows
-
 *   Install [Meteor](http://meteor.com)
+
+    Note: You do not need meteor to work on the visualizer
 
 ### Visualizer vs Website
 
@@ -89,7 +83,7 @@ The site is split into 2 parts.
 
     To run this cd to the folder you cloned this repo in and type
 
-        http-server
+        npm run start
 
     Now open a browser to [`http://localhost:8080/src/`](http://localhost:8080/src/).
 
@@ -136,7 +130,7 @@ The site is split into 2 parts.
 ### Updating the visualizer into the meteor website.
 
 To update the visiualizer/editor into the meteor website cd to the root folder of this repo
-and type `grunt`.
+and type `npm run build`.
 
 That will
 

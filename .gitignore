@@ -5,6 +5,7 @@ server/deploy/settings-live.json
 server/deploy/settings-local.json
 server/deploy/settings-staging.json
 server/vertexshaderart/settings-dev.json
+server/mongo
 settings.env
 docker-compose.yml
 node_modules

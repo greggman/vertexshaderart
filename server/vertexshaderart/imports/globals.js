@@ -1,0 +1,7 @@
+const g = {
+};
+
+export {
+  g,
+};
+

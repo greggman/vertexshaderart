@@ -84,31 +84,64 @@ var packageInfo = JSON.parse(fs.readFileSync('package.json', {encoding: "utf8"})
 
 module.exports = function(grunt) {
 
+  require('load-grunt-tasks')(grunt);
+
   function setLicense() {
     var s = replaceParams(license, packageInfo);
     grunt.config.set('uglify.min.options.banner', s);
-    var start = s + fs.readFileSync('build/js/start.js', {encoding: "utf8"})
-    grunt.config.set('requirejs.full.options.wrap.start', start);
+    //var start = s + fs.readFileSync('build/js/start.js', {encoding: "utf8"})
+    //grunt.config.set('requirejs.full.options.wrap.start', start);
   }
 
   grunt.initConfig({
-    requirejs: {
+    webpack: {
       full: {
-        options: {
-          baseUrl: "./",
-          name: "node_modules/almond/almond.js",
-          include: "build/js/includer",
-          out: "server/vertexshaderart/client/vsart.js",
-          optimize: "none",
-          wrap: {
-            start: '<%= rsStart %>',
-            endFile: 'build/js/end.js',
-          },
-          paths: {
-            '3rdparty': 'src/3rdparty',
-          },
+        entry: './src/js/main.js',
+        resolve: {
+          modules: [
+            'src',
+            'src/3rdparty',
+          ],
+          extensions: [
+            '.js',
+          ],
+        },
+        module: {
+          loaders: [
+            {
+              test: /\.js$/,
+              loader: 'babel-loader',
+              //query: {
+              //  presets: ['stage-0', 'es2015'],
+              //},
+            },
+          ],
+        },
+        output: {
+          path: path.join(__dirname, 'server/vertexshaderart/client'),
+          filename: 'vsart.js',
+          library: 'vsart',
+          libraryTarget: 'umd',
         },
       },
+    },
+    requirejs: {
+      //full: {
+      //  options: {
+      //    baseUrl: "./",
+      //    name: "node_modules/almond/almond.js",
+      //    include: "build/js/includer",
+      //    out: "server/vertexshaderart/client/vsart.js",
+      //    optimize: "none",
+      //    wrap: {
+      //      start: '<%= rsStart %>',
+      //      endFile: 'build/js/end.js',
+      //    },
+      //    paths: {
+      //      '3rdparty': 'src/3rdparty',
+      //    },
+      //  },
+      //},
       css: {
         options: {
           baseUrl: "./",
@@ -123,24 +156,24 @@ module.exports = function(grunt) {
           'src/js/*',
         ],
         options: {
-          config: 'build/conf/eslint.json',
+          //configFile: 'build/conf/eslint.json',
           //rulesdir: ['build/rules'],
         },
       },
     },
-    uglify: {
-      min: {
-        options: {
-          mangle: true,
-          //screwIE8: true,
-          banner: '<%= license %>',
-          compress: true,
-        },
-        files: {
-          'temp/delme.js': ['server/vertexshaderart/client/vsart.js'],
-        },
-      },
-    },
+    // uglify: {
+    //   min: {
+    //     options: {
+    //       mangle: true,
+    //       //screwIE8: true,
+    //       banner: '<%= license %>',
+    //       compress: false,
+    //     },
+    //     files: {
+    //       'temp/delme.js': ['server/vertexshaderart/client/vsart.js'],
+    //     },
+    //   },
+    // },
     clean: {
       dist: [ 'server/vertexshaderart/client/vsart.js' ],
     },
@@ -157,11 +190,11 @@ module.exports = function(grunt) {
     },
   });
 
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-requirejs');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('gruntify-eslint');
+  // grunt.loadNpmTasks('grunt-contrib-clean');
+  // grunt.loadNpmTasks('grunt-contrib-copy');
+  // grunt.loadNpmTasks('grunt-contrib-requirejs');
+  // grunt.loadNpmTasks('grunt-contrib-uglify');
+  // grunt.loadNpmTasks('gruntify-eslint');
 
   grunt.registerTask('makeTemplates', function() {
 
@@ -196,23 +229,6 @@ module.exports = function(grunt) {
     var scriptRE = /<script(.*?)>([\s\S]*?)<\/script>/g;
     var allScripts = getAllMatches(content, scriptRE);
     var scripts = [];
-    //var scripts = allScripts
-    //   .filter(function(m) {
-    //     var attributes = parseAttributes(m[1].trim());
-    //     return !attributes["type"] && !attributes["data-main"];
-    //   })
-    //   .map(function(m) {
-    //     return m[0];
-    //   });
-    var shaders = {};
-    allScripts.forEach(function(m) {
-      var attributes = parseAttributes(m[1].trim());
-      if (attributes["type"] &&
-          attributes["type"] !== "javascript" &&
-          attributes["type"] !== "text/javascript") {
-        shaders[attributes["id"]] = m[2];
-      }
-    });
     var metaRE = /<meta.*?>/g;
     var metas = getAllMatches(content, metaRE);
 
@@ -220,10 +236,9 @@ module.exports = function(grunt) {
         '<template name="vsart">\n' + body + scripts.join("\n") + '\n</template>\n\n' +
         '<template name="vsartmetas">\n' + metas.join("\n") + '\n</template>\n\n';
     fs.writeFileSync("server/vertexshaderart/client/vsart.html", html);
-    fs.writeFileSync("server/vertexshaderart/client/vsshaders.js", "window.vsartShaders = " + JSON.stringify(shaders));
   });
 
-  grunt.registerTask('build', ['eslint:lib', 'clean:dist', 'requirejs', 'uglify', 'makeTemplates', 'copy']);
+  grunt.registerTask('build', ['eslint:lib', 'clean:dist', 'webpack', 'requirejs', 'makeTemplates', 'copy']);
   grunt.registerTask('default', 'build');
 
   setLicense();
