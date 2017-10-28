@@ -36,6 +36,20 @@ define(function() {
   "vs-header": `
 attribute float vertexId;
 
+// struct VSA {
+//   vec2 mouse;
+//   vec2 resolution;
+//   vec4 background;
+//   float time;
+//   float vertexCount;
+//   sampler2D volume;
+//   sampler2D sound;
+//   sampler2D floatSound;
+//   sampler2D touch;
+//   vec2 soundRes;
+// };
+//
+// uniform VSA vsa;
 uniform vec2 mouse;
 uniform vec2 resolution;
 uniform vec4 background;

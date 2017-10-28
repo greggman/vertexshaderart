@@ -1612,6 +1612,11 @@ define([
       _dontUseDirectly_pointSize: 1,
     };
 
+    // uniforms['vsa.resolution'] = [1, 1];
+    // uniforms['vsa.background'] = [0, 0, 0, 1];
+    // uniforms['vsa.mouse'] = [0, 0];
+    // uniforms['vsa.soundRes'] = [s.numSoundSamples, s.numHistorySamples];
+
     var historyUniforms = {
       u_mix: 0,
       u_matrix: m4.identity(),
@@ -1632,6 +1637,7 @@ define([
 
       var programInfo = q.showWave ? s.waveProgramInfo : s.programManager.getProgramInfo();
       if (programInfo) {
+        if (!g.wasRendered) console.log(s.programManager.getProgramInfo());
         g.wasRendered = true;
 
         var num = q.showWave ? 7000 : settings.num;
@@ -1651,6 +1657,21 @@ define([
         uniforms.sound = soundHistoryTex;
         uniforms.floatSound = floatSoundHistoryTex;
         uniforms.touch = touchHistoryTex;
+        // uniforms['vsa.time'] = time;
+        // uniforms['vsa.vertexCount'] = num;
+        // uniforms['vsa.resolution[0]'] = gl.canvas.width;
+        // uniforms['vsa.resolution[1]'] = gl.canvas.height;
+        // uniforms['vsa.background[0]'] = settings.backgroundColor[0];
+        // uniforms['vsa.background[1]'] = settings.backgroundColor[1];
+        // uniforms['vsa.background[2]'] = settings.backgroundColor[2];
+        // uniforms['vsa.background[3]'] = settings.backgroundColor[3];
+        // uniforms['vsa.mouse[0]'] = mouse[0];
+        // uniforms['vsa.mouse[1]'] = mouse[1];
+        // uniforms['vsa._dontUseDirectly_pointSize'] = size;
+        // uniforms['vsa.volume'] = volumeHistoryTex;
+        // uniforms['vsa.sound'] = soundHistoryTex;
+        // uniforms['vsa.floatSound'] = floatSoundHistoryTex;
+        // uniforms['vsa.touch'] = touchHistoryTex;
 
         gl.useProgram(programInfo.program);
         twgl.setBuffersAndAttributes(gl, programInfo, s.countBufferInfo);
