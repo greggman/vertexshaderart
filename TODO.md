@@ -20,10 +20,6 @@
 
 *   Make sure notes start with previous notes on a revision
 
-*   fix revision buttons
-
-*   fix time on docker host
-
 *   make it not re-start music if the same URL.
 
     *   Don't stop music when leaving page?
@@ -32,15 +28,11 @@
 
     *   add "play/pause" to header for gallery
 
-*   Fix music info. If no artist don't show artist area
-
 *   Make markededitor expand to # of lines
 
 *   Make dialog for delete? (do I care that it's an alert?)
 
 *   check slider on iPad
-
-*   add mic support (Can I do line-in?)
 
 *   add random mode
 
@@ -124,6 +116,14 @@
 *   fix music loop or at least make stop/start work
 
 # Done
+
+*   fix revision buttons
+
+*   fix time on docker host
+
+*   Fix music info. If no artist don't show artist area
+
+*   add mic support (Can I do line-in?)
 
 *   fix, save -anon- does go to new URL
 
@@ -399,3 +399,7 @@
 *   make toolbar wrap
 
 *   check safari
+
+
+
+
