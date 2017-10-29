@@ -2,7 +2,11 @@
 
 *   Midi
 *   VR
+    *   add vsaProjection
+    *   add vsaView
+    *   Check if they are used. If so then VR, if no then display on plane
 *   VR UI
+    *   put UI on arm? (what about no arm?)
 *   VR editor
 *   sound URL (not just soundcloud)
 *   vsa. uniforms
