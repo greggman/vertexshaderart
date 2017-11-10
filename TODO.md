@@ -1,5 +1,6 @@
 # To Do
 
+*   Updating music allows save but does not change date
 *   Midi
 *   VR
     *   add vsaProjection
