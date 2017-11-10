@@ -290,7 +290,7 @@ define([
       _historyUniforms.u_texture = _srcFBI.attachments[0];
 
       twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
-      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+      twgl.drawBufferInfo(gl, s.quadBufferInfo);
 
       // copy audio data into top row of historyDst
       _historyUniforms.u_mix = format === gl.ALPHA ? 0 : 1;
@@ -304,7 +304,7 @@ define([
           _historyUniforms.u_matrix);
 
       twgl.setUniforms(s.historyProgramInfo, _historyUniforms);
-      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+      twgl.drawBufferInfo(gl, s.quadBufferInfo);
     };
 
     this.getTexture = function getTexture() {
@@ -1655,7 +1655,7 @@ define([
         gl.useProgram(programInfo.program);
         twgl.setBuffersAndAttributes(gl, programInfo, s.countBufferInfo);
         twgl.setUniforms(programInfo, uniforms);
-        twgl.drawBufferInfo(gl, mode, s.countBufferInfo, num);
+        twgl.drawBufferInfo(gl, s.countBufferInfo, mode, num);
       }
     }
 
@@ -1713,7 +1713,7 @@ define([
       historyUniforms.u_mix = mix;
       historyUniforms.u_texture = tex;
       twgl.setUniforms(s.historyProgramInfo, historyUniforms);
-      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+      twgl.drawBufferInfo(gl, s.quadBufferInfo);
     }
 
     function renderAnimRect(animRect) {
@@ -1740,7 +1740,7 @@ define([
       m4.scale(mat, [0.5, 0.5, 1], mat);
 
       twgl.setUniforms(s.rectProgramInfo, s.rectUniforms);
-      twgl.drawBufferInfo(gl, gl.TRIANGLES, s.quadBufferInfo);
+      twgl.drawBufferInfo(gl, s.quadBufferInfo);
     }
 
     function renderAnimRects() {
