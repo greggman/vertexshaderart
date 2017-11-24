@@ -26,6 +26,7 @@ meteor:
    - ROOT_URL=https://www.vertexshaderart.com
    - IMAGE_PATH=/data/images
    - RELEASE=1.5.2.2
+   - METEOR_ALLOW_SUPERUSER=true
   env_file:
    - ../files/config/meteor/settings.env
 
