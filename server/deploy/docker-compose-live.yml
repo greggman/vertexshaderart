@@ -11,7 +11,7 @@ proxy:
 
 meteor:
   container_name: c_meteor_1
-  image: ulexus/meteor
+  image: ulexus/meteor:build
   restart: on-failure:5
   ports:
    - "127.0.0.1:3000:80"
@@ -25,7 +25,7 @@ meteor:
    - REPO=https://github.com/greggman/vertexshaderart
    - ROOT_URL=https://www.vertexshaderart.com
    - IMAGE_PATH=/data/images
-   - RELEASE=1.5.2.2
+   - RELEASE=1.6
    - METEOR_ALLOW_SUPERUSER=true
   env_file:
    - ../files/config/meteor/settings.env
