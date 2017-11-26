@@ -18,8 +18,6 @@ import './vertexshaderart.html';
 const marked = require('../../lib/marked.js');
 const vsart = require('../../client/vsart.js');
 
-console.log("vsart:", vsart);
-
 marked.setOptions({
   sanitize: true,
   breaks: true,
