@@ -1,5 +1,5 @@
-import { fs } from 'fs';
-import { path } from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import { collection as ArtRevision, findNextPrevArtRevision } from '../imports/api/artrevision/artrevision.js';
 import { collection as Art } from '../imports/api/art/art.js';
@@ -7,10 +7,53 @@ import { collection as ArtLikes } from '../imports/api/artlikes/artlikes.js';
 import { collection as Comments } from '../imports/api/comments/comments.js';
 import { g } from '../imports/globals.js';
 import '../imports/pub.js';
-import '../imports/methods.js';
-import '../imports/routes.js';
+import * as routes from '../imports/routes.js';
+import * as methods from '../imports/methods.js';
 
-//import '../imports/vertexshaderart.js';
+function handleImageFiles() {
+  const req = this.request;
+  const res = this.response;
+
+  console.log("handleImageFiles:", g.IMAGE_PATH);
+  try {
+    console.log("this.params[0]:", this.params[0]);
+    var name = this.params[0].replace(/\//g, '-');
+    console.log("name:", name);
+    var filePath = g.IMAGE_PATH + '/' + name;
+    var ext = path.extname(filePath)
+    if (fs.existsSync(filePath)) {
+      var data = fs.readFileSync(filePath);
+      var type = "image/png";
+      if (path.extname(filePath) === ".jpg") {
+        type = "image/jpg";
+      }
+      res.writeHead(200, {
+        'Content-Type': type,
+        'Cache-Control': 'public, max-age=8640000',
+      });
+      res.write(data, null);
+      res.end();
+      return;
+    } else {
+      console.error("request for non-existent file:", req.url);
+      res.statusCode = 404;
+      res.end("no such image:" + req.url);
+      return;
+    }
+  } catch (e) {
+    console.error(e);
+    if (e.stack) {
+      console.error(e.stack);
+    }
+  }
+  console.error("error in request for:", req.url);
+  res.statusCode = 400;
+  res.end("error in request for:" + req.url);
+}
+
+routes.init({
+  handleImageFiles: handleImageFiles,
+});
 
 g.IMAGE_PATH = process.env.IMAGE_PATH
 
