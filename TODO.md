@@ -1,5 +1,7 @@
 # To Do
 
+*   Fix email password recovery (see)
+    (Mail not sent; to enable sending, set the MAIL_URL environment variable.)
 *   Updating music allows save but does not change date
 *   Midi
 *   VR

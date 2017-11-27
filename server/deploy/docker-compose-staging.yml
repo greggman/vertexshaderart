@@ -1,52 +1,56 @@
-proxy:
-  container_name: c_proxy
-  image: joshix/caddy:v0.9.1
-  restart: on-failure:5
-  ports:
-   - 80:80
-   - 443:443
-  volumes:
-   - ../files/save/caddy:/.caddy:rw
-   - ../files/config/caddy:/var/www/html:ro
+version: "3.3"
+services:
+  proxy:
+    container_name: c_proxy
+    image: joshix/caddy:v0.10.10
+    restart: on-failure:5
+    ports:
+     - 80:80
+     - 443:443
+    volumes:
+     - ../files/save/caddy:/.caddy:rw
+     - ../files/config/caddy:/var/www/html:ro
+    networks:
+     - vsa
 
-meteor:
-  container_name: c_meteor_1
-  image: ulexus/meteor
-  restart: on-failure:5
-  ports:
-   - "127.0.0.1:3000:80"
-  links:
-   - mongo
-  volumes_from:
-    - data
-  volumes:
-   - ./backup:/backup
-  environment:
-   - REPO=https://github.com/greggman/vertexshaderart
-   - ROOT_URL=https://staging.vertexshaderart.com
-   - IMAGE_PATH=/data/images
-   - RELEASE=1.3.3.1
-  env_file:
-   - ../files/config/meteor/settings.env
+  meteor:
+    container_name: c_meteor_1
+    image: abernix/meteord:node-8-devbuild
+    restart: on-failure:5
+    ports:
+     - "127.0.0.1:3000:80"
+    links:
+     - mongo
+    volumes:
+     - ../backup:/backup
+     - data-volume:/data
+     - ../build/bundle:/built_app
+    environment:
+     - ROOT_URL=https://staging.vertexshaderart.com
+     - IMAGE_PATH=/data/images
+     - METEOR_ALLOW_SUPERUSER=true
+     - MONGO_URL=mongodb://mongo:27017/
+    env_file:
+     - ../files/config/meteor/settings.env
+    networks:
+     - vsa
 
-data:
-  container_name: c_data_1
-  image: cogniteev/echo
-  volumes:
-   - /data/images
-   - /data/db
+  mongo:
+    container_name: c_mongo_1
+    image: mongo:3.2-jessie
+    restart: on-failure:5
+    ports:
+     - "127.0.0.1:27017:27017"
+    volumes:
+     - ../backup:/backup
+     - data-volume:/data
+    networks:
+     - vsa
 
-mongo:
-  container_name: c_mongo_1
-  image: mongo
-  restart: on-failure:5
-  ports:
-   - "127.0.0.1:27017:27017"
-  volumes_from:
-   - data
-  volumes:
-   - ../backup:/backup
+networks:
+  vsa:
+    driver: bridge
 
-#   - APP_DIR=/appgit/server/vertexshaderart
-
+volumes:
+  data-volume:
 

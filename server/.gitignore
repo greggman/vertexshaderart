@@ -1,0 +1,5 @@
+# the build folder
+.build
+# where local files are shared with docker local version
+.local
+
