@@ -14,11 +14,11 @@ function handleImageFiles() {
   const req = this.request;
   const res = this.response;
 
-  console.log("handleImageFiles:", g.IMAGE_PATH);
+  //console.log("handleImageFiles:", g.IMAGE_PATH);
   try {
-    console.log("this.params[0]:", this.params[0]);
+    //console.log("this.params[0]:", this.params[0]);
     var name = this.params[0].replace(/\//g, '-');
-    console.log("name:", name);
+    //console.log("name:", name);
     var filePath = g.IMAGE_PATH + '/' + name;
     var ext = path.extname(filePath)
     if (fs.existsSync(filePath)) {
@@ -51,6 +51,49 @@ function handleImageFiles() {
   res.end("error in request for:" + req.url);
 }
 
+const G_VALID_LETTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
+function randomName(len) {
+  var l = [];
+  for (var ii = 0; ii < len; ++ii) {
+    var ndx = (Math.random() * G_VALID_LETTERS.length + Date.now()) % G_VALID_LETTERS.length;
+    l.push(G_VALID_LETTERS.substr(ndx, 1));
+  }
+  return l.join("");
+}
+
+const dataURLHeaderRE = /^data:(.*?),/;
+
+
+methods.init({
+  saveDataURLToFile: function(dataUrl) {
+    var match = dataURLHeaderRE.exec(dataUrl);
+    if (!match) {
+      throw new Meteor.Error("bad dataURL: Does not start with 'data:...,'");
+    }
+    var spec = match[1].split(";");
+    if (spec.length === 1) {
+      spec.unshift("");
+    }
+
+    var header   = match[0];
+    var mimeType = spec[0];
+    var encoding = spec[1];
+    var ext = "." + mimeType.split("/").pop();
+    if (ext === ".jpeg") {
+      ext = ".jpg";
+    }
+
+    var found = false;
+    while (!found) {
+      var filename = "images-" + randomName(17) + '-thumbnail' + ext;
+      var fullpath = path.join(g.IMAGE_PATH, filename);
+      found = !fs.existsSync(fullpath);
+    }
+
+    fs.writeFileSync(fullpath, dataUrl.substr(header.length), encoding);
+    return url = "/cfs/files/" + filename.replace("-", "/"); // replaces only first '-'
+  },
+});
 routes.init({
   handleImageFiles: handleImageFiles,
 });

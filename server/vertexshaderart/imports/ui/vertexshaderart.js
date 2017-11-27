@@ -11,7 +11,7 @@ import { collection as ArtLikes } from '../api/artlikes/artlikes.js';
 import { collection as Comments } from '../api/comments/comments.js';
 import { getSortingType } from '../utils.js';
 
-import '../methods.js';
+import * as methods from '../methods.js';
 import './vertexshaderart.html';
 
 // import { marked } from '../lib/marked.js';
@@ -21,6 +21,12 @@ const vsart = require('../../client/vsart.js');
 marked.setOptions({
   sanitize: true,
   breaks: true,
+});
+
+methods.init({
+  saveDataURLToFile: function() {
+    return "/static/resources/images/saving-thumbnail.jpg";
+  },
 });
 
 G_PAGE_SIZE = (Meteor.settings.public.app && Meteor.settings.public.app.pageSize) ? Meteor.settings.public.app.pageSize : 15;
@@ -1100,19 +1106,6 @@ AccountsTemplates.configure({
   privacyUrl: Meteor.absoluteUrl('static/resources/privacy.html'),
   termsUrl: Meteor.absoluteUrl('static/resources/tos.html'),
 });
-
-
-
-var G_VALID_LETTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
-function randomName(len) {
-  var l = [];
-  for (var ii = 0; ii < len; ++ii) {
-    var ndx = (Math.random() * G_VALID_LETTERS.length + Date.now()) % G_VALID_LETTERS.length;
-    l.push(G_VALID_LETTERS.substr(ndx, 1));
-  }
-  return l.join("");
-}
-
 
 Meteor.startup(function () {
 });
