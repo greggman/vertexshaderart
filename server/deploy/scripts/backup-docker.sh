@@ -1,9 +1,10 @@
 #!/bin/sh
+SRC="$1"
 
 # remove any previous backup
-rm -f  /backup/latest-backup.tar.gz
-rm -f  /backup/latest-images.tar.gz
-rm -rf /backup/latest
+rm -f  "$SRC/backup/latest-backup.tar.gz"
+rm -f  "$SRC/backup/latest-images.tar.gz"
+rm -rf "$SRC/backup/latest"
 
 # make mongo spit out data
 echo "dump data"
