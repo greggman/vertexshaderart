@@ -14,11 +14,9 @@ and will help you get started quickly.
 
    Install [Docker](http://docker.com)
 
-*  OSX
+   Last version used is Docker 17.09.0-ce
 
-   I'm sure this will work on Linux just fine it's just that Docker on OSX runs in a VM
-   and these scripts assume you're on the host machine running the VM that's running
-   docker.
+*  OSX
 
    I'm sure this will work on Window just fine too, especially because docker runs everywhere
    but a few of the scripts I wrote outside of docker assume bash. Feel free to
@@ -60,8 +58,36 @@ I then edit the file `~/.ssh/config`. In that file I have lines like this
       IdentityFile ~/.ssh/id_rsa.digitalocean
       User root
 
-This does two things. #1 it makes me not have to type a password to log into docker nor my droplet
-on digital ocean. #2 it sets my user name so I can type `ssh vertexshaderart.com` instead of `ssh root@vertexshaderart.com`
+This does two things. #1 it makes me not have to type a password to log my droplet. I use use `ssh-add ~/.ssh/id_rsa.digitalocean` once
+and then it will use my key. #2 it sets my user name so I can type `ssh vertexshaderart.com` instead of `ssh root@vertexshaderart.com`
+
+### Versions
+
+There are 4 versions
+
+1.  **dev**
+
+    This is the default running on mac/osx/linux out of the current folder with live updating.
+    To run you cd to `vertexshaderart/server/vertexshaderart` and type `./start`.
+    If you edit a file below `vertexshaderart/server/vertexshaderart` it will update live.
+
+2.  **local**
+
+    This runs in docker on the local machine. Note: Older versions of docker using a VM for the host.
+    In other words you can your Mac, on it was running a VM running linux. Inside the VM was running
+    docker and docker containers.
+
+    The new version of docker mac (not sure about Docker Windows) runs docker on the mac. No VM required.
+    One advantage is that the programs running in the containers can access your mac's local filesystem
+    (which parts they can access are specfied in the docker-compose.yml files so no worries).
+
+3.  **staging**
+
+    This runs on some remote server named `staging.vertexshaderart.com`
+
+4.  **live**
+
+    This runs on `vertexshaderart.com`
 
 ### Deploy Locally
 
@@ -73,60 +99,34 @@ I'm pretty sure this will work though I haven't tested it on a fresh machine
 
     **IMPORTANT!! DO NOT ADD THIS FILE TO GIT!!**
 
-2.  edit the file `server/deploy/docker-compose-local.yml` and change this line
+2.  *build* the project.
 
-        - REPO=https://github.com/greggman/vertexshaderart
+        cd vertexshaderart/server/deploy
+        ./build.sh
 
-    to be the location of your github repo for your new project.
+    This builds into a `vertexshaderart/server/.build`
 
-3.  Start a docker terminal.
+3.  Push the project into docker containers.
 
-    On OSX that's done by running `Docker Quickstart Terminal` which is in `Appliations/Docker`.
-
-    On Linux that's probably just opening a terminal
-
-4.  Start the docker VM
-
-        docker-machine start default
-
-5.  Install docker-compose in the docker VM
-
-        ssh 192.168.99.100
-
-    You may be asked for a password for docker. The default password
-    is `tcuser`.
-
-        curl -L https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
-        exit
-
-6.  Push it!
-
-        cd server/deploy
         ./push-local.sh
 
-    **NOTE: You'll probably see several errors at the beginning.**
+    **NOTE: You'll probably errors about non-existing containersa.**
 
-    It will then download a bunch of docker image data and finally
-    spin up docker containers in a VM
+    This will do the following
 
-    You may be asked for a password for docker. The default password
-    is `tcuser`.
+    1.  Copy config files into `vertexshaderart/server/.local`
 
-7.  type
+    2.  Start the docker containers.
 
-        ssh 192.168.99.100 'docker logs -f c_meteor_1'
+        Those docker containers will directly access the files in both `vertexshaderart/server/.local`
+        and `vertexshaderart/server/.build`
 
-    This will show you output from the docker container running
-    meteor. Once you see "Starting Meteor..." (or if you see
-    "Building the Bundle..." and you've waited 3-5 mins) then...
+    Note: To stop and delete all the vsa related docker containers use `./reset-local.sh`
 
-8.  Go to `http://192.168.99.100:3000`
+4.  Go to `http://localhost:3000`
 
     If you see the website it's running. There's no data so there
     will be no art to view. You'll need to make some
-
-To update the local VM check stuff into your github repo and run steps 6+ again.
 
 ### Deploy Live
 
@@ -139,7 +139,7 @@ asked for passwords a billion times as you run these scripts.
 
 1.  make a new droplet. I used a 1gig droplet.
 
-2.  Under "Select Image" click the "Applications" tab and pick the docker image.
+2.  Under "Select Image" click the "Applications" tab and pick the docker image. At least version 17
 
 3.  Under "Add SSH Key" pick your key you uploaded
 
@@ -180,12 +180,10 @@ asked for passwords a billion times as you run these scripts.
 
     **IMPORTANT!! DO NOT ADD THIS FILE TO GIT!!**
 
-8.  Edit the file `server/deploy/docker-compose-live.yml` and change these lines
+8.  Edit the file `server/deploy/docker-compose-live.yml` and change this line
 
-        - REPO=https://github.com/greggman/vertexshaderart
         - ROOT_URL=https://www.vertexshaderart.com
 
-    The `REPO` line needs to be the location of your github repo for your new project.
     The `ROOT_URL`, needs to be the place your site can be reached.
 
     **NOTE:**
@@ -214,6 +212,7 @@ asked for passwords a billion times as you run these scripts.
 
 11. cd to the `server/deploy` folder and type
 
+        ./build.sh
         ./push-live.sh
 
 12. type
@@ -335,12 +334,12 @@ uses `consumerKey` etc..
 *   Go back to the Dashboard tab.
 *   Get App Id and App Secret
 
-##### Live vs Local vs Staging
+##### Dev vs Local vs Staging vs Live
 
 If I understand correctly the callback for each URL needs to be accessable from the browser
 which means you either need to edit them all for live vs local or else register separate apps
 for each service (mysite and mysite-dev).  Every where it says `<ipaddressofdroplet-or-domain>`
-above would be `192.168.99.100:3000` for local. Personally I haven't set any up for local but
+above would be `localhost:3000` for local. Personally I haven't set any up for local but
 I have setup separate ones for staging.
 
 #### Configuring Google Analytics
