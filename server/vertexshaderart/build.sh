@@ -5,4 +5,4 @@ popd > /dev/null
 
 cd "$SCRIPTPATH"
 
-meteor build ../build --directory --architecture=os.linux.x86_64
+meteor build ../.build --directory --architecture=os.linux.x86_64
