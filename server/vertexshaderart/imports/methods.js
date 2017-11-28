@@ -134,7 +134,7 @@ function init(options) {
     check(notes, StringIsCommentString);
 
     if (screenshotDataURL) {
-      screenshotURL = saveDataURLToFileFn(screenshotDataURL);
+      screenshotURL = saveDataURLToFile(screenshotDataURL);
     }
 
     name = name || "unnamed";
