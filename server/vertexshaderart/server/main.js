@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { URL } from 'url';
 
 import { collection as ArtRevision, findNextPrevArtRevision } from '../imports/api/artrevision/artrevision.js';
 import { collection as Art } from '../imports/api/art/art.js';
@@ -339,6 +340,51 @@ var isBot = (function() {
   };
 }());
 
+const fields = {
+  'private': true,
+  'owner': true,
+  'rank': true,
+  'private': true,
+  'notes': true,
+  'hasSound': true,
+  'unlisted': true,
+  'views': true,
+  'likes': true,
+  'screenshotURL': true,
+};
+
+function sanatizeArt(art) {
+  const n = {};
+  Object.keys(art).filter(p => !fields[p]).forEach(p => {
+    n[p] = art[p];
+  });
+  return n;
+}
+
+function isPrivate(art) {
+  return art.private;
+}
+
+function isJson(req) {
+  return req.query && req.query.format === "json";
+}
+
+function sendArt(req, res, data) {
+  if (isPrivate(data)) {
+    res.statusCode = 404;
+    res.end("no such art:" + req.url);
+    return;
+  }
+
+  if (isJson(req)) {
+    res.writeHead(200, {'Content-type': 'application/json'});
+    res.end(JSON.stringify(sanatizeArt(data)));
+  } else {
+    const html = SSR.render('artpieceSSR', data);
+    res.end(html);
+  }
+}
+
 function sendArtSSR(req, res, artId) {
   var arts = Art.find({_id: artId}).fetch();
   if (!arts || arts.length < 1) {
@@ -346,9 +392,7 @@ function sendArtSSR(req, res, artId) {
     res.end("no such art:" + req.url);
     return;
   }
-  var html = SSR.render('artpieceSSR', arts[0]);
-  res.write(html);
-  res.end();
+  sendArt(req, res, arts[0]);
 }
 
 function sendArtRevisionSSR(req, res, revisionId) {
@@ -358,20 +402,19 @@ function sendArtRevisionSSR(req, res, revisionId) {
     res.end("no such art revision:" + req.url);
     return;
   }
-  var html = SSR.render('artpieceSSR', arts[0]);
-  res.write(html);
-  res.end();
+  sendArt(req, res, arts[0]);
 }
 
-var artPathRE = /\/art\/([^/]+)$/;
-var artRevisionPathRE = /\/art\/([^/]+)\/revision\/([^/]+)$/;
+const artPathRE = /\/art\/([^/]+)$/;
+const artRevisionPathRE = /\/art\/([^/]+)\/revision\/([^/]+)$/;
 WebApp.connectHandlers.use(function(req, res, next) {
-  if (isBot(req)) {
-    var m = artPathRE.exec(req.url);
+  if (isJson(req) || isBot(req)) {
+    const u = new URL(req.url, 'http://foo.com');
+    var m = artPathRE.exec(u.pathname);
     if (m) {
       return sendArtSSR(req, res, m[1]);
     }
-    m = artRevisionPathRE.exec(req.url);
+    m = artRevisionPathRE.exec(u.pathname);
     if (m) {
       return sendArtRevisionSSR(req, res, m[2]);
     }
