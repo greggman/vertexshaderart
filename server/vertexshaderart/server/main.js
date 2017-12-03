@@ -377,7 +377,13 @@ function sendArt(req, res, data) {
   }
 
   if (isJson(req)) {
-    res.writeHead(200, {'Content-type': 'application/json'});
+    res.writeHead(200, {
+      'Content-type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET',
+      'Access-Control-Allow-Headers': 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept',
+      'Access-Control-Allow-Credentials': false,
+    });
     res.end(JSON.stringify(sanatizeArt(data)));
   } else {
     const html = SSR.render('artpieceSSR', data);
