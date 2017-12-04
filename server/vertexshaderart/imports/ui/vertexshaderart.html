@@ -139,7 +139,7 @@
 <template name="artpiece">
 
 <div class="artpiece">
-    <a href="/art/{{_id}}">
+    <a href="{{artPath}}">
       <img class="thumbnail" src="{{screenshotLink.url}}" />
       <div class="artstate">
           {{#if private}}
@@ -166,11 +166,11 @@
     </a>
     <div class="galleryinfo">
         <div class="galleryname">
-            <a href="/art/{{_id}}">&ldquo;{{name}}&rdquo;</a>
+            <a href="{{artPath}}">&ldquo;{{name}}&rdquo;</a>
             <a href="/user/{{username}}">by: {{username}}</a>
         </div>
         <div>
-            <a href="/art/{{_id}}">
+            <a href="{{artPath}}">
               <span class="views"><img src="/static/resources/images/eye.svg" />{{views}}</span><span class="likes"><img src="/static/resources/images/heart-liked.svg" />{{likes}}</span>
             </a>
         </div>
@@ -181,7 +181,7 @@
 
 <template name="revision">
     <div class="artpiece">
-        <a href="/art/{{artId}}/revision/{{_id}}">
+        <a href="{{revisionPath}}">
           <img class="thumbnail" src="{{screenshotLink.url}}" />
           <div class="galleryinfo">
             <div class="galleryname">&ldquo;{{name}}&rdquo; by: {{username}}</div>
@@ -318,7 +318,7 @@
                by: {{username}}
             </a>
             {{#if origId}}
-              <a href="/art/{{origId}}" class="shrink">based on</a>
+              <a href="{{origPath}}" class="shrink">based on</a>
             {{/if}}
             {{> userinfolike}}
             {{> share}}

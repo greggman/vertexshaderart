@@ -10,6 +10,7 @@ import { g } from '../imports/globals.js';
 import '../imports/pub.js';
 import * as routes from '../imports/routes.js';
 import * as methods from '../imports/methods.js';
+import { getArtPath, getRevisionPath, absoluteUrl } from '../imports/utils.js';
 
 function handleImageFiles() {
   const req = this.request;
@@ -340,27 +341,40 @@ var isBot = (function() {
   };
 }());
 
-const fields = {
-  'private': true,
-  'owner': true,
-  'rank': true,
-  'private': true,
-  'notes': true,
-  'hasSound': true,
-  'unlisted': true,
-  'views': true,
-  'likes': true,
-  'screenshotURL': true,
+// Best to choose the fields rather than leak later.
+const safeFields = {
+  '_id': true,
+  'createdAt': true,
+  'modifiedAt': true,
+  'origId': true,
+  'revisionId': true,
+  'artId': true,
+  'name': true,
+  'username': true,
+  'settings': true,
+  'avatarUrl': true,
 };
 
 function prepArt(art) {
   const n = {};
-  Object.keys(art).filter(p => !fields[p]).forEach(p => {
+  Object.keys(art).filter(p => safeFields[p]).forEach(p => {
     n[p] = art[p];
   });
   // settings are stored as an opaque string.
   // change them to JSON for this
   n.settings = JSON.parse(n.settings);
+  if (n.revisionId) {
+    // It's art
+    n.revisionUrl = absoluteUrl(getRevisionPath(n._id, n.revisionId));
+    n.artUrl = absoluteUrl(getArtPath(n._idx));
+  } else {
+    // It's a revision
+    n.revisionUrl = absoluteUrl(getRevisionPath(n.artId, n._id));
+    n.artUrl = absoluteUrl(getArtPath(n.artId));
+  }
+  if (n.origId) {
+    n.origUrl = absoluteUrl(getArtPath(n.origId));
+  }
   return n;
 }
 

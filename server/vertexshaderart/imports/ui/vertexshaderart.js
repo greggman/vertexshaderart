@@ -9,7 +9,7 @@ import { collection as ArtRevision, findNextPrevArtRevision } from '../api/artre
 import { collection as Art } from '../api/art/art.js';
 import { collection as ArtLikes } from '../api/artlikes/artlikes.js';
 import { collection as Comments } from '../api/comments/comments.js';
-import { getSortingType } from '../utils.js';
+import { getArtPath, getRevisionPath, getSortingType } from '../utils.js';
 
 import * as methods from '../methods.js';
 import './vertexshaderart.html';
@@ -230,6 +230,9 @@ Template.revision.helpers({
       return { url:"/static/resources/images/missing-thumbnail.jpg" };
     }
   },
+  revisionPath: function() {
+    return getRevisionPath(this.artId, this._id);
+  },
   isOwner: function() {
     return this.owner === Meteor.userId();
   },
@@ -250,6 +253,9 @@ function safeGetTime(date) {
 }
 
 Template.artpiece.helpers({
+  artPath: function() {
+    return getArtPath(this._id);
+  },
   hasRevisions: function() {
     return Router.current() &&
            Router.current().data &&
@@ -304,6 +310,9 @@ Template.vslogin.events({
 });
 
 Template.userinfo.helpers({
+  origPath: function() {
+    return getArtPath(this.origId);
+  },
   artId: function() {
     var route = Router.current();
     return route.params._id;
@@ -645,7 +654,7 @@ function getNextPrevArtRevisionUrl(next) {
     return;
   }
   var rev = result[0];
-  return "/art/" + rev.artId + "/revision/" + rev._id;
+  return getRevisionPath(rev.artId, rev._id);
 }
 
 Template.meta.helpers({
@@ -1022,7 +1031,7 @@ Template.save.events({
         console.error(err);
         return;
       }
-      var url = "/art/" + result;
+      var url = getArtPath(result);
       goWithoutInterruptingMusic(url)
     });
   },
@@ -1049,7 +1058,7 @@ Template.save.events({
 
       // Were we editing a revisions?
       if (route.params._revisionId) {
-        var url = "/art/" + origId + "/revision/" + result;
+        const url = getRevisionPath(origId, result);
         goWithoutInterruptingMusic(url);
       }
     });
