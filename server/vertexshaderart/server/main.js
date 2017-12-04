@@ -353,11 +353,14 @@ const fields = {
   'screenshotURL': true,
 };
 
-function sanatizeArt(art) {
+function prepArt(art) {
   const n = {};
   Object.keys(art).filter(p => !fields[p]).forEach(p => {
     n[p] = art[p];
   });
+  // settings are stored as an opaque string.
+  // change them to JSON for this
+  n.settings = JSON.parse(n.settings);
   return n;
 }
 
@@ -384,7 +387,7 @@ function sendArt(req, res, data) {
       'Access-Control-Allow-Headers': 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept',
       'Access-Control-Allow-Credentials': false,
     });
-    res.end(JSON.stringify(sanatizeArt(data)));
+    res.end(JSON.stringify(prepArt(data)));
   } else {
     const html = SSR.render('artpieceSSR', data);
     res.end(html);
