@@ -12388,7 +12388,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
     // This is used because then the route changes like from "/new/" to "/art/id"
     // meteor will re-render the scene with the new route.
     // but for us it's not really a new route.
-    interruptMusic: true
+    interruptMusic: true,
+    // true of we already started the audio system and don't need
+    // a gesture to start it.
+    audioStarted: false
   };
   s.screenshotCanvas.width = 600;
   s.screenshotCanvas.height = 336;
@@ -13778,10 +13781,8 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 
       $("#uicontainer").style.display = "block";
 
-      var autoPlay = q.autoPlay || q.autoplay;
       s.running = true;
-
-      if (s.inIframe && !autoPlay || isMobile) {
+      if (!s.audioStarted) {
         if (options.screenshotURL) {
           $("#screenshot").style.backgroundImage = 'url(' + options.screenshotURL + ')';
         }
@@ -13793,13 +13794,19 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
           $("#badaudio").style.display = "";
         }
         on($("#start"), 'click', function () {
-          if (isMobile) {
+          function startIt() {
+            s.audioStarted = true;
             playSoundToGetMobileAudioStarted();
+            $("#start").style.display = "none";
+            $("#screenshot").style.display = "none";
+            setUIMode(uiMode);
+            realSetSettings(settings, options);
           }
-          $("#start").style.display = "none";
-          $("#screenshot").style.display = "none";
-          setUIMode(uiMode);
-          realSetSettings(settings, options);
+          if (s.context.resume) {
+            s.context.resume().then(startIt);
+          } else {
+            startIt();
+          }
         });
       } else {
         $("#start").style.display = "none";
