@@ -74,8 +74,8 @@ define([
   // Right now Safari doesn't expose AudioContext (it's still webkitAudioContext)
   // so my hope is whenever they get around to actually supporting the 3+ year old
   // standard that things will actually work.
-  var shittyBrowser = window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
-  var isMobile = window.navigator.userAgent.match(/Android|iPhone|iPad|iPod|Windows Phone/i);
+  var shittyBrowser = false;// window.AudioContext === undefined && /iPhone|iPad|iPod/.test(navigator.userAgent);
+  var isMobile = false;// window.navigator.userAgent.match(/Android|iPhone|iPad|iPod|Windows Phone/i);
   var $ = document.querySelector.bind(document);
   var gl;
   var m4 = twgl.m4;
@@ -1500,6 +1500,9 @@ define([
       gain.gain.value = 0;
       gain.connect(s.context.destination);
       source.start(0);
+
+      s.streamSource.init();
+
       setTimeout(function() {
         source.disconnect();
       }, 100);
@@ -1528,7 +1531,6 @@ define([
         on($("#start"), 'click', function() {
           function startIt() {
             s.audioStarted = true;
-            playSoundToGetMobileAudioStarted();
             $("#start").style.display = "none";
             $("#screenshot").style.display = "none";
             setUIMode(uiMode);
@@ -1536,7 +1538,9 @@ define([
           }
           if (s.context.resume) {
             s.context.resume().then(startIt);
+            playSoundToGetMobileAudioStarted();
           } else {
+            playSoundToGetMobileAudioStarted();
             startIt();
           }
         });
