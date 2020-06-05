@@ -2,7 +2,7 @@ version: "3.3"
 services:
   proxy:
     container_name: c_proxy
-    image: joshix/caddy:v0.10.10
+    image: joshix/caddy:v1.0.5
     restart: on-failure:5
     ports:
      - 80:80
@@ -15,7 +15,7 @@ services:
 
   meteor:
     container_name: c_meteor_1
-    image: abernix/meteord:node-8-devbuild
+    image: abernix/meteord:node-12-devbuild
     restart: on-failure:5
     ports:
      - "127.0.0.1:3000:80"
@@ -37,7 +37,7 @@ services:
 
   mongo:
     container_name: c_mongo_1
-    image: mongo:3.2-jessie
+    image: mongo:4.2.7-bionic
     restart: on-failure:5
     ports:
      - "127.0.0.1:27017:27017"
