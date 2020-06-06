@@ -20,7 +20,7 @@ services:
 
   meteor:
     container_name: c_meteor_1
-    image: abernix/meteord:node-12-devbuild
+    image: abernix/meteord:node-12-base
     restart: on-failure:5
     ports:
      - "127.0.0.1:3000:80"
