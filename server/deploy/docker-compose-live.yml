@@ -4,6 +4,11 @@ services:
     container_name: c_proxy
     image: joshix/caddy:v1.0.5
     restart: on-failure:5
+    command: -agree
+    sysctls:
+      - net.ipv4.ip_unprivileged_port_start=0
+    cap_add:
+     - CAP_NET_BIND_SERVICE
     ports:
      - 80:80
      - 443:443
