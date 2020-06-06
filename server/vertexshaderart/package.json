@@ -27,7 +27,6 @@
   "homepage": "https://github.com/greggman/vertexshaderart",
   "dependencies": {
     "@babel/runtime": "^7.10.2",
-    "babel-runtime": "^6.26.0",
     "bcrypt": "^4.0.1"
   }
 }
