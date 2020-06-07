@@ -167,11 +167,15 @@ asked for passwords a billion times as you run these scripts.
 
     If it works continue to the next step. If not um... ask someone to help
 
-6.  Install docker-compose in your droplet
+6.  Install docker-compose and node in your droplet
 
         ssh <ipaddressOrDomainOfDroplet>
         curl -L https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
         chmod +x /usr/local/bin/docker-compose
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+        bash
+        nvm install 12
+        exit
         exit
 
 7.  Copy the file `server/deploy/settings-live-orig.json` to `server/deploy/settings-live.json`
