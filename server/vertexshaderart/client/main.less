@@ -669,18 +669,8 @@ header .user.nouser.outlinedbutton {
 
 
 @media (max-width : 425px) {
-  .thumbnail {
-    width: 300px;
-    height: 168px;
-  }
   .gallery {
     font-size: small;
-  }
-  .gallery .artpiece {
-    width: 300px;
-  }
-  .galleryinfo {
-    max-width: 300px;
   }
   .support {
     display: none;
@@ -691,6 +681,9 @@ header .user.nouser.outlinedbutton {
   .separatecomment {
     flex-direction: column;
   }
+  header>div {
+      flex-direction: column-reverse;
+  }
 }
 
 @media (max-width : 500px) {
@@ -699,9 +692,6 @@ header .user.nouser.outlinedbutton {
     }
     .createnew {
       display: none;
-    }
-    header>div {
-        flex-direction: column-reverse;
     }
     header h1 {
         font-size: xx-large;
