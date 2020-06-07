@@ -215,6 +215,18 @@ asked for passwords a billion times as you run these scripts.
         ./build.sh
         ./push-live.sh
 
+    ps: you probably need to do this twice and between them
+    set the permissions with
+
+        chmod gou+w files/save/caddy
+    
+    and npm install (need to fix)
+
+        # install nvm then
+        nvm install 12
+        cd build/bundle/programs/server
+        npm install
+
 12. type
 
         ssh <ipaddressOrDomainOfDroplet> 'docker logs -f c_meteor_1'
