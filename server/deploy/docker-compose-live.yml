@@ -34,7 +34,7 @@ services:
      - ROOT_URL=https://www.vertexshaderart.com
      - IMAGE_PATH=/data/images
      - METEOR_ALLOW_SUPERUSER=true
-     - MONGO_URL=mongodb://mongo:27017/
+     - MONGO_URL=mongodb://mongo:27017/admin
     env_file:
      - ../files/config/meteor/settings.env
     networks:
