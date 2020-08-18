@@ -12357,7 +12357,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(3), __webpack_require__(0), __webpack_require__(4), __webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(9), __webpack_require__(10), __webpack_require__(2), __webpack_require__(11), __webpack_require__(12), __webpack_require__(13), __webpack_require__(14), __webpack_require__(15), __webpack_require__(16), __webpack_require__(17)], __WEBPACK_AMD_DEFINE_RESULT__ = function (audioStreamSource, CodeMirror, CodeMirrorSimpleScrollbars, colorUtils, cssParse, glsl, tweeny, twgl, Notifier, fullScreen, io, KeyRouter, ListenerManager, misc, strings, shaders, typedArrayCopyWithinPolyfill // eslint-disable-line
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(2), __webpack_require__(0), __webpack_require__(3), __webpack_require__(4), __webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8), __webpack_require__(9), __webpack_require__(10), __webpack_require__(11), __webpack_require__(12), __webpack_require__(13), __webpack_require__(14), __webpack_require__(15), __webpack_require__(16), __webpack_require__(17)], __WEBPACK_AMD_DEFINE_RESULT__ = function (audioStreamSource, CodeMirror, CodeMirrorSimpleScrollbars, colorUtils, cssParse, glsl, tweeny, twgl, Notifier, fullScreen, io, KeyRouter, ListenerManager, misc, strings, shaders, typedArrayCopyWithinPolyfill // eslint-disable-line
 ) {
 
   "use strict";
@@ -12976,7 +12976,6 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
             options.format = "json";
             options["_status_code_map[302]"] = 200;
             var scUrl = "https://api.soundcloud.com" + url + misc.objectToSearchString(options);
-
             var handleResult = function (err, obj) {
               if (!err) {
                 if (obj.status && obj.status.substr(0, 3) === "302" && obj.location) {
@@ -13280,9 +13279,16 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
         setSoundLink();
         s.gainNode.gain.value = track === 'feedback' ? 1 : 0;
       } else {
-        var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
-        setSoundSource(src);
         setSoundLink(track);
+        var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
+        fetch(src, { method: 'HEAD' }).then(res => {
+          setSoundSource(res.url);
+        }).catch(e => {
+          console.error(e);
+          var msg = isMic(track) ? "" : track.title;
+          setSoundSuccessState(false, "Error streaming music: " + msg + " : " + e.toString());
+          playNextTrack();
+        });
         s.gainNode.gain.value = 1;
       }
     }
@@ -14389,96 +14395,6 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
- * Copyright 2015, Gregg Tavares.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Gregg Tavares. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
-  "use strict";
-
-  var requestFullScreen = function (element) {
-    if (element.requestFullscreen) {
-      element.requestFullscreen();
-    } else if (element.msRequestFullscreen) {
-      element.msRequestFullscreen();
-    } else if (element.webkitRequestFullScreen) {
-      element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-    } else if (element.webkitRequestFullscreen) {
-      element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-    } else if (element.mozRequestFullScreen) {
-      element.mozRequestFullScreen();
-    } else if (element.mozRequestFullscreen) {
-      element.mozRequestFullscreen();
-    }
-  };
-
-  var noop = function () {};
-
-  var cancelFullScreen = (document.exitFullscreen || document.exitFullScreen || document.msExitFullscreen || document.msExitFullScreen || document.webkitCancelFullscreen || document.webkitCancelFullScreen || document.mozCancelFullScreen || document.mozCancelFullscreen || noop).bind(document);
-
-  function isFullScreen() {
-    var f = document.fullscreenElement || document.fullScreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.webkitIsFullScreen;
-    return f !== undefined && f !== null && f !== false;
-  }
-
-  var onFullScreenChange = function (element, callback) {
-    document.addEventListener('fullscreenchange', function () /*event*/{
-      callback(isFullScreen());
-    });
-    element.addEventListener('webkitfullscreenchange', function () /*event*/{
-      callback(isFullScreen());
-    });
-    document.addEventListener('mozfullscreenchange', function () /*event*/{
-      callback(isFullScreen());
-    });
-  };
-
-  function canGoFullScreen() {
-    var body = window.document.body || {};
-    var r = body.requestFullscreen || body.requestFullScreen || body.msRequestFullscreen || body.msRequestFullScreen || body.webkitRequestFullScreen || body.webkitRequestFullscreen || body.mozRequestFullScreen || body.mozRequestFullscreen;
-    return r !== undefined && r !== null;
-  }
-
-  return {
-    cancelFullScreen: cancelFullScreen,
-    isFullScreen: isFullScreen,
-    canGoFullScreen: canGoFullScreen,
-    onFullScreenChange: onFullScreenChange,
-    requestFullScreen: requestFullScreen
-  };
-}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;// @license audiosteamsource.js 0.0.2 Copyright (c) 2015, Gregg Tavares All Rights Reserved.
 // Available via the MIT license.
 // see: http://github.com/greggman/audiostreamsource.js for details
@@ -14851,7 +14767,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 });
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -15001,7 +14917,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 });
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15287,7 +15203,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15576,7 +15492,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
@@ -15772,7 +15688,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
@@ -16306,7 +16222,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -25538,7 +25454,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 });
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
@@ -25578,6 +25494,96 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_
   }
 
   return Notifier;
+}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
+ * Copyright 2015, Gregg Tavares.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Gregg Tavares. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+  "use strict";
+
+  var requestFullScreen = function (element) {
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.msRequestFullscreen) {
+      element.msRequestFullscreen();
+    } else if (element.webkitRequestFullScreen) {
+      element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+    } else if (element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+    } else if (element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if (element.mozRequestFullscreen) {
+      element.mozRequestFullscreen();
+    }
+  };
+
+  var noop = function () {};
+
+  var cancelFullScreen = (document.exitFullscreen || document.exitFullScreen || document.msExitFullscreen || document.msExitFullScreen || document.webkitCancelFullscreen || document.webkitCancelFullScreen || document.mozCancelFullScreen || document.mozCancelFullscreen || noop).bind(document);
+
+  function isFullScreen() {
+    var f = document.fullscreenElement || document.fullScreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.webkitIsFullScreen;
+    return f !== undefined && f !== null && f !== false;
+  }
+
+  var onFullScreenChange = function (element, callback) {
+    document.addEventListener('fullscreenchange', function () /*event*/{
+      callback(isFullScreen());
+    });
+    element.addEventListener('webkitfullscreenchange', function () /*event*/{
+      callback(isFullScreen());
+    });
+    document.addEventListener('mozfullscreenchange', function () /*event*/{
+      callback(isFullScreen());
+    });
+  };
+
+  function canGoFullScreen() {
+    var body = window.document.body || {};
+    var r = body.requestFullscreen || body.requestFullScreen || body.msRequestFullscreen || body.msRequestFullScreen || body.webkitRequestFullScreen || body.webkitRequestFullscreen || body.mozRequestFullScreen || body.mozRequestFullscreen;
+    return r !== undefined && r !== null;
+  }
+
+  return {
+    cancelFullScreen: cancelFullScreen,
+    isFullScreen: isFullScreen,
+    canGoFullScreen: canGoFullScreen,
+    onFullScreenChange: onFullScreenChange,
+    requestFullScreen: requestFullScreen
+  };
 }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
