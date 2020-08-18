@@ -698,7 +698,6 @@ define([
             options.format = "json";
             options["_status_code_map[302]"] = 200;
             var scUrl = "https://api.soundcloud.com" + url + misc.objectToSearchString(options);
-
             var handleResult = function(err, obj) {
               if (!err) {
                 if (obj.status && obj.status.substr(0, 3) === "302" && obj.location) {
@@ -1009,9 +1008,18 @@ define([
         setSoundLink();
         s.gainNode.gain.value = track === 'feedback' ? 1 : 0;
       } else {
-        var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
-        setSoundSource(src);
         setSoundLink(track);
+        var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
+        fetch(src, {method: 'HEAD'})
+          .then((res) => {
+            setSoundSource(res.url);
+          })
+          .catch((e) => {
+            console.error(e);
+            var msg = isMic(track) ? "" : track.title;
+            setSoundSuccessState(false, "Error streaming music: " + msg + " : " + e.toString());
+            playNextTrack();
+          });
         s.gainNode.gain.value = 1;
       }
     }
