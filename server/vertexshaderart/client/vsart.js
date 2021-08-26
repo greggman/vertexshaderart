@@ -12964,15 +12964,83 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
       });
 
       s.sc = new function () {
-        var _clientId;
-        this.initialize = function (options) {
-          _clientId = options.client_id;
+        //var _clientId;
+        var _authToken;
+        var _authTokenExpireTime;
+        var log = function () {
+          console.log.apply(console, arguments);
+        };
+        var getCurrentTimeInSeconds = function getCurrentTimeInSeconds() {
+          return Date.now() * 0.001;
+        };
+        var isSoundCloudTokenValid = function isSoundCloudTokenValid() {
+          if (!_authToken) {
+            return false;
+          }
+          return getCurrentTimeInSeconds() > _authTokenExpireTime;
+        };
+        var getSoundCloudToken = function getSoundCloudToken(callback) {
+          if (isSoundCloudTokenValid()) {
+            log("have existing token:", _authToken);
+            setTimeout(function () {
+              callback(null, _authToken);
+            });
+            return;
+          }
+          const u = new URL('/token?format=json', window.location.href);
+          //console.log(u.href);
+          fetch(u.href).then(res => res.json()).then(data => {
+            log("response from token:", JSON.stringify(data));
+            if (data.error) {
+              callback(error);
+              return;
+            }
+            _authToken = data.token;
+            _authTokenExpireTime = data.expires_in + getCurrentTimeInSeconds() - 10;
+            callback(null, _authToken);
+          }).catch(err => {
+            log("error:", err);
+            callback(err);
+          });
+        };
+        var sendJSON = function sendJSON(url, data, callback, options = {}) {
+          getSoundCloudToken(function (error, token) {
+            console.log("gsct:", error, token);
+            if (error) {
+              callback(error);
+              return;
+            }
+            const newOptions = Object.assign({}, options);
+            newOptions.headers = Object.assign({}, options.headers || {});
+            newOptions.headers.Authorization = `OAuth ${token}`;
+            io.sendJSON(url, data, callback, newOptions);
+          });
+        };
+        this.getRealStreamURL = function sendHEAD(url, callback) {
+          getSoundCloudToken(function (error, token) {
+            if (error) {
+              callback(error);
+              return;
+            }
+            fetch(`${url}s`, {
+              method: 'GET',
+              headers: {
+                Authorization: `OAuth ${token}`
+              }
+            }).then(res => res.json()).then(data => {
+              callback(null, data.http_mp3_128_url);
+            }).catch(err => callback(err));
+          });
+        };
+
+        this.initialize = function () /*options*/{
+          //_clientId = options.client_id;
         };
         this.get = function (url, options, callback) {
 
           options = JSON.parse(JSON.stringify(options));
           var provideResult = function (fn) {
-            options.client_id = _clientId;
+            //options.client_id = _clientId;
             options.format = "json";
             options["_status_code_map[302]"] = 200;
             var scUrl = "https://api.soundcloud.com" + url + misc.objectToSearchString(options);
@@ -12980,14 +13048,14 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
             var handleResult = function (err, obj) {
               if (!err) {
                 if (obj.status && obj.status.substr(0, 3) === "302" && obj.location) {
-                  io.sendJSON(obj.location, {}, handleResult, { method: "GET" });
+                  sendJSON(obj.location, {}, handleResult, { method: "GET" });
                   return;
                 }
               }
               fn(obj, err);
             };
 
-            io.sendJSON(scUrl, {}, handleResult, {
+            sendJSON(scUrl, {}, handleResult, {
               method: "GET"
             });
           };
@@ -13204,7 +13272,15 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
     }
 
     function setSoundSource(src) {
-      s.streamSource.setSource(src);
+      console.log("soundSoundSource:", src);
+      s.sc.getRealStreamURL(src, function (err, url) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log('headurl:', url);
+        s.streamSource.setSource(url);
+      });
     }
 
     function setMusicPause(pause) {
@@ -13280,7 +13356,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
         setSoundLink();
         s.gainNode.gain.value = track === 'feedback' ? 1 : 0;
       } else {
-        var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
+        var src = track.stream_url; // + '?client_id=' + g.soundCloudClientId;
         setSoundSource(src);
         setSoundLink(track);
         s.gainNode.gain.value = 1;
@@ -25621,7 +25697,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*
  * @module IO
  */
 !(__WEBPACK_AMD_DEFINE_RESULT__ = function () {
-  var log = function () {};
+  //var log = function() { };
   //var log = console.log.bind(console);
 
   /**
@@ -25647,72 +25723,34 @@ var __WEBPACK_AMD_DEFINE_RESULT__;/*
   var request = function (url, content, callback, options) {
     content = content || "";
     options = options || {};
-    var request = new XMLHttpRequest();
-    if (request.overrideMimeType) {
-      request.overrideMimeType(options.mimeTime || 'text/plain');
-    }
-    if (options.crossOrigin) {
-      request.withCredentials = true;
-    }
-    var timeout = options.timeout || 0;
-    if (timeout) {
-      // IE11 doesn't like setting timeout to 0???!?
-      request.timeout = timeout;
-    }
-    log("set timeout to: " + request.timeout);
-    request.open(options.method || 'POST', url, true);
-    var callCallback = function (error, json) {
-      if (callback) {
-        log("calling-callback:" + (error ? " has error" : "success"));
-        callback(error, json);
-        callback = undefined; // only call it once.
+    const reqOptions = {
+      method: options.method || 'POST',
+      headers: {
+        'Content-Type': options.mimeType || 'text/plain'
       }
     };
-    var handleError = function () /* e */{
-      log("--error--");
-      callCallback("error sending json to " + url);
-    };
-    var handleTimeout = function () /* e */{
-      log("--timeout--");
-      callCallback("timeout sending json to " + url);
-    };
-    var handleForcedTimeout = function () /* e */{
-      if (callback) {
-        log("--forced timeout--");
-        request.abort();
-        callCallback("forced timeout sending json to " + url);
-      }
-    };
-    var handleFinish = function () {
-      log("--finish--");
-      // HTTP reports success with a 200 status. The file protocol reports
-      // success with zero. HTTP does not use zero as a status code (they
-      // start at 100).
-      // https://developer.mozilla.org/En/Using_XMLHttpRequest
-      var success = request.status === 200 || request.status === 0;
-      callCallback(success ? null : 'could not load: ' + url, request.responseText);
-    };
-    try {
-      // Safari 7 seems to ignore the timeout.
-      if (timeout) {
-        setTimeout(handleForcedTimeout, timeout + 50);
-      }
-      request.addEventListener('load', handleFinish, false);
-      request.addEventListener('timeout', handleTimeout, false);
-      request.addEventListener('error', handleError, false);
-      if (options.headers) {
-        Object.keys(options.headers).forEach(function (header) {
-          request.setRequestHeader(header, options.headers[header]);
-        });
-      }
-      request.send(content);
-      log("--sent: " + url);
-    } catch (e) {
-      log("--exception--");
-      setTimeout(function () {
-        callCallback('could not load: ' + url, null);
-      }, 0);
+
+    if (options.headers) {
+      Object.assign(reqOptions.headers, options.headers);
     }
+    if (options.body) {
+      reqOptions.body = options.body;
+    }
+
+    let resolve;
+    let reject;
+    const p = new Promise((_resolve, _reject) => {
+      resolve = _resolve;
+      reject = _reject;
+    });
+
+    if (options.timeout) {
+      setTimeout(() => reject('timeout'), options.timeout);
+    }
+
+    fetch(url, reqOptions).then(res => res.text()).then(resolve).catch(reject);
+
+    p.then(data => callback(null, data)).catch(err => callback(err));
   };
 
   /**

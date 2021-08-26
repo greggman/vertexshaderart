@@ -34,7 +34,7 @@
  * @module IO
  */
 define(function() {
-  var log = function() { };
+  //var log = function() { };
   //var log = console.log.bind(console);
 
   /**
@@ -60,71 +60,39 @@ define(function() {
   var request = function(url, content, callback, options) {
     content = content || "";
     options = options || { };
-    var request = new XMLHttpRequest();
-    if (request.overrideMimeType) {
-      request.overrideMimeType(options.mimeTime || 'text/plain');
+    const reqOptions = {
+      method: options.method || 'POST',
+      headers: {
+        'Content-Type': options.mimeType || 'text/plain',
+      },
+    };
+
+    if (options.headers) {
+      Object.assign(reqOptions.headers, options.headers);
     }
-    if (options.crossOrigin) {
-      request.withCredentials = true;
+    if (options.body) {
+      reqOptions.body = options.body;
     }
-    var timeout = options.timeout || 0;
-    if (timeout) {  // IE11 doesn't like setting timeout to 0???!?
-      request.timeout = timeout;
+
+    let resolve;
+    let reject;
+    const p = new Promise((_resolve, _reject) => {
+      resolve = _resolve;
+      reject = _reject;
+    });
+
+    if (options.timeout) {
+      setTimeout(() => reject('timeout'), options.timeout);
     }
-    log("set timeout to: " + request.timeout);
-    request.open(options.method || 'POST', url, true);
-    var callCallback = function(error, json) {
-      if (callback) {
-        log("calling-callback:" + (error ? " has error" : "success"));
-        callback(error, json);
-        callback = undefined;  // only call it once.
-      }
-    };
-    var handleError = function(/* e */) {
-      log("--error--");
-      callCallback("error sending json to " + url);
-    };
-    var handleTimeout = function(/* e */) {
-      log("--timeout--");
-      callCallback("timeout sending json to " + url);
-    };
-    var handleForcedTimeout = function(/* e */) {
-      if (callback) {
-        log("--forced timeout--");
-        request.abort();
-        callCallback("forced timeout sending json to " + url);
-      }
-    };
-    var handleFinish = function() {
-      log("--finish--");
-      // HTTP reports success with a 200 status. The file protocol reports
-      // success with zero. HTTP does not use zero as a status code (they
-      // start at 100).
-      // https://developer.mozilla.org/En/Using_XMLHttpRequest
-      var success = request.status === 200 || request.status === 0;
-      callCallback(success ? null : 'could not load: ' + url, request.responseText);
-    };
-    try {
-      // Safari 7 seems to ignore the timeout.
-      if (timeout) {
-        setTimeout(handleForcedTimeout, timeout + 50);
-      }
-      request.addEventListener('load', handleFinish, false);
-      request.addEventListener('timeout', handleTimeout, false);
-      request.addEventListener('error', handleError, false);
-      if (options.headers) {
-        Object.keys(options.headers).forEach(function(header) {
-          request.setRequestHeader(header, options.headers[header]);
-        });
-      }
-      request.send(content);
-      log("--sent: " + url);
-    } catch (e) {
-      log("--exception--");
-      setTimeout(function() {
-        callCallback('could not load: ' + url, null);
-      }, 0);
-    }
+
+    fetch(url, reqOptions)
+      .then(res => res.text())
+      .then(resolve)
+      .catch(reject);
+
+    p.then(data => callback(null, data))
+     .catch(err => callback(err));
+
   };
 
   /**

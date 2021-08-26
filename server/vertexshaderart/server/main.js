@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as http from 'https';
+import * as querystring from 'querystring';
 import { URL } from 'url';
 
 import { collection as ArtRevision, findNextPrevArtRevision } from '../imports/api/artrevision/artrevision.js';
@@ -11,6 +13,7 @@ import '../imports/pub.js';
 import * as routes from '../imports/routes.js';
 import * as methods from '../imports/methods.js';
 import { getArtPath, getRevisionPath, absoluteUrl } from '../imports/utils.js';
+
 
 function handleImageFiles() {
   const req = this.request;
@@ -326,6 +329,7 @@ var isBot = (function() {
     'linkedin',
     'twitter',
     'slack',
+    'discord',
     'telegram',
     'applebot',
     'pingdom',
@@ -386,6 +390,112 @@ function isJson(req) {
   return req.query && req.query.format === "json";
 }
 
+function getCurrentTimeInSeconds() {
+  return Date.now() * 0.001;
+}
+
+function makeFormPostRequest(url, form, callback) {
+  const postData = querystring.stringify(form);
+  const req = http.request(url, {
+    method: 'POST',
+    headers: {
+       'Content-Type': 'application/x-www-form-urlencoded',
+       'Content-Length': postData.length,
+    },
+  }, (res) => {
+    let body = "";
+    res.setEncoding('utf8');
+    res.on('data', (chunk) => {
+      body += chunk;
+    });
+    res.on('end', () => {
+      callback(null, res, body);
+    });
+  });
+
+  req.on('error', (e) => {
+    callback(e);
+  });
+
+  // Write data to request body
+  req.write(postData);
+  req.end();  
+}
+
+
+function isSoundCloudTokenValid() {
+  if (!g.soundCloudToken) {
+    return false;
+  }
+  return getCurrentTimeInSeconds() < g.soundCloudExpiredTimeInSeconds;
+}
+
+function getSoundCloudToken(callback) {
+  if (isSoundCloudTokenValid()) {
+    setTimeout(function() {
+      callback(null, g.soundCloudToken);
+    });
+    return;
+  }
+  /*
+  curl --request POST \
+  --url https://api.soundcloud.com/oauth2/token \
+  --header 'Content-Type: application/x-www-form-urlencoded' \
+  --data client_id=CLIENT_ID \
+  --data client_secret=CLIENT_SECRET \
+  --data grant_type=client_credentials
+
+  response:
+    {
+      "access_token":"2-157079--E7dXy6jCJcRIJsEh7WxIQyj",
+      "expires_in":3599,"refresh_token":"V7ktoD7MtmbPNgXF7gSBW2QRobrDQtaZ","scope":""}    
+
+  curl --request POST \
+  --url https://api.soundcloud.com/oauth2/token \
+  --header 'Content-Type: application/x-www-form-urlencoded' \
+  --data client_id=CLIENT_ID \
+  --data client_secret=CLIENT_SECRET \
+  --data grant_type=refresh_token \
+  --data refresh_token=REFRESH_TOKEN
+  */
+  const form = {
+    client_id: Meteor.settings.accounts.soundcloud.clientId,
+    client_secret: Meteor.settings.accounts.soundcloud.secret,
+    grant_type: 'client_credentials',
+  };
+
+  makeFormPostRequest('https://api.soundcloud.com/oauth2/token', form, function (error, response, body) {
+    try {
+      if (error || !response || response.statusCode !== 200) {
+        callback(response && response.body);
+        return;
+      } else {
+        const data = JSON.parse(body);
+        g.soundCloudToken = data.access_token;
+        g.soundCloudRefreshToken = data.refresh_token;
+        g.soundCloudExpiredTimeInSeconds = data.expires_in + getCurrentTimeInSeconds() - 10;
+        callback(null, g.soundCloudToken);
+      }
+    } catch (e) {
+      callback(e.toString())
+    };
+  });
+}
+
+function sendToken(req, res) {
+  getSoundCloudToken(function(error, token) {
+    const status = error ? 400 : 200;
+    res.writeHead(status, {
+      'Content-type': 'application/json',
+    });
+    res.end(JSON.stringify({
+      error: error,
+      token: token,
+      expires_in: g.soundCloudExpiredTimeInSeconds - getCurrentTimeInSeconds(),
+    }));
+  });
+}
+
 function sendArt(req, res, data) {
   if (isPrivate(data)) {
     res.statusCode = 404;
@@ -430,16 +540,23 @@ function sendArtRevisionSSR(req, res, revisionId) {
 
 const artPathRE = /\/art\/([^/]+)$/;
 const artRevisionPathRE = /\/art\/([^/]+)\/revision\/([^/]+)$/;
+const tokenPathRE = /^\/token$/;
 WebApp.connectHandlers.use(function(req, res, next) {
-  if (isJson(req) || isBot(req)) {
+  if (isJson(req)) {
     const u = new URL(req.url, 'http://foo.com');
-    var m = artPathRE.exec(u.pathname);
+    var m = tokenPathRE.exec(u.pathname);
     if (m) {
-      return sendArtSSR(req, res, m[1]);
+      return sendToken(req, res);
     }
-    m = artRevisionPathRE.exec(u.pathname);
-    if (m) {
-      return sendArtRevisionSSR(req, res, m[2]);
+    if (isBot(req)) {
+      m = artPathRE.exec(u.pathname);
+      if (m) {
+        return sendArtSSR(req, res, m[1]);
+      }
+      m = artRevisionPathRE.exec(u.pathname);
+      if (m) {
+        return sendArtRevisionSSR(req, res, m[2]);
+      }
     }
   }
   next();

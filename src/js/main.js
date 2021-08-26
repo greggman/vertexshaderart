@@ -686,15 +686,89 @@ define([
       });
 
       s.sc = new function() {
-        var _clientId;
-        this.initialize = function(options) {
-          _clientId = options.client_id;
+        //var _clientId;
+        var _authToken;
+        var _authTokenExpireTime;
+        var log = function() {
+          console.log.apply(console, arguments);
+        };
+        var getCurrentTimeInSeconds = function getCurrentTimeInSeconds() {
+          return Date.now() * 0.001;
+        };
+        var isSoundCloudTokenValid = function isSoundCloudTokenValid() {
+          if (!_authToken) {
+            return false;
+          }
+          return getCurrentTimeInSeconds() > _authTokenExpireTime;
+        };
+        var getSoundCloudToken = function getSoundCloudToken(callback) {
+          if (isSoundCloudTokenValid()) {
+            log("have existing token:", _authToken);
+            setTimeout(function() {
+              callback(null, _authToken);
+            });
+            return;
+          }
+          const u = new URL('/token?format=json', window.location.href);
+          //console.log(u.href);
+          fetch(u.href)
+            .then(res => res.json())
+            .then(data => {
+              log("response from token:", JSON.stringify(data));
+              if (data.error) {
+                callback(error);
+                return;
+              }
+              _authToken = data.token;
+              _authTokenExpireTime = data.expires_in + getCurrentTimeInSeconds() - 10;
+              callback(null, _authToken);
+            })
+            .catch(err => {
+              log("error:", err);
+              callback(err);
+            });
+        };
+        var sendJSON = function sendJSON(url, data, callback, options = {}) {
+          getSoundCloudToken(function(error, token) {
+            console.log("gsct:", error, token);
+            if (error) {
+              callback(error);
+              return;
+            }
+            const newOptions = Object.assign({}, options);
+            newOptions.headers = Object.assign({}, options.headers || {});
+            newOptions.headers.Authorization = `OAuth ${token}`;
+            io.sendJSON(url, data, callback, newOptions);
+          });
+        };
+        this.getRealStreamURL = function sendHEAD(url, callback) {
+          getSoundCloudToken(function(error, token) {
+            if (error) {
+              callback(error);
+              return;
+            }
+            fetch(`${url}s`, {
+              method: 'GET',
+              headers: {
+                Authorization: `OAuth ${token}`,
+              },
+            })
+              .then(res => res.json())
+              .then(data => {
+                callback(null, data.http_mp3_128_url);
+              })
+              .catch(err => callback(err));
+          });
+        };
+
+        this.initialize = function(/*options*/) {
+          //_clientId = options.client_id;
         };
         this.get = function(url, options, callback) {
 
           options = JSON.parse(JSON.stringify(options));
           var provideResult = function(fn) {
-            options.client_id = _clientId;
+            //options.client_id = _clientId;
             options.format = "json";
             options["_status_code_map[302]"] = 200;
             var scUrl = "https://api.soundcloud.com" + url + misc.objectToSearchString(options);
@@ -702,14 +776,14 @@ define([
             var handleResult = function(err, obj) {
               if (!err) {
                 if (obj.status && obj.status.substr(0, 3) === "302" && obj.location) {
-                  io.sendJSON(obj.location, {}, handleResult, { method: "GET"});
+                  sendJSON(obj.location, {}, handleResult, { method: "GET"});
                   return;
                 }
               }
               fn(obj, err);
             };
 
-            io.sendJSON(scUrl, {}, handleResult, {
+            sendJSON(scUrl, {}, handleResult, {
               method: "GET",
             });
           };
@@ -933,7 +1007,15 @@ define([
     }
 
     function setSoundSource(src) {
-      s.streamSource.setSource(src);
+      console.log("soundSoundSource:", src);
+      s.sc.getRealStreamURL(src, function(err, url) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log('headurl:', url);
+        s.streamSource.setSource(url);
+      });
     }
 
     function setMusicPause(pause) {
@@ -1009,7 +1091,7 @@ define([
         setSoundLink();
         s.gainNode.gain.value = track === 'feedback' ? 1 : 0;
       } else {
-        var src = track.stream_url + '?client_id=' + g.soundCloudClientId;
+        var src = track.stream_url;// + '?client_id=' + g.soundCloudClientId;
         setSoundSource(src);
         setSoundLink(track);
         s.gainNode.gain.value = 1;
