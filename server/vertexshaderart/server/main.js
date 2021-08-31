@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as http from 'https';
+import * as https from 'https';
 import * as querystring from 'querystring';
 import { URL } from 'url';
 
@@ -394,34 +394,66 @@ function getCurrentTimeInSeconds() {
   return Date.now() * 0.001;
 }
 
-function makeFormPostRequest(url, form, callback) {
-  const postData = querystring.stringify(form);
-  const req = http.request(url, {
-    method: 'POST',
-    headers: {
-       'Content-Type': 'application/x-www-form-urlencoded',
-       'Content-Length': postData.length,
-    },
-  }, (res) => {
-    let body = "";
-    res.setEncoding('utf8');
-    res.on('data', (chunk) => {
-      body += chunk;
-    });
-    res.on('end', () => {
-      callback(null, res, body);
-    });
-  });
+async function makeRequest(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const method = options.method || 'GET';
+    const headers = {};
+    Object.assign(headers, options.headers || {});
 
-  req.on('error', (e) => {
-    callback(e);
-  });
+    const data = options.data;
+    if (data) {
+      headers['Content-Length'] = data.length;
+    }
 
-  // Write data to request body
-  req.write(postData);
-  req.end();  
+    const req = https.request(url, {
+      method,
+      headers,
+    }, (res) => {
+      if (res.statusCode === 302) {
+        const url = res.headers['location'];
+        makeRequest(url, options)
+          .then(data => resolve(data))
+          .catch(err => reject(err));
+        return;
+      }
+      let body = "";
+      res.setEncoding('utf8');
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
+      res.on('end', () => {
+        resolve(body);
+      });
+    });
+
+    req.on('error', (e) => {
+      reject(e);
+    });
+
+    if (data) {
+      req.write(data);
+    }
+    req.end();  
+  });
 }
 
+async function makeFormPostRequest(url, form) {
+  return await makeRequest(url, {
+    method: 'POST',
+    data: querystring.stringify(form),
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  });
+}
+
+async function makeGetRequest(url, token) {
+  return await makeRequest(url, {
+    headers: {
+      'Authorization': `OAuth ${token}`,
+    },
+  });
+}
 
 function isSoundCloudTokenValid() {
   if (!g.soundCloudToken) {
@@ -430,12 +462,9 @@ function isSoundCloudTokenValid() {
   return getCurrentTimeInSeconds() < g.soundCloudExpiredTimeInSeconds;
 }
 
-function getSoundCloudToken(callback) {
+async function getSoundCloudToken() {
   if (isSoundCloudTokenValid()) {
-    setTimeout(function() {
-      callback(null, g.soundCloudToken);
-    });
-    return;
+    return g.soundCloudToken;
   }
   /*
   curl --request POST \
@@ -464,36 +493,78 @@ function getSoundCloudToken(callback) {
     grant_type: 'client_credentials',
   };
 
-  makeFormPostRequest('https://api.soundcloud.com/oauth2/token', form, function (error, response, body) {
-    try {
-      if (error || !response || response.statusCode !== 200) {
-        callback(response && response.body);
-        return;
-      } else {
-        const data = JSON.parse(body);
-        g.soundCloudToken = data.access_token;
-        g.soundCloudRefreshToken = data.refresh_token;
-        g.soundCloudExpiredTimeInSeconds = data.expires_in + getCurrentTimeInSeconds() - 10;
-        callback(null, g.soundCloudToken);
-      }
-    } catch (e) {
-      callback(e.toString())
-    };
-  });
+  const body = await makeFormPostRequest('https://api.soundcloud.com/oauth2/token', form);
+  const data = JSON.parse(body);
+  g.soundCloudToken = data.access_token;
+  g.soundCloudRefreshToken = data.refresh_token;
+  g.soundCloudExpiredTimeInSeconds = data.expires_in + getCurrentTimeInSeconds() - 10;
+  return g.soundCloudToken;
 }
 
-function sendToken(req, res) {
-  getSoundCloudToken(function(error, token) {
-    const status = error ? 400 : 200;
-    res.writeHead(status, {
-      'Content-type': 'application/json',
-    });
-    res.end(JSON.stringify({
-      error: error,
-      token: token,
-      expires_in: g.soundCloudExpiredTimeInSeconds - getCurrentTimeInSeconds(),
-    }));
+async function sendTrackUrl(req, res) {
+  let error;
+  let url;
+  let status = 200;
+  try {
+    const token = await getSoundCloudToken();
+    const stream_url = req.query.url;
+    const trackUrl = `${stream_url}s`;
+    const trackData = await makeGetRequest(trackUrl, token);
+    const {http_mp3_128_url} = JSON.parse(trackData);
+    url = http_mp3_128_url;
+  } catch (e) {
+    status = 400;
+    error = e;
+  }
+  res.writeHead(status, {
+    'Content-type': 'application/json',
   });
+  res.end(JSON.stringify({
+    error: error,
+    url: url,
+  }));
+}
+
+async function sendResolve(req, res) {
+  let result = {};
+  let status = 200;
+  try {
+    const token = await getSoundCloudToken();
+    const url = req.query.url;
+    const trackUrl = `https://api.soundcloud.com/resolve?${new URLSearchParams({url, format: 'json'}).toString()}`;
+    const trackData = await makeGetRequest(trackUrl, token);
+    result = JSON.parse(trackData);
+  } catch (e) {
+    status = 400;
+    result = {
+      error: e.toString(),
+    };
+  }
+  res.writeHead(status, {
+    'Content-type': 'application/json',
+  });
+  res.end(JSON.stringify(result));
+}
+
+async function sendToken(req, res) {
+  let error;
+  let token;
+  let status = 200;
+  try {
+    token = await getSoundCloudToken();
+  } catch (e) {
+    error = e.toString();
+    status = 400;
+  }
+
+  res.writeHead(status, {
+    'Content-type': 'application/json',
+  });
+  res.end(JSON.stringify({
+    error: error,
+    token: token,
+    expires_in: g.soundCloudExpiredTimeInSeconds - getCurrentTimeInSeconds(),
+  }));
 }
 
 function sendArt(req, res, data) {
@@ -540,12 +611,16 @@ function sendArtRevisionSSR(req, res, revisionId) {
 
 const artPathRE = /\/art\/([^/]+)$/;
 const artRevisionPathRE = /\/art\/([^/]+)\/revision\/([^/]+)$/;
-const tokenPathRE = /^\/token$/;
 WebApp.connectHandlers.use(function(req, res, next) {
   if (isJson(req)) {
     const u = new URL(req.url, 'http://foo.com');
-    var m = tokenPathRE.exec(u.pathname);
-    if (m) {
+    if (u.pathname === '/track_url') {
+      return sendTrackUrl(req, res);
+    }
+    if (u.pathname === "/resolve") {
+      return sendResolve(req, res);
+    }
+    if (u.pathname === "/token") {
       return sendToken(req, res);
     }
     if (isBot(req)) {

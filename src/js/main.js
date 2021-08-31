@@ -742,23 +742,15 @@ define([
           });
         };
         this.getRealStreamURL = function sendHEAD(url, callback) {
-          getSoundCloudToken(function(error, token) {
-            if (error) {
-              callback(error);
-              return;
-            }
-            fetch(`${url}s`, {
-              method: 'GET',
-              headers: {
-                Authorization: `OAuth ${token}`,
-              },
+          fetch(`/track_url?${new URLSearchParams({format: 'json', url}).toString()}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.error) {
+                throw data.error;
+              }
+              callback(null, data.url);
             })
-              .then(res => res.json())
-              .then(data => {
-                callback(null, data.http_mp3_128_url);
-              })
-              .catch(err => callback(err));
-          });
+            .catch(err => callback(err));
         };
 
         this.initialize = function(/*options*/) {
@@ -1118,26 +1110,27 @@ define([
         s.playlist = [url];
         playNextTrack();
       } else {
-        s.sc.get("/resolve", { url: url }, function(result, err) {
-          if (err) {
+        fetch(`/resolve?${new URLSearchParams({format: 'json', url})}`)
+          .then(res => res.json())
+          .then(result => {
+            var tracks = result.kind === "playlist" ? result.tracks : [result];
+            s.trackNdx = 0;
+            s.playlist = [];
+            if (Array.isArray(tracks)) {
+              s.playlist = tracks.filter(isStreamable);
+            }
+
+            if (!s.playlist.length) {
+              console.error("no streamable tracks");
+              setSoundSuccessState(false, "not streamable according to soundcloud");
+            } else {
+              playNextTrack();
+            }
+          })
+          .catch(err => {
             console.error("bad url:", url, err);
             setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
-            return;
-          }
-          var tracks = result.kind === "playlist" ? result.tracks : [result];
-          s.trackNdx = 0;
-          s.playlist = [];
-          if (Array.isArray(tracks)) {
-            s.playlist = tracks.filter(isStreamable);
-          }
-
-          if (!s.playlist.length) {
-            console.error("no streamable tracks");
-            setSoundSuccessState(false, "not streamable according to soundcloud");
-          } else {
-            playNextTrack();
-          }
-        });
+          });
       }
     }
 

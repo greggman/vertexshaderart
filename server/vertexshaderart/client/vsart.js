@@ -13017,20 +13017,12 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
           });
         };
         this.getRealStreamURL = function sendHEAD(url, callback) {
-          getSoundCloudToken(function (error, token) {
-            if (error) {
-              callback(error);
-              return;
+          fetch(`/track_url?${new URLSearchParams({ format: 'json', url }).toString()}`).then(res => res.json()).then(data => {
+            if (data.error) {
+              throw data.error;
             }
-            fetch(`${url}s`, {
-              method: 'GET',
-              headers: {
-                Authorization: `OAuth ${token}`
-              }
-            }).then(res => res.json()).then(data => {
-              callback(null, data.http_mp3_128_url);
-            }).catch(err => callback(err));
-          });
+            callback(null, data.url);
+          }).catch(err => callback(err));
         };
 
         this.initialize = function () /*options*/{
@@ -13383,12 +13375,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
         s.playlist = [url];
         playNextTrack();
       } else {
-        s.sc.get("/resolve", { url: url }, function (result, err) {
-          if (err) {
-            console.error("bad url:", url, err);
-            setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
-            return;
-          }
+        fetch(`/resolve?${new URLSearchParams({ format: 'json', url })}`).then(res => res.json()).then(result => {
           var tracks = result.kind === "playlist" ? result.tracks : [result];
           s.trackNdx = 0;
           s.playlist = [];
@@ -13402,6 +13389,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
           } else {
             playNextTrack();
           }
+        }).catch(err => {
+          console.error("bad url:", url, err);
+          setSoundSuccessState(false, "not a valid soundcloud url? " + (err.message ? err.message : ""));
         });
       }
     }
