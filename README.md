@@ -26,16 +26,11 @@ A few tips when making art
 
             #define RESOLUTION_OF_MY_DISPLAY 2000.0
             gl_PointSize *= resolution.x / RESOLUTION_OF_MY_DISPLAY;
+            
+    *   the aspect of the display
 
-    *   `CSS` vs `Native`
-
-        vertexshaderart.com will automatically set the `gl.lineWidth` to `window.devicePixelRatio` if you pick `CSS`.
-        Similarly it will multiply `gl_PointSize` by devicePixelRatio if set to `CSS`.
-        It's up to you whether or not your art would be better it multiplied by devicePixelRatio.
-
-        For example if you want the thinnest possible lines you'd pick `Native`. If on the other hand you want the lines
-        to be the same thickness on a 4000x2000 HD-DPI display vs a 2000x1000 non HD-DPI display then pick `CSS`. Similarly
-        if you want points to be the same size on HD-DPI and non HD-DPI pick `CSS`.
+        Remember that the user might be on a phone (so display taller than it is wide) vs a desktop (usually wider than tall).
+        Consider taking that into account. For example scaling by the larger of resolution.x or resolution.y
 
 *   Use `vertexCount` were appropriate
 
@@ -55,11 +50,6 @@ You can embed a piece on your blog or whatever by putting the url in an iframe. 
     <iframe width="700" height="400" src="http://www.vertexshaderart.com/art/uqWtxuQpEkfxqWXCK" frameborder="0" allowfullscreen></iframe>
 
 The UI will be removed and there will put a ▶ icon to start it.
-This is because you probably don't want them to run automatically
-since they might be heavy.
-
-If you really do want it to play automatically add `?autoplay=true` to
-the URL.
 
 ## Contributing
 
@@ -110,6 +100,9 @@ The site is split into 2 parts.
     depending on what code you're working on. It checks if it's running on
     `'localhost'` to enable this feature. You can override this by adding
     `?pauseOnBlur=false` to the URL.
+    
+    **Note:** You will not be able to use soundcloud tracks in the standalone editor.
+    They changed their API (2021/7) so that a server is required.
 
 2.  A Meteor based website
 
@@ -126,6 +119,9 @@ The site is split into 2 parts.
     This will launch meteor. Once it's running you can open a browser to
     [`http://localhost:3000`](http://localhost:3000) and you should see effectively
     the same site as http://www.vertexshaderart.com though you'll have no data or users.
+    
+    Note: You will need a soundcloud client and secret in your `settings-dev.json`
+    to use soundcloud tracks.
 
 ### Updating the visualizer into the meteor website.
 
@@ -191,11 +187,6 @@ are passed in by adding a `?` and then `key=value&key=value`.
     that rendering is not running. I use this when I want to test UI
     layout on battery. I can muck with the CSS etc and not having it
     rendering the heavy graphics.
-
-*   `autoplay=true`
-
-    If embedded in an iframe the defaul is not to run since they
-    might be heavy and might have music.
 
 ## Deploying
 
