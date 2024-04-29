@@ -6,11 +6,22 @@
   Tools are out of date etc and it's just too much work for a site that
   gets almost no traffic and that I, myself, rarely use.
 
+  Using Soundcloud has always been problematic. They've changed their API
+  more than once causing a bunch of work. Artists delete their accounts, or
+  delete songs, or change permissions
+  and then the visualizations here are left non-working.
+
+  I thought about maybe trying to find a few 1000s free tracks
+  and upload them somewhere streamable but that would also be
+  too much work.
+
+  So, I took the site offline.
+
 ---
 
 See it live at [vertexshaderart.com](http://vertexshaderart.com)
 
-Cleary inspired by [glslsandbox.com](http://glslsandbox.com) this one
+Clearly inspired by [glslsandbox.com](http://glslsandbox.com) this one
 only lets you edit a vertex shader. The vertex shaders main input is
 just a `vertexId` that counts vertices.
 
