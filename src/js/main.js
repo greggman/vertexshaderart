@@ -1000,14 +1000,18 @@ define([
 
     function setSoundSource(src) {
       console.log("soundSoundSource:", src);
-      s.sc.getRealStreamURL(src, function(err, url) {
-        if (err) {
-          console.log(err);
-          return;
-        }
-        console.log('headurl:', url);
-        s.streamSource.setSource(url);
-      });
+      if (isMic(src)) {
+        s.streamSource.setSource(src);
+      } else {
+        s.sc.getRealStreamURL(src, function(err, url) {
+          if (err) {
+            console.log(err);
+            return;
+          }
+          console.log('headurl:', url);
+          s.streamSource.setSource(url);
+        });
+      }
     }
 
     function setMusicPause(pause) {

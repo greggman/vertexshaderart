@@ -82,7 +82,7 @@ The site is split into 2 parts.
     The source for this editor is in the `src` folder. The main entry point is
     `src/js/main.js`
 
-    The code is a little funky becaue this was created first and then fitted into
+    The code is a little funky because this was created first and then fitted into
     Meteor. Because Meteor replaces the entire DOM on the fly, when running in Meteor
     the code inits once, keeps the canvas and editor DOM elements around and inserts
     and removes them when required. Any variable that starts with `s.` is something
