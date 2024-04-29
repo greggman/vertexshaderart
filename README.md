@@ -1,5 +1,13 @@
 ﻿# vertexshaderart
 
+# vertexshaderart.com is offline
+
+  Soundcloud changed their API and I can't be bothered to fix this code.
+  Tools are out of date etc and it's just too much work for a site that
+  gets almost no traffic and that I, myself, rarely use.
+
+---
+
 See it live at [vertexshaderart.com](http://vertexshaderart.com)
 
 Cleary inspired by [glslsandbox.com](http://glslsandbox.com) this one
