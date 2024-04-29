@@ -79,7 +79,7 @@ There are 4 versions
 
     The new version of docker mac (not sure about Docker Windows) runs docker on the mac. No VM required.
     One advantage is that the programs running in the containers can access your mac's local filesystem
-    (which parts they can access are specfied in the docker-compose.yml files so no worries).
+    (which parts they can access are specified in the docker-compose.yml files so no worries).
 
 3.  **staging**
 
@@ -149,7 +149,7 @@ asked for passwords a billion times as you run these scripts.
 
     Test it by typing
 
-        ssh <ipaddressOfDroplet>
+        ssh <ipAddressOfDroplet>
 
     It should connect to your droplet no questions asked. If it doesn't then you either
     didn't setup your ssh keys or something else is wrong. Type `exit` to exit or press Ctrl-D.
@@ -233,7 +233,7 @@ asked for passwords a billion times as you run these scripts.
 
 12. type
 
-        ssh <ipaddressOrDomainOfDroplet> 'docker logs -f c_meteor_1'
+        ssh <ipAddressOrDomainOfDroplet> 'docker logs -f c_meteor_1'
 
     This will show you output from the docker container running
     meteor. Once you see "Starting Meteor..." ..
@@ -247,8 +247,8 @@ To update the site check stuff into your github repo and run steps 10+ again
 ### Deploy Staging
 
 NOTE: I'm not normally running a staging server. The only reason I needed
-a staging server was to test HTTPS because letsencrypt requires a publically
-accessable server at the domain for which it will be issuing a certificate.
+a staging server was to test HTTPS because letsencrypt requires a publicly
+accessible server at the domain for which it will be issuing a certificate.
 
 So, the instructions almost the same as [Deploy Live](#deploy-live). You
 need to make a separate droplet for staging so yes, start from step 1 of
@@ -262,10 +262,10 @@ and point it at the staging droplet.
 Step 7, copy `settings-staging-orig.json` to `settings-staging.json`
 
 Steps 8 through 13, everywhere it says `www.` change it to `staging.`.
-Everwhere something ends with `-live` use `-staging` instead.
+Everywhere something ends with `-live` use `-staging` instead.
 
 That's pretty much it. It should work the same. One more note, if
-you want to test any of the login serivces they'll need their own
+you want to test any of the login services they'll need their own
 codes, separate from the live site's codes. See below.
 
 #### Configuring login services
@@ -352,7 +352,7 @@ uses `consumerKey` etc..
 
 ##### Dev vs Local vs Staging vs Live
 
-If I understand correctly the callback for each URL needs to be accessable from the browser
+If I understand correctly the callback for each URL needs to be accessi ble from the browser
 which means you either need to edit them all for live vs local or else register separate apps
 for each service (mysite and mysite-dev).  Every where it says `<ipaddressofdroplet-or-domain>`
 above would be `localhost:3000` for local. Personally I haven't set any up for local but
